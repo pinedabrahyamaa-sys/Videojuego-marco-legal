@@ -1,41 +1,33 @@
 @echo off
-chcp 65001 >nul
-title Auditoría Forense - CICPC
+setlocal
 
-:: 1. Calcular ruta absoluta de index.html y normalizar barras invertidas a barras inclinadas
+:: Obtener ruta absoluta de index.html
 set "GAME_PATH=%~dp0index.html"
-set "GAME_URL=%GAME_PATH:\=/%"
 
-:: 2. Buscar navegador compatible para modo aplicación limpia (Google Chrome o Microsoft Edge)
-set "BROWSER="
-
+:: Intentar con Google Chrome
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
-    set "BROWSER=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
-    goto :LAUNCH
+    start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --app="%GAME_PATH%" --start-maximized --user-data-dir="%TEMP%\escape_room_cicpc_profile"
+    exit /b 0
 )
 if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" (
-    set "BROWSER=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
-    goto :LAUNCH
+    start "" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" --app="%GAME_PATH%" --start-maximized --user-data-dir="%TEMP%\escape_room_cicpc_profile"
+    exit /b 0
 )
 if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" (
-    set "BROWSER=%LocalAppData%\Google\Chrome\Application\chrome.exe"
-    goto :LAUNCH
+    start "" "%LocalAppData%\Google\Chrome\Application\chrome.exe" --app="%GAME_PATH%" --start-maximized --user-data-dir="%TEMP%\escape_room_cicpc_profile"
+    exit /b 0
 )
+
+:: Intentar con Microsoft Edge
 if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (
-    set "BROWSER=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
-    goto :LAUNCH
+    start "" "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" --app="%GAME_PATH%" --start-maximized --user-data-dir="%TEMP%\escape_room_cicpc_profile"
+    exit /b 0
 )
 if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" (
-    set "BROWSER=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
-    goto :LAUNCH
+    start "" "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" --app="%GAME_PATH%" --start-maximized --user-data-dir="%TEMP%\escape_room_cicpc_profile"
+    exit /b 0
 )
 
-:: 3. Lanzamiento en ventana de aplicación independiente
-:LAUNCH
-if defined BROWSER (
-    start "" "%BROWSER%" --app="file:///%GAME_URL%" --start-maximized --user-data-dir="%TEMP%\escape_room_cicpc_profile"
-) else (
-    start "" "%GAME_PATH%"
-)
-
+:: Respaldo con navegador predeterminado
+start "" "%GAME_PATH%"
 exit /b 0
