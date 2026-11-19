@@ -215,7 +215,7 @@ window.Game = window.Game || {};
         if (moved) {
             State.isMoving = true;
             State.walkTimer += 0.22;
-            if (Audio) Audio.step();
+            if (Audio && State.mode === "PLAYING") Audio.step();
         } else {
             State.isMoving = false;
         }

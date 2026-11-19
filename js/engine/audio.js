@@ -5,6 +5,7 @@ window.Game = window.Game || {};
     let ctx = null;
     let isMuted = false;
     let lastStepTime = 0;
+    let isLeftFoot = false;
 
     // Cargar preferencia persistente
     try {
@@ -47,7 +48,7 @@ window.Game = window.Game || {};
         // EFECTOS DE SONIDO SINTETIZADOS SUTILES Y SOBRIOS
         // =====================================================================
 
-        // Pisada sutil al caminar (con cooldown de ~280ms)
+        // Pisada ligera y realista de zapato sobre piso de concreto (Web Audio API)
         step: function() {
             if (isMuted) return;
             const now = Date.now();
@@ -57,30 +58,68 @@ window.Game = window.Game || {};
             const ac = getAudioContext();
             if (!ac) return;
 
-            const osc = ac.createOscillator();
-            const gain = ac.createGain();
-            const filter = ac.createBiquadFilter();
-
+            // Alternar sutilmente entre pie izquierdo y derecho para sonido orgánico
+            isLeftFoot = !isLeftFoot;
             const t = ac.currentTime;
-            // Tono grave variable
-            const freq = 65 + (Math.random() - 0.5) * 14;
-            osc.type = "triangle";
-            osc.frequency.setValueAtTime(freq, t);
-            osc.frequency.exponentialRampToValueAtTime(35, t + 0.08);
+            const duration = 0.045; // ~45 ms
 
-            // Filtro pasa-bajos para sonido mate amortiguado
-            filter.type = "lowpass";
-            filter.frequency.setValueAtTime(180, t);
+            // 1. Golpe grave suave de cuerpo / suela (116Hz / 124Hz)
+            const baseFreq = isLeftFoot ? 122 : 116;
+            const pitchJitter = (Math.random() - 0.5) * 4;
+            const oscFreq = baseFreq + pitchJitter;
 
-            gain.gain.setValueAtTime(0.06, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+            const osc = ac.createOscillator();
+            const oscGain = ac.createGain();
+            const oscFilter = ac.createBiquadFilter();
 
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(ac.destination);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(oscFreq, t);
+            osc.frequency.exponentialRampToValueAtTime(38, t + duration);
+
+            oscFilter.type = "lowpass";
+            oscFilter.frequency.setValueAtTime(170, t);
+
+            oscGain.gain.setValueAtTime(0.075, t);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+            osc.connect(oscFilter);
+            oscFilter.connect(oscGain);
+            oscGain.connect(ac.destination);
 
             osc.start(t);
-            osc.stop(t + 0.08);
+            osc.stop(t + duration);
+
+            // 2. Pulso muy corto de ruido blanco con filtro pasa-banda (~900Hz) para textura de concreto
+            try {
+                const sampleRate = ac.sampleRate;
+                const bufferSize = Math.max(1, Math.floor(sampleRate * duration));
+                const buffer = ac.createBuffer(1, bufferSize, sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+                }
+
+                const noise = ac.createBufferSource();
+                noise.buffer = buffer;
+
+                const bandpass = ac.createBiquadFilter();
+                bandpass.type = "bandpass";
+                bandpass.frequency.setValueAtTime(isLeftFoot ? 910 : 880, t);
+                bandpass.Q.setValueAtTime(1.8, t);
+
+                const noiseGain = ac.createGain();
+                noiseGain.gain.setValueAtTime(0.038, t);
+                noiseGain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+                noise.connect(bandpass);
+                bandpass.connect(noiseGain);
+                noiseGain.connect(ac.destination);
+
+                noise.start(t);
+                noise.stop(t + duration);
+            } catch (err) {
+                // Silencioso si buffer falla en algún contexto limitado
+            }
         },
 
         // Sonido de folio / expediente de papel

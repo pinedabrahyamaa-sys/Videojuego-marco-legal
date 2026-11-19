@@ -905,7 +905,7 @@ window.Game = window.Game || {};
         },
 
         // =========================================================================
-        // JUGADOR: AUDITOR / PERITO FORENSE 2D HD ILUSTRADO
+        // JUGADOR: PERITO FORENSE DEL CICPC (2D HD ILUSTRADO ~50PX)
         // =========================================================================
         drawPlayer: function(ctx, state) {
             const player = state.player;
@@ -914,298 +914,447 @@ window.Game = window.Game || {};
             const facing = player.facing || "down";
 
             ctx.save();
+            // Anclaje estricto en la caja de colisión (player.size = 26)
             const centerX = player.x + 13;
             const footY = player.y + 26;
 
             const stepCycle = isMoving ? Math.sin(walkTimer) : 0;
-            const bob = isMoving ? Math.abs(Math.sin(walkTimer)) * 1.6 : 0;
-            const sway = isMoving ? Math.sin(walkTimer) * 0.05 : 0;
+            const bob = isMoving ? Math.abs(Math.sin(walkTimer)) * 1.8 : 0;
+            const sway = isMoving ? Math.sin(walkTimer) * 0.04 : 0;
 
             // Sombra ovalada suave proyectada en el suelo
-            ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
             ctx.beginPath();
-            ctx.ellipse(centerX, footY - 1, 12, 5, 0, 0, Math.PI * 2);
+            ctx.ellipse(centerX, footY - 1, 15, 6, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Piernas y zapatos de cuero oscuros con paso fluido
-            const leftLegOffset = isMoving ? stepCycle * 4 : 0;
-            const rightLegOffset = isMoving ? -stepCycle * 4 : 0;
+            // Piernas y calzado táctico con paso fluido (~50px altura visual total)
+            const leftLegOffset = isMoving ? stepCycle * 4.5 : 0;
+            const rightLegOffset = isMoving ? -stepCycle * 4.5 : 0;
 
-            // Pantalón sastre oscuro
-            drawRoundedRect(ctx, centerX - 7, footY - 14 + leftLegOffset * 0.5, 5, 11, 2);
-            ctx.fillStyle = "#18212D";
+            // Pantalón táctico oscuro (#141C26 con sombras #0C121A)
+            // Pierna izquierda
+            drawRoundedRect(ctx, centerX - 9, footY - 19 + leftLegOffset * 0.5, 6.5, 14, 2);
+            ctx.fillStyle = "#141C26";
             ctx.fill();
             ctx.strokeStyle = INK_OUTLINE;
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Zapato izquierdo
-            drawRoundedRect(ctx, centerX - 8, footY - 4 + leftLegOffset, 6.5, 4.5, 2);
+            // Zapato táctico izquierdo de cuero
+            drawRoundedRect(ctx, centerX - 10, footY - 5.5 + leftLegOffset, 8.5, 5.5, 2);
             ctx.fillStyle = "#0A0D12";
             ctx.fill();
             ctx.stroke();
+            ctx.fillStyle = "#222B38";
+            ctx.fillRect(centerX - 10, footY - 1.5 + leftLegOffset, 8.5, 1.5);
 
             // Pierna derecha
-            drawRoundedRect(ctx, centerX + 2, footY - 14 + rightLegOffset * 0.5, 5, 11, 2);
-            ctx.fillStyle = "#18212D";
+            drawRoundedRect(ctx, centerX + 2.5, footY - 19 + rightLegOffset * 0.5, 6.5, 14, 2);
+            ctx.fillStyle = "#141C26";
             ctx.fill();
             ctx.stroke();
 
-            // Zapato derecho
-            drawRoundedRect(ctx, centerX + 1.5, footY - 4 + rightLegOffset, 6.5, 4.5, 2);
+            // Zapato táctico derecho de cuero
+            drawRoundedRect(ctx, centerX + 1.5, footY - 5.5 + rightLegOffset, 8.5, 5.5, 2);
             ctx.fillStyle = "#0A0D12";
             ctx.fill();
             ctx.stroke();
+            ctx.fillStyle = "#222B38";
+            ctx.fillRect(centerX + 1.5, footY - 1.5 + rightLegOffset, 8.5, 1.5);
 
-            // Torso superior, chaqueta formal y cabeza
+            // Torso superior, uniforme institucional del CICPC y rostro definido
             ctx.save();
-            ctx.translate(centerX, footY - 16 - bob);
+            ctx.translate(centerX, footY - 20 - bob);
             ctx.rotate(sway);
 
-            if (facing === "up") {
-                // Brazos con chaleco azul marino institucional
-                const armL_Y = isMoving ? -stepCycle * 2.5 : 0;
-                const armR_Y = isMoving ? stepCycle * 2.5 : 0;
+            const armL_Y = isMoving ? -stepCycle * 3 : 0;
+            const armR_Y = isMoving ? stepCycle * 3 : 0;
 
-                drawRoundedRect(ctx, -11.5, -9 + armL_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#10203A";
+            if (facing === "up") {
+                // ==================== VISTA TRASERA (FACING UP) ====================
+                // Brazo izquierdo
+                drawRoundedRect(ctx, -15.5, -17 + armL_Y, 5.5, 15, 2.5);
+                ctx.fillStyle = "#0D1E38";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
 
-                drawRoundedRect(ctx, 7, -9 + armR_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#10203A";
+                // Brazo derecho
+                drawRoundedRect(ctx, 10, -17 + armR_Y, 5.5, 15, 2.5);
+                ctx.fillStyle = "#0D1E38";
                 ctx.fill();
                 ctx.stroke();
 
-                // Hombreras con ribete dorado reflectivo (#D9A738)
-                ctx.fillStyle = "#D9A738";
-                ctx.fillRect(-10.5, -9 + armL_Y, 3, 1.2);
-                ctx.fillRect(7.5, -9 + armR_Y, 3, 1.2);
+                // Charreteras / hombreras doradas con ribete
+                ctx.fillStyle = "#E5B842";
+                ctx.fillRect(-14, -18 + armL_Y, 4, 1.6);
+                ctx.fillRect(10, -18 + armR_Y, 4, 1.6);
 
-                // Espalda del chaleco táctico institucional azul marino (#10203A)
-                drawRoundedRect(ctx, -8.5, -12, 17, 14, 3);
-                ctx.fillStyle = "#10203A";
+                // Espalda de la chaqueta táctica azul marino (#0D1E38)
+                drawRoundedRect(ctx, -11, -19, 22, 16, 3);
+                ctx.fillStyle = "#0D1E38";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.4;
                 ctx.stroke();
 
-                // Franja reflectiva oscura en la espalda con filete dorado
-                ctx.fillStyle = "#0A1424";
-                ctx.fillRect(-7.5, -9.5, 15, 6.5);
-                ctx.strokeStyle = "#D9A738";
-                ctx.lineWidth = 0.8;
-                ctx.strokeRect(-7.5, -9.5, 15, 6.5);
+                // Cinturón táctico negro con funda
+                drawRoundedRect(ctx, -11, -3.5, 22, 3.5, 1);
+                ctx.fillStyle = "#0A0D12";
+                ctx.fill();
+                ctx.stroke();
 
-                // Siglas "CICPC" nítidas en amarillo dorado reflectivo
-                ctx.fillStyle = "#FFD700";
-                ctx.font = "bold 5px 'JetBrains Mono', monospace";
+                // Franja reflectiva superior oscura en la espalda
+                ctx.fillStyle = "#091322";
+                ctx.fillRect(-10, -16.5, 20, 8);
+                ctx.strokeStyle = "#E5B842";
+                ctx.lineWidth = 0.9;
+                ctx.strokeRect(-10, -16.5, 20, 8);
+
+                // Siglas "CICPC" nítidas y más grandes en amarillo dorado reflectivo
+                ctx.fillStyle = "#F0C24B";
+                ctx.font = "bold 6.5px 'JetBrains Mono', monospace";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText("CICPC", 0, -6.2);
+                ctx.fillText("CICPC", 0, -12.5);
 
                 // Costura central inferior
-                ctx.strokeStyle = "#1A2E4C";
+                ctx.strokeStyle = "#1A3359";
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(0, -3);
-                ctx.lineTo(0, 2);
+                ctx.moveTo(0, -8);
+                ctx.lineTo(0, -3.5);
                 ctx.stroke();
 
-                // Cuello posterior
-                drawRoundedRect(ctx, -5.5, -14, 11, 3.5, 1.5);
-                ctx.fillStyle = "#0C172A";
+                // Cuello del uniforme
+                drawRoundedRect(ctx, -7, -21.5, 14, 4, 2);
+                ctx.fillStyle = "#081224";
                 ctx.fill();
                 ctx.stroke();
 
-                // Cabeza (vista posterior con cabello sombreado)
-                ctx.fillStyle = "#211A18";
+                // Nuca visible (piel masculina)
+                drawRoundedRect(ctx, -3.5, -23, 7, 3.5, 1.5);
+                ctx.fillStyle = "#E5B288";
+                ctx.fill();
+
+                // Orejas traseras sutiles
+                ctx.fillStyle = "#E5B288";
+                ctx.fillRect(-8.5, -27, 2, 4);
+                ctx.fillRect(6.5, -27, 2, 4);
+
+                // Cabeza posterior y corte de cabello táctico masculino
+                ctx.fillStyle = "#1E1614";
                 ctx.beginPath();
-                ctx.arc(0, -18, 6, 0, Math.PI * 2);
+                ctx.arc(0, -26.5, 7.8, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
 
-                drawRoundedRect(ctx, -6.5, -24, 13, 8, [5, 5, 2, 2]);
-                ctx.fillStyle = "#2D2320";
+                // Degradado/volumen del cabello corto
+                drawRoundedRect(ctx, -8, -33, 16, 9.5, [6, 6, 2, 2]);
+                ctx.fillStyle = "#2D221F";
                 ctx.fill();
+
             } else {
-                // Brazos laterales con chaleco azul marino
-                const armL_Y = isMoving ? -stepCycle * 2.5 : 0;
-                const armR_Y = isMoving ? stepCycle * 2.5 : 0;
+                // ==================== VISTA FRONTAL / LATERAL ====================
+                const isSide = facing === "left" || facing === "right";
+                const headDir = facing === "left" ? -1 : (facing === "right" ? 1 : 0);
 
-                drawRoundedRect(ctx, -11.5, -9 + armL_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#10203A";
+                // Brazos
+                drawRoundedRect(ctx, -15.5, -17 + armL_Y, 5.5, 15, 2.5);
+                ctx.fillStyle = "#0D1E38";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
-
-                // Hombrera dorada izquierda
-                ctx.fillStyle = "#D9A738";
-                ctx.fillRect(-10.5, -9 + armL_Y, 3, 1.2);
 
                 // Mano izquierda
                 ctx.fillStyle = "#E5B288";
                 ctx.beginPath();
-                ctx.arc(-9.2, 3 + armL_Y, 2, 0, Math.PI * 2);
+                ctx.arc(-12.8, -1 + armL_Y, 2.6, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Libreta / carpeta de cadena de custodia pericial
-                const clipX = -13.5;
-                const clipY = -2 + armL_Y * 0.5;
-                drawRoundedRect(ctx, clipX, clipY, 5.5, 7.5, 1);
+                // Libreta / carpeta de cadena de custodia en mano izquierda
+                const clipX = -17.5;
+                const clipY = -5 + armL_Y * 0.6;
+                drawRoundedRect(ctx, clipX, clipY, 6.5, 9.5, 1);
                 ctx.fillStyle = "#ECE5D8";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 0.7;
+                ctx.lineWidth = 0.8;
                 ctx.stroke();
 
                 ctx.fillStyle = "#1E2734";
-                ctx.fillRect(clipX + 1.2, clipY, 3, 1.5);
+                ctx.fillRect(clipX + 1.2, clipY, 4, 1.8);
                 ctx.fillStyle = "#7A6F62";
-                ctx.fillRect(clipX + 1, clipY + 3, 3.5, 0.7);
-                ctx.fillRect(clipX + 1, clipY + 4.5, 3.5, 0.7);
+                ctx.fillRect(clipX + 1, clipY + 3.5, 4.5, 0.8);
+                ctx.fillRect(clipX + 1, clipY + 5.5, 4.5, 0.8);
 
-                drawRoundedRect(ctx, 7, -9 + armR_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#10203A";
+                // Brazo derecho
+                drawRoundedRect(ctx, 10, -17 + armR_Y, 5.5, 15, 2.5);
+                ctx.fillStyle = "#0D1E38";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
 
-                // Hombrera dorada derecha
-                ctx.fillStyle = "#D9A738";
-                ctx.fillRect(7.5, -9 + armR_Y, 3, 1.2);
+                // Parche institucional en el hombro visible en vistas laterales
+                if (isSide) {
+                    const patchX = headDir > 0 ? 10.5 : -15;
+                    drawRoundedRect(ctx, patchX, -16 + (headDir > 0 ? armR_Y : armL_Y), 4.5, 5.5, 1);
+                    ctx.fillStyle = "#0D1E38";
+                    ctx.fill();
+                    ctx.strokeStyle = "#E5B842";
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+                    ctx.fillStyle = "#E5B842";
+                    ctx.fillRect(patchX + 0.8, -15 + (headDir > 0 ? armR_Y : armL_Y), 2.9, 1.5);
+                }
 
                 // Mano derecha
                 ctx.fillStyle = "#E5B288";
                 ctx.beginPath();
-                ctx.arc(9.2, 3 + armR_Y, 2, 0, Math.PI * 2);
+                ctx.arc(12.8, -1 + armR_Y, 2.6, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Chaleco institucional azul marino (#10203A)
-                drawRoundedRect(ctx, -8.5, -12, 17, 14, 3);
-                ctx.fillStyle = "#10203A";
+                // Chaqueta táctica azul marino (#0D1E38 con sombras #081224)
+                drawRoundedRect(ctx, -11, -19, 22, 16, 3);
+                ctx.fillStyle = "#0D1E38";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.4;
                 ctx.stroke();
 
-                // Ribetes dorados en los hombros del chaleco
-                ctx.fillStyle = "#D9A738";
-                ctx.fillRect(-7.5, -11.5, 3.5, 1.2);
-                ctx.fillRect(4, -11.5, 3.5, 1.2);
+                // Charreteras doradas en los hombros
+                ctx.fillStyle = "#E5B842";
+                ctx.fillRect(-10, -18.5, 4, 1.5);
+                ctx.fillRect(6, -18.5, 4, 1.5);
 
-                // Camisa clara y solapas
-                ctx.fillStyle = "#E8EEF5";
-                ctx.beginPath();
-                ctx.moveTo(-3.5, -12);
-                ctx.lineTo(3.5, -12);
-                ctx.lineTo(0, -6);
-                ctx.closePath();
+                // Cinturón táctico negro con hebilla metálica
+                drawRoundedRect(ctx, -11, -3.5, 22, 3.5, 1);
+                ctx.fillStyle = "#0A0D12";
                 ctx.fill();
+                ctx.stroke();
 
-                // Corbata sobria oscura
-                ctx.fillStyle = "#0A121F";
-                ctx.beginPath();
-                ctx.moveTo(-1.2, -12);
-                ctx.lineTo(1.2, -12);
-                ctx.lineTo(1.6, -3);
-                ctx.lineTo(0, -1);
-                ctx.lineTo(-1.6, -3);
-                ctx.closePath();
-                ctx.fill();
-
-                // Placa policial dorada metálica (CICPC) en el pecho
-                ctx.fillStyle = "#D9A738";
-                ctx.beginPath();
-                ctx.moveTo(3, -9);
-                ctx.lineTo(6.5, -9);
-                ctx.lineTo(6.5, -6.5);
-                ctx.lineTo(4.75, -5);
-                ctx.lineTo(3, -6.5);
-                ctx.closePath();
+                // Hebilla metálica plateada/dorada
+                ctx.fillStyle = "#E5B842";
+                drawRoundedRect(ctx, -3, -3.5, 6, 3.5, 0.8);
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 0.6;
                 ctx.stroke();
+                ctx.fillStyle = "#0A0D12";
+                ctx.fillRect(-1, -2.5, 2, 1.5);
 
-                // Destello metálico blanco en la placa
-                ctx.fillStyle = "#FFFFFF";
-                ctx.fillRect(3.8, -8.2, 1.2, 1.2);
-
-                // Credencial de auditoría forense con lanyard en el pecho
-                let badgeX = -2;
-                let eyeL_X = -2.5;
-                let eyeR_X = 2.5;
-                let headOffsetX = 0;
-
-                if (facing === "left") {
-                    badgeX = -4.5;
-                    eyeL_X = -4.5;
-                    eyeR_X = -1;
-                    headOffsetX = -1.4;
-                } else if (facing === "right") {
-                    badgeX = 1.5;
-                    eyeL_X = 1;
-                    eyeR_X = 4.5;
-                    headOffsetX = 1.4;
-                }
-
-                // Cordón azul marino institucional
-                ctx.strokeStyle = "#10203A";
-                ctx.lineWidth = 1;
+                // Camisa interior clara y solapa
+                ctx.fillStyle = "#E8EEF5";
                 ctx.beginPath();
-                ctx.moveTo(-2, -11);
-                ctx.lineTo(badgeX + 2, -6);
-                ctx.lineTo(2, -11);
+                ctx.moveTo(-4, -19);
+                ctx.lineTo(4, -19);
+                ctx.lineTo(0, -11);
+                ctx.closePath();
+                ctx.fill();
+
+                // Corbata o cuello táctico oscuro
+                ctx.fillStyle = "#08101E";
+                ctx.beginPath();
+                ctx.moveTo(-1.5, -19);
+                ctx.lineTo(1.5, -19);
+                ctx.lineTo(1.8, -8);
+                ctx.lineTo(0, -6);
+                ctx.lineTo(-1.8, -8);
+                ctx.closePath();
+                ctx.fill();
+
+                // ==================== ESCUDO / PLACA POLICIAL DORADA ====================
+                // Ubicado en el pecho (lado izquierdo del perito, viewer's right)
+                const badgeX = isSide ? (headDir > 0 ? 3 : -7) : 3.5;
+                const badgeY = -14.5;
+                const badgeW = 6;
+                const badgeH = 7.2;
+
+                ctx.save();
+                // Sombra sutil del escudo
+                ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+                ctx.beginPath();
+                ctx.moveTo(badgeX + 0.5, badgeY + 0.5);
+                ctx.lineTo(badgeX + badgeW + 0.5, badgeY + 0.5);
+                ctx.lineTo(badgeX + badgeW + 0.5, badgeY + badgeH * 0.65);
+                ctx.lineTo(badgeX + badgeW / 2 + 0.5, badgeY + badgeH + 0.5);
+                ctx.lineTo(badgeX + 0.5, badgeY + badgeH * 0.65);
+                ctx.closePath();
+                ctx.fill();
+
+                // Escudo dorado brillante (#E5B842)
+                ctx.fillStyle = "#E5B842";
+                ctx.beginPath();
+                ctx.moveTo(badgeX, badgeY);
+                ctx.lineTo(badgeX + badgeW, badgeY);
+                ctx.lineTo(badgeX + badgeW, badgeY + badgeH * 0.65);
+                ctx.lineTo(badgeX + badgeW / 2, badgeY + badgeH);
+                ctx.lineTo(badgeX, badgeY + badgeH * 0.65);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 0.8;
                 ctx.stroke();
 
-                // Credencial (tarjeta plástica blanca con barra ámbar)
-                drawRoundedRect(ctx, badgeX, -6, 4.5, 6, 1);
+                // Núcleo del escudo y destello metálico blanco (#FFF3C4)
+                ctx.fillStyle = "#10203A";
+                ctx.beginPath();
+                ctx.arc(badgeX + badgeW / 2, badgeY + 3.2, 1.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = "#FFF3C4";
+                ctx.fillRect(badgeX + 1, badgeY + 1, 1.5, 1.5);
+                ctx.restore();
+
+                // ==================== PORTA-CARNET / GAFETE INSTITUCIONAL ====================
+                const idX = isSide ? (headDir > 0 ? -4 : -9.5) : -7.5;
+                const idY = -12;
+
+                // Cordón azul marino institucional
+                ctx.strokeStyle = "#0D1E38";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(-2, -18);
+                ctx.lineTo(idX + 2.5, idY);
+                ctx.lineTo(2, -18);
+                ctx.stroke();
+
+                // Tarjeta blanca con banda amarilla
+                drawRoundedRect(ctx, idX, idY, 5, 6.5, 1);
                 ctx.fillStyle = "#FFFFFF";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 0.7;
                 ctx.stroke();
+                ctx.fillStyle = "#E5B842";
+                ctx.fillRect(idX + 0.5, idY + 0.5, 4, 1.8);
 
-                ctx.fillStyle = "#D9A738";
-                ctx.fillRect(badgeX + 0.5, -5.5, 3.5, 1.5);
+                // ==================== CUELLO Y ROSTRO MASCULINO DEFINIDO ====================
+                const headOffsetX = isSide ? headDir * 2.5 : 0;
 
-                // Cuello del perito
+                // Cuello definido sobre la camisa
                 ctx.fillStyle = "#E5B288";
-                ctx.fillRect(-2.2 + headOffsetX, -14, 4.4, 3);
+                ctx.fillRect(-3.2 + headOffsetX * 0.5, -21.5, 6.4, 4);
+                ctx.fillStyle = "rgba(180, 110, 75, 0.35)"; // Sombra bajo la mandíbula
+                ctx.fillRect(-3.2 + headOffsetX * 0.5, -21.5, 6.4, 1.5);
 
-                // Rostro
+                // Cabeza base masculina con mandíbula angulada
                 ctx.fillStyle = "#F0C49F";
                 ctx.beginPath();
-                ctx.arc(headOffsetX, -18, 5.8, 0, Math.PI * 2);
+                ctx.arc(headOffsetX, -26.5, 7.6, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.2;
+                ctx.lineWidth = 1.3;
                 ctx.stroke();
 
-                // Ojos
-                ctx.fillStyle = "#1D2733";
-                ctx.beginPath();
-                ctx.arc(eyeL_X + headOffsetX * 0.3, -18, 1, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(eyeR_X + headOffsetX * 0.3, -18, 1, 0, Math.PI * 2);
+                // Barbilla / mentón ligeramente cuadrado
+                drawRoundedRect(ctx, -4.5 + headOffsetX, -23.5, 9, 4, 2);
+                ctx.fillStyle = "#F0C49F";
                 ctx.fill();
 
-                // Cabello con volumen y estilo limpio
-                ctx.fillStyle = "#2D2320";
+                // Sombra de barba recortada masculina (barba de dos días)
+                ctx.fillStyle = "rgba(35, 25, 20, 0.22)";
                 ctx.beginPath();
-                ctx.arc(headOffsetX, -20, 6.2, Math.PI, Math.PI * 2);
+                ctx.arc(headOffsetX, -24.5, 6.5, 0.2, Math.PI - 0.2);
                 ctx.fill();
-                drawRoundedRect(ctx, -6.2 + headOffsetX, -23.5, 12.4, 6, [5, 5, 0, 0]);
-                ctx.fill();
+
+                if (!isSide) {
+                    // Orejas en vista frontal
+                    ctx.fillStyle = "#E5B288";
+                    ctx.fillRect(-8.4, -27, 2, 4.2);
+                    ctx.fillRect(6.4, -27, 2, 4.2);
+
+                    // Cejas masculinas definidas y rectas
+                    ctx.fillStyle = "#1E1614";
+                    ctx.fillRect(-5.8, -29.5, 4.2, 1.4);
+                    ctx.fillRect(1.6, -29.5, 4.2, 1.4);
+
+                    // Ojos nítidos oscuros con punto de brillo
+                    ctx.fillStyle = "#0E141D";
+                    ctx.beginPath();
+                    ctx.arc(-3.6, -27, 1.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(3.6, -27, 1.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(-3.9, -27.4, 0.8, 0.8);
+                    ctx.fillRect(3.3, -27.4, 0.8, 0.8);
+
+                    // Tabique y sombra de nariz sutil
+                    ctx.strokeStyle = "rgba(180, 110, 75, 0.65)";
+                    ctx.lineWidth = 0.9;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -28);
+                    ctx.lineTo(0.5, -25.2);
+                    ctx.lineTo(-0.8, -24.8);
+                    ctx.stroke();
+
+                    // Boca: línea seria y concentrada
+                    ctx.fillStyle = "#8C5542";
+                    ctx.fillRect(-1.8, -22.5, 3.6, 1);
+
+                    // Cabello masculino corto con volumen táctico
+                    ctx.fillStyle = "#1E1614";
+                    drawRoundedRect(ctx, -8, -34, 16, 9.5, [7, 7, 1, 1]);
+                    ctx.fill();
+                    // Mechón / volumen superior
+                    ctx.fillStyle = "#2D221F";
+                    drawRoundedRect(ctx, -6.5, -34.8, 13, 5, [5, 5, 0, 0]);
+                    ctx.fill();
+
+                } else {
+                    // Vista de perfil masculino (lateral)
+                    const eyeX = headOffsetX + headDir * 2.6;
+                    const earX = headOffsetX - headDir * 5.5;
+
+                    // Oreja
+                    ctx.fillStyle = "#E5B288";
+                    ctx.fillRect(earX, -27, 2.2, 4.5);
+
+                    // Ceja orientada
+                    ctx.fillStyle = "#1E1614";
+                    ctx.fillRect(eyeX - 1.5, -29.5, 4, 1.4);
+
+                    // Ojo en perfil mirando al frente
+                    ctx.fillStyle = "#0E141D";
+                    ctx.beginPath();
+                    ctx.arc(eyeX, -27, 1.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(eyeX + (headDir > 0 ? 0.3 : -0.8), -27.3, 0.7, 0.7);
+
+                    // Nariz en perfil que sobresale hacia la dirección
+                    ctx.fillStyle = "#E5B288";
+                    ctx.beginPath();
+                    ctx.moveTo(headOffsetX + headDir * 5, -27);
+                    ctx.lineTo(headOffsetX + headDir * 7.5, -25.5);
+                    ctx.lineTo(headOffsetX + headDir * 5, -24.5);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Boca seria en perfil
+                    ctx.fillStyle = "#8C5542";
+                    ctx.fillRect(headOffsetX + headDir * 2, -22.5, 2.8, 1);
+
+                    // Cabello táctico en perfil con corte desvanecido
+                    ctx.fillStyle = "#1E1614";
+                    drawRoundedRect(ctx, headOffsetX - 7, -34, 14, 9.5, [7, 7, 2, 2]);
+                    ctx.fill();
+                    ctx.fillStyle = "#2D221F";
+                    drawRoundedRect(ctx, headOffsetX - 5.5, -34.8, 11, 4.8, [5, 5, 0, 0]);
+                    ctx.fill();
+                }
             }
+
+            ctx.restore();
+            ctx.restore();
+        },
 
             ctx.restore();
             ctx.restore();
