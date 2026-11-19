@@ -377,6 +377,36 @@ canvas#gameCanvas {
     max-width: 760px;
 }
 
+/* Sello diagonal de uso académico */
+.academic-stamp {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 800;
+    color: rgba(200, 75, 82, 0.75);
+    border: 2px solid rgba(200, 75, 82, 0.55);
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 1.5px;
+    transform: rotate(6deg);
+    text-transform: uppercase;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(200, 75, 82, 0.15);
+}
+
+.screen-footer-note {
+    font-size: 10.5px;
+    color: #7E8D9F;
+    line-height: 1.45;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    font-style: italic;
+    text-align: center;
+}
+
 .card-header-badge {
     display: inline-flex;
     align-items: center;

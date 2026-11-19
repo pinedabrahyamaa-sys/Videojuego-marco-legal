@@ -433,6 +433,26 @@ window.Game = window.Game || {};
             drawRoundedRect(ctx, x + 7, y + 5, 42, 96, 2);
             ctx.fill();
 
+            // Etiqueta de precinto pericial ("EVIDENCIA - ART. 29") en racks comprometidos
+            if (currentRoom === 3 || currentRoom === 2) {
+                const sealX = x + 15;
+                const sealY = y + 84;
+                ctx.save();
+                drawRoundedRect(ctx, sealX, sealY, 26, 8, 1);
+                ctx.fillStyle = "#F4EFE6";
+                ctx.fill();
+                ctx.strokeStyle = "#8B263E";
+                ctx.lineWidth = 0.9;
+                ctx.stroke();
+
+                ctx.fillStyle = "#8B263E";
+                ctx.font = "bold 4.5px 'JetBrains Mono', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("EVIDENCIA // ART.29", sealX + 13, sealY + 4);
+                ctx.restore();
+            }
+
             // Etiqueta del Rack
             ctx.fillStyle = "#8F9FA8";
             ctx.font = "600 7.5px 'JetBrains Mono', monospace";
@@ -625,6 +645,89 @@ window.Game = window.Game || {};
             ctx.lineWidth = 1.2;
             ctx.strokeRect(20.5, 22.5, worldW - 41, worldH - 45);
 
+            // =========================================================================
+            // EMBLEMA DE LA DIVISIÓN DE DELITOS INFORMÁTICOS (SALA 1)
+            // =========================================================================
+            if (currentRoom === 1) {
+                ctx.save();
+                const emX = 100;
+                const emY = 350;
+                const rad = 32;
+
+                // Sombra en el suelo
+                ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+                ctx.beginPath();
+                ctx.arc(emX + 2, emY + 2, rad, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Base circular institucional azul marino (#10203A)
+                ctx.fillStyle = "#10203A";
+                ctx.beginPath();
+                ctx.arc(emX, emY, rad, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Anillo dorado exterior
+                ctx.strokeStyle = "#D9A738";
+                ctx.lineWidth = 2.2;
+                ctx.stroke();
+
+                // Anillo interior fino
+                ctx.beginPath();
+                ctx.arc(emX, emY, rad - 5, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(217, 167, 56, 0.45)";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Estrella de 8 puntas estilizada
+                for (let p = 0; p < 8; p++) {
+                    const ang = p * (Math.PI / 4);
+                    const r1 = rad - 7;
+                    const r2 = rad - 16;
+                    const midAng = ang + Math.PI / 8;
+
+                    ctx.beginPath();
+                    ctx.moveTo(emX, emY);
+                    ctx.lineTo(emX + Math.cos(ang) * r1, emY + Math.sin(ang) * r1);
+                    ctx.lineTo(emX + Math.cos(midAng) * r2, emY + Math.sin(midAng) * r2);
+                    ctx.closePath();
+                    ctx.fillStyle = p % 2 === 0 ? "#E5BE60" : "#B88628";
+                    ctx.fill();
+                }
+
+                // Núcleo central con balanza de la justicia
+                ctx.fillStyle = "#0C1420";
+                ctx.beginPath();
+                ctx.arc(emX, emY, 11, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#D9A738";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(emX - 5, emY - 2);
+                ctx.lineTo(emX + 5, emY - 2);
+                ctx.moveTo(emX, emY - 5);
+                ctx.lineTo(emX, emY + 4);
+                ctx.moveTo(emX - 2, emY + 4);
+                ctx.lineTo(emX + 2, emY + 4);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(emX - 5, emY + 1, 2, 0, Math.PI);
+                ctx.arc(emX + 5, emY + 1, 2, 0, Math.PI);
+                ctx.stroke();
+
+                // Leyenda pericial circular inferior
+                ctx.fillStyle = "#EAE2D0";
+                ctx.font = "bold 5.5px 'JetBrains Mono', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("CICPC · DELITOS INFORMÁTICOS", emX, emY + rad + 8);
+                ctx.restore();
+            }
+
             // Canaletas de cables de red con funda técnica gris oscuro y abrazaderas
             ctx.save();
             ctx.lineWidth = 4;
@@ -647,7 +750,7 @@ window.Game = window.Game || {};
             }
             ctx.restore();
 
-            // Franjas de advertencia en el umbral de la salida
+            // Cinta pericial de resguardo e inspección técnica (CICPC)
             ctx.save();
             const hazardX = door.x - 26;
             const hazardY = door.y - 2;
@@ -655,17 +758,44 @@ window.Game = window.Game || {};
             const hazardH = door.height + 4;
 
             drawRoundedRect(ctx, hazardX, hazardY, hazardW, hazardH, 3);
-            ctx.fillStyle = "#151C27";
+            ctx.fillStyle = door.locked ? "#121720" : "rgba(36, 107, 78, 0.22)";
             ctx.fill();
             ctx.clip();
 
-            ctx.strokeStyle = door.locked ? "rgba(200, 75, 82, 0.45)" : "rgba(63, 163, 124, 0.55)";
-            ctx.lineWidth = 3.5;
-            for (let stripeY = hazardY - 14; stripeY < hazardY + hazardH + 14; stripeY += 10) {
-                ctx.beginPath();
-                ctx.moveTo(hazardX - 4, stripeY);
-                ctx.lineTo(hazardX + hazardW + 4, stripeY + hazardW);
-                ctx.stroke();
+            if (door.locked) {
+                // Rayado diagonal de advertencia pericial en amarillo reflectivo (#D9A738) y negro
+                ctx.strokeStyle = "#D9A738";
+                ctx.lineWidth = 4;
+                for (let stripeY = hazardY - 14; stripeY < hazardY + hazardH + 14; stripeY += 10) {
+                    ctx.beginPath();
+                    ctx.moveTo(hazardX - 4, stripeY);
+                    ctx.lineTo(hazardX + hazardW + 4, stripeY + hazardW);
+                    ctx.stroke();
+                }
+
+                // Cinta transversal pericial de resguardo
+                ctx.fillStyle = "#D9A738";
+                ctx.fillRect(hazardX + 1, hazardY + 8, hazardW - 2, 7.5);
+                ctx.fillStyle = "#0B0F14";
+                ctx.font = "bold 4.5px 'JetBrains Mono', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("INSPECCIÓN", hazardX + hazardW / 2, hazardY + 12);
+
+                ctx.fillStyle = "#D9A738";
+                ctx.fillRect(hazardX + 1, hazardY + hazardH - 15, hazardW - 2, 7.5);
+                ctx.fillStyle = "#0B0F14";
+                ctx.fillText("CICPC", hazardX + hazardW / 2, hazardY + hazardH - 11);
+            } else {
+                // Paso despejado pericial en verde esmeralda mate
+                ctx.strokeStyle = "rgba(63, 163, 124, 0.65)";
+                ctx.lineWidth = 2.5;
+                for (let stripeY = hazardY + 6; stripeY < hazardY + hazardH; stripeY += 12) {
+                    ctx.beginPath();
+                    ctx.moveTo(hazardX + 4, stripeY);
+                    ctx.lineTo(hazardX + hazardW - 4, stripeY);
+                    ctx.stroke();
+                }
             }
             ctx.restore();
 
@@ -678,9 +808,14 @@ window.Game = window.Game || {};
             ctx.fillRect(worldW - 20, 22, 20, door.y - 22);
             ctx.fillRect(worldW - 20, door.y + door.height, 20, worldH - 22 - (door.y + door.height));
 
+            // Cenefa horizontal institucional azul marino con filete dorado (CICPC)
+            ctx.fillStyle = "#10203A";
+            ctx.fillRect(0, 18, worldW, 4.5);
+            ctx.fillStyle = "#D9A738";
+            ctx.fillRect(0, 21.2, worldW, 1.3);
+
             // Zócalos y molduras entintadas
             ctx.fillStyle = "#2D3B4F";
-            ctx.fillRect(0, 20, worldW, 2.5);
             ctx.fillRect(0, worldH - 22, worldW, 2.5);
             ctx.fillRect(18, 22, 2.5, worldH - 44);
             ctx.fillRect(worldW - 20, 22, 2.5, door.y - 22);
@@ -828,41 +963,60 @@ window.Game = window.Game || {};
             ctx.rotate(sway);
 
             if (facing === "up") {
-                // Brazos
+                // Brazos con chaleco azul marino institucional
                 const armL_Y = isMoving ? -stepCycle * 2.5 : 0;
                 const armR_Y = isMoving ? stepCycle * 2.5 : 0;
 
                 drawRoundedRect(ctx, -11.5, -9 + armL_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#222D3D";
+                ctx.fillStyle = "#10203A";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
 
                 drawRoundedRect(ctx, 7, -9 + armR_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#222D3D";
+                ctx.fillStyle = "#10203A";
                 ctx.fill();
                 ctx.stroke();
 
-                // Espalda de la chaqueta formal
+                // Hombreras con ribete dorado reflectivo (#D9A738)
+                ctx.fillStyle = "#D9A738";
+                ctx.fillRect(-10.5, -9 + armL_Y, 3, 1.2);
+                ctx.fillRect(7.5, -9 + armR_Y, 3, 1.2);
+
+                // Espalda del chaleco táctico institucional azul marino (#10203A)
                 drawRoundedRect(ctx, -8.5, -12, 17, 14, 3);
-                ctx.fillStyle = "#273446";
+                ctx.fillStyle = "#10203A";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.4;
                 ctx.stroke();
 
-                // Costura central de la chaqueta
-                ctx.strokeStyle = "#1A232F";
+                // Franja reflectiva oscura en la espalda con filete dorado
+                ctx.fillStyle = "#0A1424";
+                ctx.fillRect(-7.5, -9.5, 15, 6.5);
+                ctx.strokeStyle = "#D9A738";
+                ctx.lineWidth = 0.8;
+                ctx.strokeRect(-7.5, -9.5, 15, 6.5);
+
+                // Siglas "CICPC" nítidas en amarillo dorado reflectivo
+                ctx.fillStyle = "#FFD700";
+                ctx.font = "bold 5px 'JetBrains Mono', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("CICPC", 0, -6.2);
+
+                // Costura central inferior
+                ctx.strokeStyle = "#1A2E4C";
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(0, -10);
+                ctx.moveTo(0, -3);
                 ctx.lineTo(0, 2);
                 ctx.stroke();
 
                 // Cuello posterior
                 drawRoundedRect(ctx, -5.5, -14, 11, 3.5, 1.5);
-                ctx.fillStyle = "#1C2532";
+                ctx.fillStyle = "#0C172A";
                 ctx.fill();
                 ctx.stroke();
 
@@ -879,16 +1033,20 @@ window.Game = window.Game || {};
                 ctx.fillStyle = "#2D2320";
                 ctx.fill();
             } else {
-                // Brazos laterales
+                // Brazos laterales con chaleco azul marino
                 const armL_Y = isMoving ? -stepCycle * 2.5 : 0;
                 const armR_Y = isMoving ? stepCycle * 2.5 : 0;
 
                 drawRoundedRect(ctx, -11.5, -9 + armL_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#222D3D";
+                ctx.fillStyle = "#10203A";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
+
+                // Hombrera dorada izquierda
+                ctx.fillStyle = "#D9A738";
+                ctx.fillRect(-10.5, -9 + armL_Y, 3, 1.2);
 
                 // Mano izquierda
                 ctx.fillStyle = "#E5B288";
@@ -896,10 +1054,32 @@ window.Game = window.Game || {};
                 ctx.arc(-9.2, 3 + armL_Y, 2, 0, Math.PI * 2);
                 ctx.fill();
 
-                drawRoundedRect(ctx, 7, -9 + armR_Y, 4.5, 11, 2);
-                ctx.fillStyle = "#222D3D";
+                // Libreta / carpeta de cadena de custodia pericial
+                const clipX = -13.5;
+                const clipY = -2 + armL_Y * 0.5;
+                drawRoundedRect(ctx, clipX, clipY, 5.5, 7.5, 1);
+                ctx.fillStyle = "#ECE5D8";
                 ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 0.7;
                 ctx.stroke();
+
+                ctx.fillStyle = "#1E2734";
+                ctx.fillRect(clipX + 1.2, clipY, 3, 1.5);
+                ctx.fillStyle = "#7A6F62";
+                ctx.fillRect(clipX + 1, clipY + 3, 3.5, 0.7);
+                ctx.fillRect(clipX + 1, clipY + 4.5, 3.5, 0.7);
+
+                drawRoundedRect(ctx, 7, -9 + armR_Y, 4.5, 11, 2);
+                ctx.fillStyle = "#10203A";
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                // Hombrera dorada derecha
+                ctx.fillStyle = "#D9A738";
+                ctx.fillRect(7.5, -9 + armR_Y, 3, 1.2);
 
                 // Mano derecha
                 ctx.fillStyle = "#E5B288";
@@ -907,13 +1087,18 @@ window.Game = window.Game || {};
                 ctx.arc(9.2, 3 + armR_Y, 2, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Chaqueta de perito (delante)
+                // Chaleco institucional azul marino (#10203A)
                 drawRoundedRect(ctx, -8.5, -12, 17, 14, 3);
-                ctx.fillStyle = "#273446";
+                ctx.fillStyle = "#10203A";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
                 ctx.lineWidth = 1.4;
                 ctx.stroke();
+
+                // Ribetes dorados en los hombros del chaleco
+                ctx.fillStyle = "#D9A738";
+                ctx.fillRect(-7.5, -11.5, 3.5, 1.2);
+                ctx.fillRect(4, -11.5, 3.5, 1.2);
 
                 // Camisa clara y solapas
                 ctx.fillStyle = "#E8EEF5";
@@ -925,7 +1110,7 @@ window.Game = window.Game || {};
                 ctx.fill();
 
                 // Corbata sobria oscura
-                ctx.fillStyle = "#141C25";
+                ctx.fillStyle = "#0A121F";
                 ctx.beginPath();
                 ctx.moveTo(-1.2, -12);
                 ctx.lineTo(1.2, -12);
@@ -935,8 +1120,26 @@ window.Game = window.Game || {};
                 ctx.closePath();
                 ctx.fill();
 
+                // Placa policial dorada metálica (CICPC) en el pecho
+                ctx.fillStyle = "#D9A738";
+                ctx.beginPath();
+                ctx.moveTo(3, -9);
+                ctx.lineTo(6.5, -9);
+                ctx.lineTo(6.5, -6.5);
+                ctx.lineTo(4.75, -5);
+                ctx.lineTo(3, -6.5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 0.6;
+                ctx.stroke();
+
+                // Destello metálico blanco en la placa
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(3.8, -8.2, 1.2, 1.2);
+
                 // Credencial de auditoría forense con lanyard en el pecho
-                let badgeX = -1.5;
+                let badgeX = -2;
                 let eyeL_X = -2.5;
                 let eyeR_X = 2.5;
                 let headOffsetX = 0;
@@ -947,15 +1150,15 @@ window.Game = window.Game || {};
                     eyeR_X = -1;
                     headOffsetX = -1.4;
                 } else if (facing === "right") {
-                    badgeX = 1.8;
+                    badgeX = 1.5;
                     eyeL_X = 1;
                     eyeR_X = 4.5;
                     headOffsetX = 1.4;
                 }
 
-                // Cordón / lanyard
-                ctx.strokeStyle = "#D99B26";
-                ctx.lineWidth = 0.9;
+                // Cordón azul marino institucional
+                ctx.strokeStyle = "#10203A";
+                ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(-2, -11);
                 ctx.lineTo(badgeX + 2, -6);
@@ -970,7 +1173,7 @@ window.Game = window.Game || {};
                 ctx.lineWidth = 0.7;
                 ctx.stroke();
 
-                ctx.fillStyle = "#D99B26";
+                ctx.fillStyle = "#D9A738";
                 ctx.fillRect(badgeX + 0.5, -5.5, 3.5, 1.5);
 
                 // Cuello del perito
