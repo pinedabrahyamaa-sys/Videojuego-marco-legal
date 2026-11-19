@@ -429,8 +429,18 @@ window.Game = window.Game || {};
     // MODAL DE EVIDENCIA (CLUE)
     // =========================================================================
     function openClue(item) {
+        const clueModal = document.getElementById("clue-modal");
         const clueTitleEl = document.getElementById("clue-title");
         const clueTextEl = document.getElementById("clue-text");
+
+        if (clueModal) {
+            clueModal.classList.remove("clue-document", "clue-computer");
+            if (item.clueType === "document") {
+                clueModal.classList.add("clue-document");
+            } else {
+                clueModal.classList.add("clue-computer");
+            }
+        }
 
         if (clueTitleEl) clueTitleEl.innerText = item.title;
         if (clueTextEl) clueTextEl.innerText = item.text;
@@ -587,9 +597,15 @@ window.Game = window.Game || {};
         if (!canvas) return;
         ctx = canvas.getContext("2d");
 
-        // Ajustar resolución lógica del canvas a 840x520
-        canvas.width = State.viewport.width;
-        canvas.height = State.viewport.height;
+        // Inicializar texturas procedimentales HD en canvas offscreen
+        if (window.Game.Textures && window.Game.Textures.init) {
+            window.Game.Textures.init();
+        }
+
+        // Configurar soporte High-DPI (2D HD nítido)
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(State.viewport.width * dpr);
+        canvas.height = Math.round(State.viewport.height * dpr);
 
         // Inicializar partículas atmosféricas en las dimensiones del mundo (1160x740)
         State.initAmbientParticles(State.world.width, State.world.height, 35);

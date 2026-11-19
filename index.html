@@ -172,13 +172,42 @@
             <div id="terminal-verdict" style="display: none;"></div>
         </div>
 
-        <!-- Modal de Evidencia Encontrada -->
-        <div id="clue-modal" role="dialog" aria-modal="true" aria-labelledby="clue-title">
-            <div class="modal-header">
-                <span class="modal-badge-info">EVIDENCIA CONSIGNADA</span>
-                <h2 id="clue-title">ELEMENTO MATERIAL PROBATORIO</h2>
+        <!-- Modal de Evidencia Encontrada (Diegético: Gaceta Oficial / Estación Forense) -->
+        <div id="clue-modal" role="dialog" aria-modal="true" aria-labelledby="clue-title" class="clue-document">
+            <!-- Cabecera Editorial Gaceta Oficial (Modo Documento) -->
+            <div class="gaceta-masthead">
+                <div class="gaceta-top-republica">REPÚBLICA BOLIVARIANA DE VENEZUELA</div>
+                <h1 class="gaceta-main-title">GACETA OFICIAL</h1>
+                <div class="gaceta-sub-republica">DE LA REPÚBLICA BOLIVARIANA DE VENEZUELA</div>
+                <div class="gaceta-double-rule"></div>
+                <div class="gaceta-meta-bar">
+                    <span>AÑO CXXIX — MES I</span>
+                    <span>Caracas, martes 30 de octubre de 2001</span>
+                    <span>Número 37.313</span>
+                </div>
+                <div class="gaceta-single-rule"></div>
+                <div class="gaceta-law-title">Ley N° 48 · Ley Especial contra los Delitos Informáticos</div>
             </div>
-            <p id="clue-text"></p>
+
+            <!-- Cabecera de Estación Digital Forense (Modo Terminal / Computadora) -->
+            <div class="workstation-titlebar">
+                <div class="os-window-dots">
+                    <span class="dot close"></span>
+                    <span class="dot min"></span>
+                    <span class="dot max"></span>
+                </div>
+                <div class="os-window-title">ESTACIÓN FORENSE // REGISTRO DE SISTEMA</div>
+                <div class="os-badge-secure">EVIDENCIA DIGITAL // SOLO LECTURA</div>
+            </div>
+
+            <!-- Contenido del expediente / evidencia -->
+            <div class="clue-body-wrap">
+                <div class="modal-header">
+                    <span class="modal-badge-info" id="clue-badge-label">EVIDENCIA CONSIGNADA</span>
+                    <h2 id="clue-title">ELEMENTO MATERIAL PROBATORIO</h2>
+                </div>
+                <p id="clue-text"></p>
+            </div>
             <button id="close-clue" class="close-btn" type="button">CERRAR Y CONTINUAR INSPECCIÓN</button>
         </div>
 
@@ -208,6 +237,7 @@
     <script src="js/data/glossary.js" defer></script>
     <script src="js/engine/audio.js" defer></script>
     <script src="js/engine/state.js" defer></script>
+    <script src="js/engine/textures.js" defer></script>
     <script src="js/engine/renderer.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
