@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría Forense - Ley Especial contra los Delitos Informáticos (Gaceta N.° 37.313)</title>
+    <!-- Google Fonts: Inter para lectura nítida y JetBrains Mono para códigos y registros periciales -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos de ilustración técnica 2D sobria -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-tag">PERITAJE JUDICIAL // GACETA OFICIAL N.° 37.313</div>
+        <h1>AUDITORÍA TÉCNICO-LEGAL EN SISTEMAS</h1>
+        <div class="subtitle">Inspección de evidencias conforme a la Ley Especial contra los Delitos Informáticos y Firma Electrónica</div>
+    </header>
+
+    <!-- HUD Superior: Panel de Control de la Diligencia -->
+    <div id="status-bar">
+        <div class="hud-item hud-room">
+            <span class="hud-status-led" title="Diligencia en curso"></span>
+            <span class="hud-label">SECCIÓN</span>
+            <span class="hud-value" id="room-num">1 / 5</span>
+        </div>
+        <div class="hud-item hud-name">
+            <span class="hud-label">ÁREA PERICIAL</span>
+            <span class="hud-value" id="room-name-display">OFICINA DE SOPORTE</span>
+        </div>
+        <div class="hud-item hud-clues">
+            <span class="hud-label">EVIDENCIAS</span>
+            <span class="hud-value" id="clues-counter">0 / 3</span>
+        </div>
+        <div class="hud-item hud-timer">
+            <span class="hud-label">TIEMPO</span>
+            <span class="hud-value" id="timer-display">00:00</span>
+        </div>
+        <div class="hud-item hud-errors">
+            <span class="hud-label">OBSERVACIONES</span>
+            <span class="hud-value" id="errors-counter">0</span>
+        </div>
+        <button id="btn-open-manual" class="hud-btn" type="button" title="Consultar Manual Legal [M]">
+            <span class="hud-btn-icon">📖</span> MANUAL [M]
+        </button>
+        <button id="btn-audio" class="hud-btn" type="button" title="Alternar Audio [N]">
+            <span class="hud-btn-icon">🔊</span> AUDIO ON
+        </button>
+        <div class="hud-hint" id="interaction-hint">
+            Diligencia activa: usa <b>W A S D</b> para desplazarte. [E] examinar. [M] Manual. [N] Audio.
+        </div>
+    </div>
+
+    <!-- Contenedor Principal del Juego -->
+    <div id="game-container">
+        <!-- Canvas en alta resolución 2D vectorial (840x520 viewport con cámara de seguimiento) -->
+        <canvas id="gameCanvas" width="840" height="520"></canvas>
+
+        <!-- Sombra perimetral sutil -->
+        <div class="vignette-layer"></div>
+
+        <!-- Notificación táctica de diligencia -->
+        <div id="tactical-toast" role="status" aria-live="polite">
+            <span class="toast-icon">§</span>
+            <span id="toast-message">EXPEDIENTE PERICIAL // GACETA OFICIAL N.° 37.313</span>
+        </div>
+
+        <!-- Pantalla de Transición entre sectores periciales -->
+        <div id="transition-overlay">
+            <div class="transition-spinner"></div>
+            <div class="transition-text" id="transition-status-text">CONSIGNANDO DICTAMEN PERICIAL...</div>
+            <div class="transition-sub">Preservando cadena de custodia digital</div>
+        </div>
+
+        <!-- Pantalla de Inicio: Apertura de Expediente -->
+        <div id="start-screen" class="screen-overlay">
+            <div class="screen-card">
+                <div class="card-header-badge">
+                    <span class="badge-icon">🏛</span>
+                    <span>EXPEDIENTE FORENSE // ACTA DE INSPECCIÓN OCULAR</span>
+                </div>
+                <h2 class="screen-title">AUDITORÍA TÉCNICA DEL CENTRO DE CÓMPUTO</h2>
+                <p class="screen-desc">
+                    Se apertura formalmente el procedimiento de inspección pericial en las instalaciones tecnológicas. 
+                    Su labor consiste en examinar cada estación de trabajo, verificar las evidencias documentales y 
+                    telemáticas bajo la <b>Ley Especial contra los Delitos Informáticos (Gaceta Oficial N.° 37.313)</b> 
+                    y resolver la calificación jurídica en dos fases para habilitar el paso a los sectores restringidos.
+                </p>
+                <div class="instructions-grid">
+                    <div class="instruction-item">
+                        <div class="inst-header">
+                            <span class="inst-key">W A S D</span>
+                            <b>DESPLAZAMIENTO</b>
+                        </div>
+                        <p>Movimiento libre del perito por las salas y corredores de inspección.</p>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="inst-header">
+                            <span class="inst-key">[ E ]</span>
+                            <b>COTEJO E INSPECCIÓN</b>
+                        </div>
+                        <p>Examinar terminales, expedientes impresos y paneles de acceso.</p>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="inst-header">
+                            <span class="inst-key">[ M ]</span>
+                            <b>MANUAL LEGAL</b>
+                        </div>
+                        <p>Consulta en cualquier momento las definiciones del Art. 2 y agravantes del Título III.</p>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="inst-header">
+                            <span class="inst-indicator verified">⚖</span>
+                            <b>DICTAMEN EN 2 PASOS</b>
+                        </div>
+                        <p>Identifica primero el delito y luego sus agravantes/penas accesorias para habilitar la salida.</p>
+                    </div>
+                </div>
+                <button id="btn-start" class="cyber-btn" type="button">INICIAR INSPECCIÓN PERICIAL</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de Victoria: Informe Final de Auditoría -->
+        <div id="victory-screen" class="screen-overlay" style="display: none;">
+            <div class="screen-card victory report-card">
+                <div class="card-header-badge success">
+                    <span class="badge-icon">✓</span>
+                    <span>DICTAMEN EMITIDO // INFORME PERICIAL CONSOLIDADO</span>
+                </div>
+                <h2 class="screen-title">INFORME FINAL DE AUDITORÍA FORENSE</h2>
+                <p class="screen-desc">
+                    Se ha culminado la totalidad de las 5 secciones periciales, logrando tipificar con rigor legal 
+                    las infracciones a la <b>Ley Especial contra los Delitos Informáticos</b> y determinando 
+                    las sanciones principales, accesorias e indemnizaciones civiles correspondientes.
+                </p>
+
+                <!-- Resumen de Métricas de la Diligencia -->
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <span class="metric-label">TIEMPO TOTAL</span>
+                        <span class="metric-val" id="victory-time">00:00</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-label">EVIDENCIAS ANALIZADAS</span>
+                        <span class="metric-val" id="victory-clues">0 / 0</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="metric-label">OBSERVACIONES / ERRORES</span>
+                        <span class="metric-val" id="victory-errors">0</span>
+                    </div>
+                </div>
+
+                <!-- Tabla de Delitos Resueltos -->
+                <div id="victory-table-container" class="table-scroll-container"></div>
+
+                <button id="btn-restart" class="cyber-btn" type="button">REINICIAR AUDITORÍA</button>
+            </div>
+        </div>
+
+        <!-- Modal de Terminal / Desafío Legal en Dos Pasos -->
+        <div id="terminal-modal" role="dialog" aria-modal="true" aria-labelledby="q-title">
+            <div class="modal-header">
+                <div id="terminal-step-badge" class="step-badge step-1">PASO 1 DE 2: TIPIFICACIÓN DEL DELITO</div>
+                <h2 id="q-title">CONTROL PERICIAL // DICTAMEN REQUERIDO</h2>
+                <p id="q-summary" class="terminal-summary"></p>
+            </div>
+            <div id="terminal-error"></div>
+            <p id="q-text"></p>
+            <div id="q-options"></div>
+            <div id="terminal-verdict" style="display: none;"></div>
+        </div>
+
+        <!-- Modal de Evidencia Encontrada -->
+        <div id="clue-modal" role="dialog" aria-modal="true" aria-labelledby="clue-title">
+            <div class="modal-header">
+                <span class="modal-badge-info">EVIDENCIA CONSIGNADA</span>
+                <h2 id="clue-title">ELEMENTO MATERIAL PROBATORIO</h2>
+            </div>
+            <p id="clue-text"></p>
+            <button id="close-clue" class="close-btn" type="button">CERRAR Y CONTINUAR INSPECCIÓN</button>
+        </div>
+
+        <!-- Modal de Manual Legal (Glosario Art. 2 y Título III) -->
+        <div id="manual-modal" role="dialog" aria-modal="true" aria-labelledby="manual-title">
+            <div class="manual-modal-header">
+                <div class="manual-title-group">
+                    <span class="modal-badge-info">CONSULTA NORMATIVA</span>
+                    <h2 id="manual-title">MANUAL LEGAL // GACETA OFICIAL N.° 37.313</h2>
+                </div>
+                <button id="close-manual" class="modal-close-icon" type="button" title="Cerrar Manual [Escape]">✕</button>
+            </div>
+            <div class="manual-controls">
+                <div class="manual-tabs">
+                    <button id="tab-defs" class="manual-tab active" type="button">DEFINICIONES (ART. 2)</button>
+                    <button id="tab-rules" class="manual-tab" type="button">AGRAVANTES Y SANCIONES (TÍTULO III)</button>
+                </div>
+                <input id="manual-search" class="manual-search-input" type="text" placeholder="Buscar concepto o artículo legal...">
+            </div>
+            <div id="manual-content" class="manual-content-body"></div>
+        </div>
+    </div>
+
+    <!-- Carga ordenada de scripts del motor mediante defer -->
+    <script src="js/data/rooms.js" defer></script>
+    <script src="js/data/puzzles.js" defer></script>
+    <script src="js/data/glossary.js" defer></script>
+    <script src="js/engine/audio.js" defer></script>
+    <script src="js/engine/state.js" defer></script>
+    <script src="js/engine/renderer.js" defer></script>
+    <script src="js/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Escape Room de la Nube</title>
+    <!-- Google Fonts: Press Start 2P para encabezados y JetBrains Mono para textos y modales -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="escape_room.css">
+</head>
+<body>
+
+    <header>
+        <h1>EL ESCAPE ROOM DE LA NUBE</h1>
+        <div class="subtitle">PROTOCOLOS DE CIBERSEGURIDAD Y DERECHO INFORMÁTICO</div>
+    </header>
+
+    <!-- HUD Superior Limpio -->
+    <div id="status-bar">
+        <div class="hud-item hud-room">
+            <span class="hud-label">SALA</span>
+            <span class="hud-value"><span id="room-num">1</span>/3</span>
+        </div>
+        <div class="hud-item hud-name">
+            <span class="hud-label">SECTOR</span>
+            <span class="hud-value" id="room-name-display">OFICINA DE SOPORTE</span>
+        </div>
+        <div class="hud-item hud-clues">
+            <span class="hud-label">PISTAS</span>
+            <span class="hud-value" id="clues-counter">0/3</span>
+        </div>
+        <div class="hud-hint" id="interaction-hint">
+            Usa <b>W A S D</b> o flechas para moverte. Pulsa <b>[E]</b> para examinar.
+        </div>
+    </div>
+
+    <!-- Contenedor Principal del Juego -->
+    <div id="game-container">
+        <!-- Canvas de Juego con renderizado pixelado escalado -->
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+        <!-- Capas de efectos retro CRT: Scanlines y Viñeta -->
+        <div class="scanlines-layer"></div>
+        <div class="vignette-layer"></div>
+
+        <!-- Notificación táctica flotante -->
+        <div id="tactical-toast">
+            <span class="toast-icon">⚡</span>
+            <span id="toast-message">SISTEMA EN LÍNEA</span>
+        </div>
+
+        <!-- Pantalla de Transición Fade entre salas -->
+        <div id="transition-overlay">
+            <div class="transition-text" id="transition-status-text">DESBLOQUEANDO SECTOR...</div>
+        </div>
+
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="screen-overlay">
+            <div class="screen-card">
+                <span class="screen-badge">TERMINAL DE ENLACE // ACCESO RESTRINGIDO</span>
+                <h2 class="screen-title">INTRUSIÓN EN EL CENTRO DE DATOS</h2>
+                <p class="screen-desc">
+                    Una inteligencia artificial rebelde ha bloqueado los perímetros de seguridad del centro de datos. 
+                    Inspecciona los puestos de trabajo para recolectar evidencia legal y técnica, supera los cortafuegos 
+                    y alcanza la salida de cada sector.
+                </p>
+                <div class="instructions-grid">
+                    <div class="instruction-item">
+                        <b>[ MOVIMIENTO ]</b>
+                        Teclas W, A, S, D o flechas del teclado.
+                    </div>
+                    <div class="instruction-item">
+                        <b>[ INTERACCIÓN ]</b>
+                        Presiona [E] frente a monitores, documentos y terminales.
+                    </div>
+                    <div class="instruction-item">
+                        <b>[ PISTAS ]</b>
+                        Brillan si no las has leído. Cambian a estado revisado.
+                    </div>
+                    <div class="instruction-item">
+                        <b>[ SALIDAS ]</b>
+                        Desbloquea la terminal respondiendo el desafío legal.
+                    </div>
+                </div>
+                <button id="btn-start" class="cyber-btn" type="button">INICIAR MISIÓN</button>
+            </div>
+        </div>
+
+        <!-- Pantalla de Victoria -->
+        <div id="victory-screen" class="screen-overlay" style="display: none;">
+            <div class="screen-card victory">
+                <span class="screen-badge">AUTORIZACIÓN ROOT CONCEDIDA</span>
+                <h2 class="screen-title">¡MISIÓN CUMPLIDA!</h2>
+                <p class="screen-desc">
+                    Has aplicado rigurosamente los principios del derecho informático y la ciberseguridad: 
+                    neutralizaste las cláusulas abusivas, identificaste los vectores de suplantación de identidad 
+                    (phishing) y validaste la firma electrónica de raíz.
+                </p>
+                <div class="instructions-grid">
+                    <div class="instruction-item">
+                        <b>[ IA CENTRAL ]</b>
+                        Neutralizada con éxito.
+                    </div>
+                    <div class="instruction-item">
+                        <b>[ PROTOCOLOS ]</b>
+                        100% de cumplimiento normativo.
+                    </div>
+                </div>
+                <button id="btn-restart" class="cyber-btn" type="button">REINICIAR MISIÓN</button>
+            </div>
+        </div>
+
+        <!-- Modal de Terminal / Puzle legal -->
+        <div id="terminal-modal" role="dialog" aria-modal="true" aria-labelledby="q-title">
+            <h2 id="q-title">TERMINAL BLOQUEADA</h2>
+            <div id="terminal-error"></div>
+            <p id="q-text"></p>
+            <div id="q-options"></div>
+        </div>
+
+        <!-- Modal de Pista Encontrada -->
+        <div id="clue-modal" role="dialog" aria-modal="true" aria-labelledby="clue-title">
+            <h2 id="clue-title">PISTA ENCONTRADA</h2>
+            <p id="clue-text"></p>
+            <button id="close-clue" class="close-btn" type="button">CERRAR Y CONTINUAR</button>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Estado del juego
+    let currentRoom = 1;
+    let isPaused = true; // Inicia pausado mientras está la pantalla de inicio
+    let isTransitioning = false;
+    let readClues = new Set(); // Registro de pistas leídas: "sala_indice"
+
+    // Jugador (Analista)
+    let player = {
+        x: 50,
+        y: 200,
+        size: 26,
+        speed: 3,
+        color: "#00ffcc"
+    };
+
+    // Variables de ciclo de caminata y movimiento
+    let isMoving = false;
+    let walkTimer = 0;
+
+    // Puerta / Terminal interactiva de cada sala
+    let door = {
+        x: 560,
+        y: 158,
+        width: 24,
+        height: 84,
+        locked: true,
+        color: "#ff0055"
+    };
+
+    // Nombres de las salas
+    const roomNames = {
+        1: "OFICINA DE SOPORTE",
+        2: "CENTRO DE OPERACIONES",
+        3: "NÚCLEO DE SERVIDORES"
+    };
+
+    // Preguntas / Puzles legales por sala (contenido original intacto)
+    const puzzles = {
+        1: {
+            title: "Sala 1: Contrato de Software con Cláusula Abusiva",
+            text: "El sistema bloquea la salida con un contrato de licencia que estipula: 'La empresa desarrolladora se exime de cualquier responsabilidad por fallos graves y el usuario renuncia a toda jurisdicción legal'. ¿Qué principio jurídico vulnera esta cláusula principal?",
+            options: [
+                { text: "A) Cláusula abusiva / Irrenunciabilidad de derechos básicos del consumidor.", correct: true },
+                { text: "B) Derecho a la libre competencia de mercado.", correct: false },
+                { text: "C) Ley de propiedad intelectual de código fuente.", correct: false }
+            ]
+        },
+        2: {
+            title: "Sala 2: Captura de Pantalla de Phishing",
+            text: "Una terminal muestra un correo sospechoso que imita a la administración del servidor pidiendo credenciales urgentes bajo amenaza de borrar datos. ¿Qué elemento técnico/legal define principalmente que se trata de un ataque de Phishing?",
+            options: [
+                { text: "A) Uso de una firma electrónica avanzada legítima.", correct: false },
+                { text: "B) Suplantación de identidad (spoofing) con fines de estafa y robo de credenciales.", correct: true },
+                { text: "C) Auditoría de ciberseguridad autorizada por la ley.", correct: false }
+            ]
+        },
+        3: {
+            title: "Sala 3: Validez de Firma Electrónica",
+            text: "Para apagar la IA central y escapar, debes autorizar el comando raíz. ¿Qué requisito es INDISPENSABLE para que una firma electrónica sea legalmente válida y desbloquee el núcleo?",
+            options: [
+                { text: "A) Estar vinculada al firmante de manera única y bajo su control exclusivo mediante un certificado válido.", correct: true },
+                { text: "B) Estar impresa en papel físico con tinta azul.", correct: false },
+                { text: "C) Ser aprobada por la IA central del datacenter.", correct: false }
+            ]
+        }
+    };
+
+    // Diseños de las salas (contenido original intacto)
+    const roomLayouts = {
+        1: {
+            desks: [
+                {
+                    x: 40, y: 40, width: 142, label: "PUESTO 01",
+                    clueType: "computer",
+                    clue: "La licencia intenta eximir al proveedor incluso por fallos graves. Revisa si un contrato puede quitar al consumidor derechos básicos o imponer una cláusula abusiva."
+                },
+                {
+                    x: 220, y: 40, width: 142, label: "PUESTO 02",
+                    clueType: "document",
+                    clue: "Nota legal: renunciar anticipadamente a derechos del consumidor no vuelve válida una condición injusta. La pista trata de protección al consumidor, no de competencia ni de autoría del código."
+                },
+                {
+                    x: 268, y: 292, width: 154, label: "ANALISTA",
+                    clueType: "computer",
+                    clue: "El punto sospechoso es que la empresa se libera de responsabilidad y obliga al usuario a renunciar a protecciones legales. Busca el principio que impide ese desequilibrio."
+                }
+            ],
+            racks: [
+                { x: 466, y: 40, label: "RACK A" },
+                { x: 466, y: 263, label: "RACK B" }
+            ],
+            plants: [{ x: 35, y: 326 }, { x: 424, y: 326 }]
+        },
+        2: {
+            desks: [
+                {
+                    x: 37, y: 40, width: 170, label: "SEGURIDAD",
+                    clueType: "computer",
+                    clue: "El correo exige credenciales con urgencia. Compara el remitente real con la identidad que afirma tener: la suplantación con intención de robar claves es la pista principal."
+                },
+                {
+                    x: 233, y: 40, width: 170, label: "MONITOREO",
+                    clueType: "document",
+                    clue: "Informe: un simulacro autorizado no suplanta a otra persona para robar contraseñas. Una falsa identidad, urgencia y solicitud de claves apuntan al phishing."
+                },
+                {
+                    x: 37, y: 292, width: 170, label: "INCIDENTES",
+                    clueType: "document",
+                    clue: "La amenaza de borrar datos busca que la víctima actúe sin comprobar el mensaje. Investiga el enlace y quién lo envió antes de compartir credenciales."
+                },
+                {
+                    x: 233, y: 292, width: 170, label: "ANÁLISIS",
+                    clueType: "computer",
+                    clue: "La pista no es una auditoría legal: el mensaje se hace pasar por administración y busca obtener acceso mediante las credenciales."
+                }
+            ],
+            racks: [
+                { x: 454, y: 40, label: "NODO 01" },
+                { x: 454, y: 263, label: "NODO 02" }
+            ],
+            plants: []
+        },
+        3: {
+            desks: [
+                {
+                    x: 340, y: 40, width: 168, label: "CONSOLA",
+                    clueType: "computer",
+                    clue: "Una firma electrónica puede ser válida sin papel. Verifica que quede vinculada al firmante, que este conserve el control y que el certificado sea válido."
+                },
+                {
+                    x: 340, y: 292, width: 168, label: "CONTROL",
+                    clueType: "document",
+                    clue: "Lista de verificación: identidad vinculada de forma única, control del firmante y certificado válido. La tinta azul o la aprobación de la IA no sustituyen esos requisitos."
+                }
+            ],
+            racks: [
+                { x: 38, y: 39, label: "CORE 01" },
+                { x: 109, y: 39, label: "CORE 02" },
+                { x: 180, y: 39, label: "CORE 03" },
+                { x: 38, y: 263, label: "CORE 04" },
+                { x: 109, y: 263, label: "CORE 05" },
+                { x: 180, y: 263, label: "CORE 06" }
+            ],
+            plants: []
+        }
+    };
+
+    // Controles de teclado
+    let keys = {};
+    let activeInteraction = null;
+
+    window.addEventListener("keydown", (e) => {
+        const key = e.key.toLowerCase();
+        if (key.startsWith("arrow")) e.preventDefault();
+        if (key === "e" && !keys[key] && !isPaused && !isTransitioning) {
+            const target = findNearestInteraction();
+            if (target) interactWithObject(target);
+        }
+        keys[key] = true;
+    });
+
+    window.addEventListener("keyup", (e) => { 
+        keys[e.key.toLowerCase()] = false; 
+    });
+
+    document.getElementById("close-clue").addEventListener("click", closeClue);
+
+    document.getElementById("btn-start").addEventListener("click", () => {
+        document.getElementById("start-screen").style.display = "none";
+        isPaused = false;
+        updateHUD();
+        showTacticalToast("CONEXIÓN ESTABLECIDA // SECTOR 1");
+    });
+
+    document.getElementById("btn-restart").addEventListener("click", restartMission);
+
+    // Sistema de notificaciones tácticas tipo toast
+    let toastTimeout = null;
+    function showTacticalToast(msg) {
+        const toast = document.getElementById("tactical-toast");
+        const msgEl = document.getElementById("toast-message");
+        msgEl.innerText = msg;
+        toast.classList.add("visible");
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove("visible");
+        }, 3200);
+    }
+
+    // Actualización del HUD superior
+    function updateHUD() {
+        document.getElementById("room-num").innerText = currentRoom;
+        document.getElementById("room-name-display").innerText = roomNames[currentRoom];
+        
+        const totalClues = roomLayouts[currentRoom].desks.length;
+        let count = 0;
+        for (let i = 0; i < totalClues; i++) {
+            if (readClues.has(`${currentRoom}_${i}`)) count++;
+        }
+        document.getElementById("clues-counter").innerText = `${count}/${totalClues}`;
+    }
+
+    // Lógica de colisiones y obstáculos (exacta al original)
+    function getRoomObstacles() {
+        const layout = roomLayouts[currentRoom];
+        const obstacles = [];
+
+        layout.desks.forEach((desk) => {
+            obstacles.push({ x: desk.x, y: desk.y, width: desk.width, height: 58 });
+            obstacles.push({
+                x: desk.x + Math.floor(desk.width / 2) - 9,
+                y: desk.y + 61,
+                width: 20,
+                height: 22
+            });
+        });
+        layout.racks.forEach((rack) => {
+            obstacles.push({ x: rack.x, y: rack.y, width: 56, height: 106 });
+        });
+        layout.plants.forEach((plant) => {
+            obstacles.push({ x: plant.x + 5, y: plant.y, width: 24, height: 28 });
+        });
+        if (door.locked) {
+            obstacles.push({ x: door.x, y: door.y, width: door.width, height: door.height });
+        }
+        return obstacles;
+    }
+
+    // Objetos interactivos
+    function getRoomInteractables() {
+        const items = roomLayouts[currentRoom].desks.map((desk, idx) => {
+            if (desk.clueType === "document") {
+                return {
+                    kind: "clue",
+                    index: idx,
+                    title: "Documento: " + desk.label,
+                    text: desk.clue,
+                    x: desk.x + desk.width - 33,
+                    y: desk.y + 35,
+                    width: 14,
+                    height: 13,
+                    range: 54
+                };
+            }
+            return {
+                kind: "clue",
+                index: idx,
+                title: "Computadora: " + desk.label,
+                text: desk.clue,
+                x: desk.x + Math.floor(desk.width / 2) - 25,
+                y: desk.y + 35,
+                width: 50,
+                height: 14,
+                range: 54
+            };
+        });
+
+        if (door.locked) {
+            items.push({
+                kind: "puzzle",
+                title: "Terminal de salida",
+                x: door.x,
+                y: door.y,
+                width: door.width,
+                height: door.height,
+                range: 20
+            });
+        }
+        return items;
+    }
+
+    function distanceToInteractable(item) {
+        const centerX = player.x + player.size / 2;
+        const centerY = player.y + player.size / 2;
+        const nearestX = Math.max(item.x, Math.min(centerX, item.x + item.width));
+        const nearestY = Math.max(item.y, Math.min(centerY, item.y + item.height));
+        return Math.hypot(centerX - nearestX, centerY - nearestY);
+    }
+
+    function findNearestInteraction() {
+        let nearest = null;
+        let nearestDistance = Infinity;
+
+        getRoomInteractables().forEach((item) => {
+            const distance = distanceToInteractable(item);
+            if (distance <= item.range && distance < nearestDistance) {
+                nearest = item;
+                nearestDistance = distance;
+            }
+        });
+        return nearest;
+    }
+
+    function overlapsObstacle(x, y, obstacle) {
+        return x < obstacle.x + obstacle.width &&
+            x + player.size > obstacle.x &&
+            y < obstacle.y + obstacle.height &&
+            y + player.size > obstacle.y;
+    }
+
+    function canMoveTo(x, y) {
+        if (x < 20 || x > canvas.width - 20 - player.size ||
+            y < 20 || y > canvas.height - 20 - player.size) {
+            return false;
+        }
+        return !getRoomObstacles().some((obstacle) => overlapsObstacle(x, y, obstacle));
+    }
+
+    function updateInteractionHint() {
+        const hint = document.getElementById("interaction-hint");
+        hint.innerHTML = activeInteraction
+            ? `Pulsa <b>[E]</b> para interactuar con: <span style="color:#00ffcc">${activeInteraction.title}</span>`
+            : `Usa <b>W A S D</b> o flechas para moverte. Pulsa <b>[E]</b> para examinar.`;
+    }
+
+    function update() {
+        if (isPaused || isTransitioning) return;
+
+        let moveX = 0;
+        let moveY = 0;
+        if (keys["w"] || keys["arrowup"]) moveY -= player.speed;
+        if (keys["s"] || keys["arrowdown"]) moveY += player.speed;
+        if (keys["a"] || keys["arrowleft"]) moveX -= player.speed;
+        if (keys["d"] || keys["arrowright"]) moveX += player.speed;
+
+        let moved = false;
+        if (moveX !== 0 && canMoveTo(player.x + moveX, player.y)) {
+            player.x += moveX;
+            moved = true;
+        }
+        if (moveY !== 0 && canMoveTo(player.x, player.y + moveY)) {
+            player.y += moveY;
+            moved = true;
+        }
+
+        if (moved) {
+            isMoving = true;
+            walkTimer += 0.22;
+        } else {
+            isMoving = false;
+        }
+
+        // Si la puerta está abierta, cruzarla activa la transición hacia la siguiente sala
+        if (!door.locked && !isTransitioning) {
+            if (player.x + player.size >= door.x &&
+                player.y + player.size >= door.y &&
+                player.y <= door.y + door.height + 6) {
+                triggerRoomTransition();
+                return;
+            }
+        }
+
+        activeInteraction = findNearestInteraction();
+        updateInteractionHint();
+    }
+
+    // Transición suave entre salas con efecto fade
+    function triggerRoomTransition() {
+        isTransitioning = true;
+        isPaused = true;
+        const overlay = document.getElementById("transition-overlay");
+        const statusText = document.getElementById("transition-status-text");
+
+        if (currentRoom < 3) {
+            statusText.innerText = "ACCEDIENDO AL SIGUIENTE SECTOR...";
+            overlay.classList.add("active");
+            
+            setTimeout(() => {
+                currentRoom++;
+                player.x = 50;
+                player.y = 200;
+                door.locked = true;
+                door.color = "#ff0055";
+                updateHUD();
+
+                setTimeout(() => {
+                    overlay.classList.remove("active");
+                    isTransitioning = false;
+                    isPaused = false;
+                    showTacticalToast("SECTOR " + currentRoom + ": " + roomNames[currentRoom]);
+                }, 350);
+            }, 550);
+        } else {
+            statusText.innerText = "DESCONECTANDO IA CENTRAL...";
+            overlay.classList.add("active");
+
+            setTimeout(() => {
+                overlay.classList.remove("active");
+                document.getElementById("victory-screen").style.display = "flex";
+                isTransitioning = false;
+            }, 650);
+        }
+    }
+
+    // Reinicio sin recargar la página
+    function restartMission() {
+        document.getElementById("victory-screen").style.display = "none";
+        currentRoom = 1;
+        readClues.clear();
+        player.x = 50;
+        player.y = 200;
+        door.locked = true;
+        door.color = "#ff0055";
+        isPaused = false;
+        isTransitioning = false;
+        updateHUD();
+        showTacticalToast("MISIÓN REINICIADA // SECTOR 1");
+    }
+
+    // Renderizado de Escritorios con iluminación y progreso visual
+    function drawDesk(x, y, width, label, index) {
+        const now = Date.now();
+        const clueKey = `${currentRoom}_${index}`;
+        const isRead = readClues.has(clueKey);
+
+        // Sombra de escritorio
+        ctx.fillStyle = "rgba(5, 10, 16, 0.45)";
+        ctx.fillRect(x + 4, y + 5, width, 62);
+
+        // Mueble
+        ctx.fillStyle = "#392b26";
+        ctx.fillRect(x, y, width, 58);
+        ctx.fillStyle = "#74523a";
+        ctx.fillRect(x + 3, y + 3, width - 6, 51);
+        ctx.fillStyle = "#9a704c";
+        ctx.fillRect(x + 4, y + 4, width - 8, 4);
+        ctx.fillStyle = "#302621";
+        ctx.fillRect(x + 4, y + 54, width - 8, 4);
+
+        const monitorX = x + Math.floor((width - 34) / 2);
+
+        // Halo de luz suave en el monitor
+        const monitorGlow = ctx.createRadialGradient(monitorX + 17, y + 16, 3, monitorX + 17, y + 16, 28);
+        const glowColor = currentRoom === 2 ? "rgba(255, 80, 80," : "rgba(57, 215, 202,";
+        monitorGlow.addColorStop(0, glowColor + "0.26)");
+        monitorGlow.addColorStop(1, glowColor + "0.0)");
+        ctx.fillStyle = monitorGlow;
+        ctx.fillRect(monitorX - 16, y - 8, 66, 48);
+
+        // Chasis del monitor
+        ctx.fillStyle = "#15212b";
+        ctx.fillRect(monitorX - 2, y + 6, 38, 22);
+        ctx.fillStyle = "#26333d";
+        ctx.fillRect(monitorX, y + 8, 34, 17);
+        ctx.fillStyle = currentRoom === 2 ? "#b75754" : "#39d7ca";
+        ctx.fillRect(monitorX + 3, y + 11, 28, 2);
+        ctx.fillStyle = "#83a8ae";
+        ctx.fillRect(monitorX + 4, y + 16, 17, 1);
+        ctx.fillRect(monitorX + 4, y + 19, 23, 1);
+        ctx.fillStyle = "#17232a";
+        ctx.fillRect(monitorX + 14, y + 28, 6, 5);
+        ctx.fillRect(monitorX + 9, y + 32, 16, 2);
+
+        // Teclado
+        ctx.fillStyle = "#28333a";
+        ctx.fillRect(x + Math.floor(width / 2) - 25, y + 38, 50, 9);
+        ctx.fillStyle = "#9aadb0";
+        for (let key = 0; key < 8; key++) {
+            ctx.fillRect(x + Math.floor(width / 2) - 21 + key * 5, y + 40, 2, 2);
+        }
+
+        // Documentos / Papeles
+        ctx.fillStyle = "#d9d4c3";
+        ctx.fillRect(x + width - 34, y + 36, 13, 11);
+        ctx.fillStyle = "#73868a";
+        ctx.fillRect(x + width - 32, y + 39, 8, 1);
+        ctx.fillRect(x + width - 32, y + 42, 6, 1);
+        ctx.fillRect(x + width - 32, y + 45, 7, 1);
+
+        // Taza de café
+        ctx.fillStyle = "#d2a35d";
+        ctx.fillRect(x + width - 17, y + 37, 7, 9);
+        ctx.fillStyle = "#f3d9a8";
+        ctx.fillRect(x + width - 16, y + 36, 5, 2);
+        ctx.fillStyle = "#33414a";
+        ctx.fillRect(x + 8, y + 45, 11, 3);
+
+        // Silla de oficina
+        drawChair(x + Math.floor(width / 2) - 9, y + 61);
+
+        // Etiqueta del puesto
+        ctx.fillStyle = "#9aadb0";
+        ctx.font = "7px 'JetBrains Mono', monospace";
+        ctx.fillText(label, x + 5, y + 53);
+
+        // Progreso Visual de Pistas:
+        // Si NO está leída: Brillo pulsante suave sobre el elemento de la pista.
+        // Si YA está leída: Indicador sutil de verificación completada (✓).
+        const deskData = roomLayouts[currentRoom].desks[index];
+        const isDoc = deskData && deskData.clueType === "document";
+        const clueSpotX = isDoc ? x + width - 27 : monitorX + 17;
+        const clueSpotY = isDoc ? y + 41 : y + 16;
+
+        if (!isRead) {
+            // Halo pulsante sutil
+            const pulse = 0.28 + Math.sin(now / 260) * 0.20;
+            const clueGlow = ctx.createRadialGradient(clueSpotX, clueSpotY, 2, clueSpotX, clueSpotY, 22);
+            clueGlow.addColorStop(0, `rgba(0, 255, 204, ${pulse})`);
+            clueGlow.addColorStop(1, "rgba(0, 255, 204, 0)");
+            ctx.fillStyle = clueGlow;
+            ctx.fillRect(clueSpotX - 22, clueSpotY - 22, 44, 44);
+
+            // Marcador de pista pendiente
+            ctx.fillStyle = "#ffcf66";
+            ctx.font = "bold 8px 'JetBrains Mono', monospace";
+            ctx.fillText("!", x + width - 12, y + 14);
+        } else {
+            // Indicador revisado (checkmark limpio)
+            ctx.fillStyle = "#39dfb5";
+            ctx.font = "bold 8px 'JetBrains Mono', monospace";
+            ctx.fillText("✓", x + width - 13, y + 14);
+        }
+    }
+
+    function drawChair(x, y) {
+        ctx.fillStyle = "rgba(5, 10, 16, 0.4)";
+        ctx.fillRect(x + 2, y + 3, 18, 19);
+        ctx.fillStyle = "#263844";
+        ctx.fillRect(x + 4, y + 2, 12, 14);
+        ctx.fillStyle = "#466171";
+        ctx.fillRect(x + 6, y + 4, 8, 9);
+        ctx.fillStyle = "#17232b";
+        ctx.fillRect(x + 8, y + 16, 4, 4);
+        ctx.fillRect(x + 2, y + 20, 16, 2);
+    }
+
+    // Renderizado de Servidores con Halo y LEDs Asíncronos
+    function drawServerRack(x, y, label) {
+        const now = Date.now();
+
+        // Sombra y Halo suave del rack de servidores
+        ctx.fillStyle = "rgba(3, 8, 13, 0.5)";
+        ctx.fillRect(x + 4, y + 5, 56, 106);
+
+        const rackGlow = ctx.createRadialGradient(x + 28, y + 53, 12, x + 28, y + 53, 55);
+        const rackHaloColor = currentRoom === 3 ? "rgba(255, 89, 107," : "rgba(57, 223, 181,";
+        rackGlow.addColorStop(0, rackHaloColor + "0.18)");
+        rackGlow.addColorStop(1, rackHaloColor + "0.0)");
+        ctx.fillStyle = rackGlow;
+        ctx.fillRect(x - 12, y - 10, 80, 126);
+
+        // Chasis del rack
+        ctx.fillStyle = "#101820";
+        ctx.fillRect(x, y, 56, 106);
+        ctx.fillStyle = "#33414a";
+        ctx.fillRect(x + 3, y + 3, 50, 100);
+        ctx.fillStyle = "#1b252e";
+        ctx.fillRect(x + 7, y + 7, 42, 91);
+        ctx.fillStyle = "#60717b";
+        ctx.fillRect(x + 8, y + 7, 2, 91);
+        ctx.fillRect(x + 46, y + 7, 2, 91);
+
+        // Bahías con LEDs parpadeantes de manera asíncrona
+        for (let bay = 0; bay < 5; bay++) {
+            const bayY = y + 11 + bay * 17;
+            ctx.fillStyle = bay % 2 === 0 ? "#28343e" : "#202c35";
+            ctx.fillRect(x + 12, bayY, 31, 14);
+            ctx.fillStyle = "#111920";
+            ctx.fillRect(x + 15, bayY + 3, 13, 2);
+            ctx.fillRect(x + 15, bayY + 7, 18, 2);
+
+            // LED 1: Estado principal (Parpadeo asíncrono basado en desfase de posición y bahía)
+            const phase1 = (x * 19 + bay * 37);
+            const isBlink1On = Math.sin((now / 190) + phase1) > -0.15;
+            const isAlertNode = bay === 2 && currentRoom === 3;
+            
+            const led1Color = isAlertNode 
+                ? (isBlink1On ? "#ff596b" : "#4a1219") 
+                : (isBlink1On ? "#39dfb5" : "#0d3f33");
+            
+            ctx.fillStyle = led1Color;
+            ctx.fillRect(x + 37, bayY + 4, 3, 3);
+            if (isBlink1On) {
+                ctx.fillStyle = isAlertNode ? "rgba(255, 89, 107, 0.4)" : "rgba(57, 223, 181, 0.4)";
+                ctx.fillRect(x + 36, bayY + 3, 5, 5);
+                ctx.fillStyle = led1Color;
+                ctx.fillRect(x + 37, bayY + 4, 3, 3);
+            }
+
+            // LED 2: Actividad de lectura/escritura (Parpadeo rápido asíncrono)
+            const phase2 = (x * 31 + bay * 53);
+            const isBlink2On = Math.sin((now / 110) + phase2) > 0.35;
+            const led2Color = isBlink2On ? "#ffcf66" : "#423214";
+            ctx.fillStyle = led2Color;
+            ctx.fillRect(x + 37, bayY + 9, 3, 2);
+        }
+
+        ctx.fillStyle = "#b8c5c8";
+        ctx.font = "7px 'JetBrains Mono', monospace";
+        ctx.fillText(label, x + 9, y + 114);
+    }
+
+    function drawPlant(x, y) {
+        ctx.fillStyle = "rgba(5, 10, 16, 0.4)";
+        ctx.fillRect(x + 3, y + 4, 30, 25);
+        ctx.fillStyle = "#7b4e37";
+        ctx.fillRect(x + 5, y + 12, 24, 16);
+        ctx.fillStyle = "#b17b51";
+        ctx.fillRect(x + 7, y + 13, 20, 2);
+        ctx.fillStyle = "#2d815d";
+        ctx.fillRect(x + 15, y + 2, 5, 17);
+        ctx.fillRect(x + 8, y + 5, 8, 5);
+        ctx.fillRect(x + 20, y + 4, 9, 5);
+        ctx.fillRect(x + 10, y, 6, 5);
+        ctx.fillRect(x + 21, y, 6, 5);
+        ctx.fillStyle = "#55ad75";
+        ctx.fillRect(x + 16, y + 3, 2, 11);
+        ctx.fillRect(x + 9, y + 6, 6, 2);
+        ctx.fillRect(x + 22, y + 5, 6, 2);
+    }
+
+    // Renderizado de la Sala con iluminación ambiental y halo en la Puerta
+    function drawRoom() {
+        const now = Date.now();
+
+        ctx.fillStyle = "#101820";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#28333b";
+        ctx.fillRect(18, 20, 564, 360);
+
+        // Suelo baldosa pixelada
+        for (let row = 0, y = 22; y < 376; row++, y += 42) {
+            for (let col = 0, x = 20; x < 580; col++, x += 48) {
+                ctx.fillStyle = (row + col) % 2 === 0 ? "#2a3640" : "#27333d";
+                ctx.fillRect(x, y, 46, 40);
+            }
+        }
+        ctx.strokeStyle = "rgba(132, 157, 165, 0.13)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20.5, 22.5, 559, 354);
+
+        // Paredes y molduras perimetrales
+        ctx.fillStyle = "#18232c";
+        ctx.fillRect(0, 0, canvas.width, 20);
+        ctx.fillRect(0, 380, canvas.width, 20);
+        ctx.fillRect(0, 20, 18, 360);
+        ctx.fillRect(582, 20, 18, 138);
+        ctx.fillRect(582, 242, 18, 138);
+        ctx.fillStyle = "#45545c";
+        ctx.fillRect(0, 18, canvas.width, 2);
+        ctx.fillRect(0, 380, canvas.width, 2);
+        ctx.fillRect(16, 20, 2, 360);
+        ctx.fillRect(582, 20, 2, 138);
+        ctx.fillRect(582, 242, 2, 138);
+
+        // Luces cenitales superiores
+        ctx.fillStyle = "#32424b";
+        for (let x = 25; x < 580; x += 72) {
+            ctx.fillRect(x, 5, 48, 7);
+            ctx.fillStyle = "#94c1c1";
+            ctx.fillRect(x + 4, 7, 40, 2);
+            ctx.fillStyle = "#32424b";
+        }
+
+        // Panel de ventilación
+        ctx.fillStyle = "#18232c";
+        ctx.fillRect(236, 20, 128, 12);
+        ctx.fillStyle = "#42515a";
+        ctx.fillRect(240, 22, 120, 8);
+        ctx.fillStyle = "#62bdb2";
+        for (let pane = 0; pane < 4; pane++) {
+            ctx.fillRect(243 + pane * 29, 24, 25, 4);
+        }
+
+        // Dibujar mobiliario según el sector actual
+        const layout = roomLayouts[currentRoom];
+        layout.desks.forEach((desk, idx) => {
+            drawDesk(desk.x, desk.y, desk.width, desk.label, idx);
+        });
+        layout.racks.forEach((rack) => {
+            drawServerRack(rack.x, rack.y, rack.label);
+        });
+        layout.plants.forEach((plant) => {
+            drawPlant(plant.x, plant.y);
+        });
+
+        // Iluminación ambiental radial suave del recinto
+        const roomGlow = ctx.createRadialGradient(300, 198, 75, 300, 198, 360);
+        roomGlow.addColorStop(0, "rgba(51, 147, 145, 0.03)");
+        roomGlow.addColorStop(1, "rgba(4, 9, 15, 0.40)");
+        ctx.fillStyle = roomGlow;
+        ctx.fillRect(18, 20, 564, 360);
+
+        // Indicador de sector en esquina
+        ctx.fillStyle = "#b7c8ca";
+        ctx.font = "8px 'Press Start 2P', monospace";
+        ctx.fillText(roomNames[currentRoom], 25, 34);
+
+        // LEDs de estado en pared
+        ctx.fillStyle = "#63d9ca";
+        ctx.fillRect(553, 365, 4, 4);
+        ctx.fillRect(560, 365, 4, 4);
+        ctx.fillRect(567, 365, 4, 4);
+
+        // ==========================================================
+        // PUERTA DE SALIDA CON HALO SUAVE DINÁMICO
+        // ==========================================================
+        const doorGlow = ctx.createRadialGradient(door.x + 12, door.y + 42, 8, door.x + 12, door.y + 42, 60);
+        if (door.locked) {
+            const pulse = 0.22 + Math.sin(now / 320) * 0.08;
+            doorGlow.addColorStop(0, `rgba(255, 0, 85, ${pulse})`);
+            doorGlow.addColorStop(1, "rgba(255, 0, 85, 0)");
+        } else {
+            const pulse = 0.38 + Math.sin(now / 220) * 0.12;
+            doorGlow.addColorStop(0, `rgba(0, 255, 204, ${pulse})`);
+            doorGlow.addColorStop(1, "rgba(0, 255, 204, 0)");
+        }
+        ctx.fillStyle = doorGlow;
+        ctx.fillRect(door.x - 30, door.y - 20, door.width + 60, door.height + 40);
+
+        // Estructura y cerrojo de la puerta
+        ctx.fillStyle = door.locked ? "#7e253d" : "#236c60";
+        ctx.fillRect(door.x - 2, door.y - 2, door.width + 2, door.height + 4);
+        ctx.fillStyle = door.locked ? "#e84967" : "#48e4c4";
+        ctx.fillRect(door.x + 2, door.y + 2, door.width - 6, door.height - 4);
+        ctx.fillStyle = door.locked ? "#ffb36b" : "#d5fff3";
+        ctx.fillRect(door.x + 17, door.y + 38, 3, 4);
+
+        // Rótulo de la puerta
+        ctx.fillStyle = door.locked ? "#ffa3ba" : "#c1ffea";
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText(door.locked ? "BLOQUEADA" : "ABIERTA", 500, door.y + door.height + 14);
+    }
+
+    // Renderizado del Jugador con ciclo de caminata y balanceo
+    function drawPlayer() {
+        const x = 0;
+        const y = 0;
+        ctx.save();
+        ctx.translate(player.x, player.y);
+        ctx.scale(player.size / 20, player.size / 22);
+
+        // Cálculos de animación de caminata
+        const footL = isMoving ? Math.sin(walkTimer) * 2.6 : 0;
+        const footR = isMoving ? -Math.sin(walkTimer) * 2.6 : 0;
+        const bob = isMoving ? Math.abs(Math.sin(walkTimer)) * 1.4 : 0;
+        const sway = isMoving ? Math.sin(walkTimer) * 0.035 : 0;
+
+        // Sombra en el suelo
+        ctx.fillStyle = "rgba(3, 8, 13, 0.55)";
+        ctx.fillRect(x + 3, y + 17, 16, 5);
+
+        // Piernas y pies con movimiento alternado
+        ctx.fillStyle = "#18242e";
+        ctx.fillRect(x + 4, y + 13 + footL, 5, 7);
+        ctx.fillRect(x + 12, y + 13 + footR, 5, 7);
+        ctx.fillStyle = "#34495b";
+        ctx.fillRect(x + 5, y + 13 + footL, 3, 5);
+        ctx.fillRect(x + 13, y + 13 + footR, 3, 5);
+        ctx.fillStyle = "#121920";
+        ctx.fillRect(x + 3, y + 18 + footL, 6, 3);
+        ctx.fillRect(x + 12, y + 18 + footR, 6, 3);
+
+        // Torso, brazos y cabeza con balanceo suave
+        ctx.save();
+        ctx.translate(10, 10 - bob);
+        ctx.rotate(sway);
+        ctx.translate(-10, -10);
+
+        // Torso / Ropa
+        ctx.fillStyle = "#101a23";
+        ctx.fillRect(x + 3, y + 6, 14, 10);
+        ctx.fillStyle = "#31546a";
+        ctx.fillRect(x + 4, y + 7, 12, 8);
+        ctx.fillStyle = "#4d7890";
+        ctx.fillRect(x + 6, y + 8, 8, 2);
+
+        // Brazos
+        ctx.fillStyle = "#c7a46d";
+        ctx.fillRect(x + 1, y + 8, 4, 6);
+        ctx.fillRect(x + 15, y + 8, 4, 6);
+        ctx.fillStyle = "#d7b17d";
+        ctx.fillRect(x + 2, y + 9, 2, 3);
+        ctx.fillRect(x + 16, y + 9, 2, 3);
+
+        // Cabeza y cabello
+        ctx.fillStyle = "#211e22";
+        ctx.fillRect(x + 5, y + 1, 10, 8);
+        ctx.fillStyle = "#d6aa83";
+        ctx.fillRect(x + 6, y + 3, 8, 6);
+        ctx.fillStyle = "#332b2a";
+        ctx.fillRect(x + 5, y + 1, 10, 3);
+        ctx.fillRect(x + 4, y + 3, 2, 4);
+        ctx.fillRect(x + 14, y + 3, 2, 3);
+
+        // Ojos
+        ctx.fillStyle = "#24313a";
+        ctx.fillRect(x + 7, y + 6, 2, 1);
+        ctx.fillRect(x + 11, y + 6, 2, 1);
+
+        // Credencial / Badge de ciberseguridad
+        ctx.fillStyle = "#51e0cc";
+        ctx.fillRect(x + 9, y + 10, 3, 3);
+
+        ctx.restore();
+        ctx.restore();
+    }
+
+    // Marcador [E] flotante con balanceo suave
+    function drawInteractionMarker() {
+        if (!activeInteraction) return;
+
+        const now = Date.now();
+        const floatOffset = Math.sin(now / 220) * 3;
+        const markerX = activeInteraction.x + activeInteraction.width / 2;
+        const markerY = Math.max(36, activeInteraction.y - 8) + floatOffset;
+
+        // Halo suave en el marcador
+        ctx.fillStyle = "rgba(255, 207, 102, 0.22)";
+        ctx.fillRect(markerX - 11, markerY - 14, 22, 19);
+
+        // Caja del marcador
+        ctx.fillStyle = "#0c141d";
+        ctx.fillRect(markerX - 9, markerY - 12, 18, 15);
+        ctx.strokeStyle = "#ffcf66";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(markerX - 8.5, markerY - 11.5, 17, 14);
+
+        // Letra 'E' centrada
+        ctx.fillStyle = "#ffcf66";
+        ctx.font = "bold 8px 'Press Start 2P', monospace";
+        ctx.fillText("E", markerX - 4, markerY - 1);
+    }
+
+    function draw() {
+        drawRoom();
+        drawPlayer();
+        drawInteractionMarker();
+    }
+
+    // Modal de Terminal
+    function openTerminal() {
+        isPaused = true;
+        const puzzle = puzzles[currentRoom];
+        document.getElementById("q-title").innerText = puzzle.title;
+        document.getElementById("q-text").innerText = puzzle.text;
+        
+        // Limpiar mensaje de error anterior
+        const errorEl = document.getElementById("terminal-error");
+        errorEl.style.display = "none";
+        errorEl.innerText = "";
+
+        const optionsContainer = document.getElementById("q-options");
+        optionsContainer.innerHTML = "";
+        
+        puzzle.options.forEach((opt) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt.text;
+            btn.onclick = () => checkAnswer(opt.correct);
+            optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById("terminal-modal").style.display = "block";
+    }
+
+    // Modal de Pistas
+    function openClue(item) {
+        isPaused = true;
+        document.getElementById("clue-title").innerText = item.title;
+        document.getElementById("clue-text").innerText = item.text;
+        document.getElementById("clue-modal").style.display = "block";
+    }
+
+    function closeClue() {
+        document.getElementById("clue-modal").style.display = "none";
+        isPaused = false;
+        activeInteraction = findNearestInteraction();
+        updateInteractionHint();
+    }
+
+    // Interacción con objetos
+    function interactWithObject(item) {
+        if (item.kind === "puzzle") {
+            openTerminal();
+        } else {
+            readClues.add(`${currentRoom}_${item.index}`);
+            updateHUD();
+            openClue(item);
+        }
+    }
+
+    // Validación de respuesta con animación Shake y desbloqueo visual
+    function checkAnswer(isCorrect) {
+        const errorEl = document.getElementById("terminal-error");
+        const modal = document.getElementById("terminal-modal");
+
+        if (isCorrect) {
+            errorEl.style.display = "none";
+            modal.style.display = "none";
+            door.locked = false;
+            door.color = "#00ffcc";
+            isPaused = false;
+            
+            showTacticalToast("¡RESPUESTA VÁLIDA! PUERTA DESBLOQUEADA. DIRÍGETE A LA SALIDA.");
+        } else {
+            errorEl.innerText = "[ACCESO DENEGADO] El cortafuegos legal rechaza la solución. Revisa las pistas de la sala e inténtalo de nuevo.";
+            errorEl.style.display = "block";
+            
+            // Re-ejecutar animación Shake al fallar
+            modal.classList.remove("shake");
+            void modal.offsetWidth; // Forzar reflow en el navegador
+            modal.classList.add("shake");
+        }
+    }
+
+    // Bucle principal de ejecución del juego
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    loop();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,284 @@
+window.Game = window.Game || {};
+
+(function() {
+    // Máquina de estados centralizada, mundo amplio y cámara suave
+    window.Game.State = {
+        // Máquina de estados: "MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY"
+        mode: "MENU",
+
+        currentRoom: 1,
+        readClues: new Set(),     // "sala_indice"
+        errors: 0,
+        elapsedSeconds: 0,
+        timerInterval: null,
+        terminalStep: 1,
+
+        // Dimensiones del mundo ampliado por sala
+        world: {
+            width: 1160,
+            height: 740
+        },
+
+        // Dimensiones del visor / viewport
+        viewport: {
+            width: 840,
+            height: 520
+        },
+
+        // Cámara de seguimiento con interpolación suave (lerp)
+        camera: {
+            x: 0,
+            y: 0
+        },
+
+        // Jugador: Auditor / Perito Forense
+        player: {
+            x: 64,
+            y: 350,
+            size: 26,             // Hitbox de colisión seguro = 26x26
+            speed: 3.6,           // Velocidad ágil para el mundo ampliado = 3.6
+            color: "#D99B26",
+            facing: "down"        // "up", "down", "left", "right"
+        },
+
+        isMoving: false,
+        walkTimer: 0,
+
+        // Puerta / Control de paso pericial (centrada en la pared derecha del mundo)
+        door: {
+            x: 1124,
+            y: 318,
+            width: 28,
+            height: 104,
+            locked: true,
+            color: "#C84B52"
+        },
+
+        keys: {},
+        activeInteraction: null,
+        toastTimeout: null,
+        ambientParticles: [],
+
+        // =========================================================================
+        // CONTROL DE CÁMARA SUAVE (LERP) Y RECORTE DENTRO DEL MUNDO
+        // =========================================================================
+        updateCamera: function(lerp = 0.14) {
+            const targetX = this.player.x + this.player.size / 2 - this.viewport.width / 2;
+            const targetY = this.player.y + this.player.size / 2 - this.viewport.height / 2;
+
+            const maxX = Math.max(0, this.world.width - this.viewport.width);
+            const maxY = Math.max(0, this.world.height - this.viewport.height);
+
+            const clampedX = Math.max(0, Math.min(maxX, targetX));
+            const clampedY = Math.max(0, Math.min(maxY, targetY));
+
+            this.camera.x += (clampedX - this.camera.x) * lerp;
+            this.camera.y += (clampedY - this.camera.y) * lerp;
+        },
+
+        snapCamera: function() {
+            const targetX = this.player.x + this.player.size / 2 - this.viewport.width / 2;
+            const targetY = this.player.y + this.player.size / 2 - this.viewport.height / 2;
+
+            const maxX = Math.max(0, this.world.width - this.viewport.width);
+            const maxY = Math.max(0, this.world.height - this.viewport.height);
+
+            this.camera.x = Math.max(0, Math.min(maxX, targetX));
+            this.camera.y = Math.max(0, Math.min(maxY, targetY));
+        },
+
+        // =========================================================================
+        // TRANSICIÓN DE ESTADOS SEGURA Y CENTRALIZADA
+        // =========================================================================
+        setMode: function(newMode) {
+            const validModes = ["MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY"];
+            if (!validModes.includes(newMode)) return;
+
+            this.mode = newMode;
+
+            if (newMode !== "PLAYING") {
+                this.clearMovementState();
+            }
+
+            const terminalModal = document.getElementById("terminal-modal");
+            const clueModal = document.getElementById("clue-modal");
+            const manualModal = document.getElementById("manual-modal");
+            const startScreen = document.getElementById("start-screen");
+            const victoryScreen = document.getElementById("victory-screen");
+
+            if (terminalModal) terminalModal.style.display = newMode === "TERMINAL" ? "block" : "none";
+            if (clueModal) clueModal.style.display = newMode === "CLUE" ? "block" : "none";
+            if (manualModal) manualModal.style.display = newMode === "MANUAL" ? "block" : "none";
+            if (startScreen) startScreen.style.display = newMode === "MENU" ? "flex" : "none";
+            if (victoryScreen) victoryScreen.style.display = newMode === "VICTORY" ? "flex" : "none";
+
+            this.ensureTimerRunning();
+        },
+
+        clearMovementState: function() {
+            this.isMoving = false;
+            this.keys = {};
+        },
+
+        // =========================================================================
+        // MÉTRICAS Y CÁLCULOS DINÁMICOS
+        // =========================================================================
+        getTotalRooms: function() {
+            return window.Game.PUZZLES ? Object.keys(window.Game.PUZZLES).length : 5;
+        },
+
+        getTotalCluesAllRooms: function() {
+            if (!window.Game.ROOM_LAYOUTS) return 0;
+            let total = 0;
+            for (const key in window.Game.ROOM_LAYOUTS) {
+                if (window.Game.ROOM_LAYOUTS[key].desks) {
+                    total += window.Game.ROOM_LAYOUTS[key].desks.length;
+                }
+            }
+            return total;
+        },
+
+        getTotalCluesCurrentRoom: function() {
+            if (!window.Game.ROOM_LAYOUTS || !window.Game.ROOM_LAYOUTS[this.currentRoom]) return 0;
+            return window.Game.ROOM_LAYOUTS[this.currentRoom].desks ? window.Game.ROOM_LAYOUTS[this.currentRoom].desks.length : 0;
+        },
+
+        getReadCluesCurrentRoom: function() {
+            const total = this.getTotalCluesCurrentRoom();
+            let count = 0;
+            for (let i = 0; i < total; i++) {
+                if (this.readClues.has(`${this.currentRoom}_${i}`)) count++;
+            }
+            return count;
+        },
+
+        formatTime: function(totalSeconds) {
+            const mins = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+            const secs = (totalSeconds % 60).toString().padStart(2, "0");
+            return `${mins}:${secs}`;
+        },
+
+        ensureTimerRunning: function() {
+            if (this.mode !== "MENU" && this.mode !== "VICTORY") {
+                if (!this.timerInterval) {
+                    this.timerInterval = setInterval(() => {
+                        if (this.mode !== "MENU" && this.mode !== "VICTORY") {
+                            this.elapsedSeconds++;
+                            const timerEl = document.getElementById("timer-display");
+                            if (timerEl) timerEl.innerText = this.formatTime(this.elapsedSeconds);
+                        }
+                    }, 1000);
+                }
+            }
+        },
+
+        // =========================================================================
+        // ACTUALIZACIÓN DEL HUD SUPERIOR
+        // =========================================================================
+        updateHUD: function() {
+            const roomNumEl = document.getElementById("room-num");
+            const roomNameEl = document.getElementById("room-name-display");
+            const cluesCounterEl = document.getElementById("clues-counter");
+            const timerEl = document.getElementById("timer-display");
+            const errorsEl = document.getElementById("errors-counter");
+
+            if (roomNumEl) roomNumEl.innerText = `${this.currentRoom} / ${this.getTotalRooms()}`;
+            if (roomNameEl && window.Game.ROOM_NAMES) {
+                roomNameEl.innerText = window.Game.ROOM_NAMES[this.currentRoom] || "ÁREA PERICIAL";
+            }
+            if (cluesCounterEl) {
+                cluesCounterEl.innerText = `${this.getReadCluesCurrentRoom()} / ${this.getTotalCluesCurrentRoom()}`;
+            }
+            if (timerEl) {
+                timerEl.innerText = this.formatTime(this.elapsedSeconds);
+            }
+            if (errorsEl) {
+                errorsEl.innerText = this.errors;
+            }
+
+            // Actualizar botón de audio si existe
+            const btnAudio = document.getElementById("btn-audio");
+            if (btnAudio && window.Game.Audio) {
+                const muted = window.Game.Audio.isMuted();
+                btnAudio.innerHTML = muted 
+                    ? `<span class="hud-btn-icon">🔇</span> AUDIO OFF` 
+                    : `<span class="hud-btn-icon">🔊</span> AUDIO ON`;
+                btnAudio.classList.toggle("muted", muted);
+            }
+        },
+
+        showTacticalToast: function(msg) {
+            const toast = document.getElementById("tactical-toast");
+            const msgEl = document.getElementById("toast-message");
+            if (!toast || !msgEl) return;
+
+            msgEl.innerText = msg;
+            toast.classList.add("visible");
+            clearTimeout(this.toastTimeout);
+            this.toastTimeout = setTimeout(() => {
+                toast.classList.remove("visible");
+            }, 3200);
+        },
+
+        // Partículas atmosféricas distribuidas en las dimensiones del mundo
+        initAmbientParticles: function(worldWidth = 1160, worldHeight = 740, count = 35) {
+            this.ambientParticles = [];
+            for (let i = 0; i < count; i++) {
+                this.ambientParticles.push({
+                    x: Math.random() * (worldWidth - 60) + 30,
+                    y: Math.random() * (worldHeight - 60) + 30,
+                    vx: (Math.random() - 0.5) * 0.22,
+                    vy: -0.1 - Math.random() * 0.18,
+                    size: 1 + Math.random() * 1.5,
+                    baseAlpha: 0.12 + Math.random() * 0.25,
+                    pulseSeed: Math.random() * Math.PI * 2
+                });
+            }
+        },
+
+        updateAmbientParticles: function(worldWidth = 1160, worldHeight = 740) {
+            const minX = 26, maxX = worldWidth - 26;
+            const minY = 26, maxY = worldHeight - 26;
+
+            for (let i = 0; i < this.ambientParticles.length; i++) {
+                const p = this.ambientParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.y < minY) {
+                    p.y = maxY;
+                    p.x = Math.random() * (maxX - minX) + minX;
+                }
+                if (p.x < minX) p.x = maxX;
+                if (p.x > maxX) p.x = minX;
+            }
+        },
+
+        // =========================================================================
+        // REINICIO COMPLETO Y LIMPIO SIN RECARGAR LA PÁGINA
+        // =========================================================================
+        resetMission: function() {
+            this.currentRoom = 1;
+            this.readClues.clear();
+            this.errors = 0;
+            this.elapsedSeconds = 0;
+            this.terminalStep = 1;
+
+            this.player.x = 64;
+            this.player.y = 350;
+            this.player.facing = "down";
+
+            this.door.x = 1124;
+            this.door.y = 318;
+            this.door.width = 28;
+            this.door.height = 104;
+            this.door.locked = true;
+            this.door.color = "#C84B52";
+
+            this.snapCamera();
+            this.setMode("PLAYING");
+            this.updateHUD();
+            this.showTacticalToast("EXPEDIENTE REINICIADO // SECCIÓN 1");
+        }
+    };
+})();

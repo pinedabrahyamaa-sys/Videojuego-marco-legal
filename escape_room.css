@@ -1,0 +1,512 @@
+/* ==========================================================================
+   EL ESCAPE ROOM DE LA NUBE - ESTILOS CIBERSEGURIDAD TERMINAL
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Press+Start+2P&display=swap');
+
+:root {
+    --bg-dark: #070b12;
+    --panel-bg: rgba(11, 17, 28, 0.94);
+    --border-cyan: #00ffcc;
+    --border-red: #ff0055;
+    --glow-cyan: rgba(0, 255, 204, 0.45);
+    --glow-red: rgba(255, 0, 85, 0.45);
+    --accent-amber: #ffcf66;
+    --text-main: #e2f1f1;
+    --text-dim: #7f9ba6;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--border-cyan);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 12px;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Fondo de cuadrícula cibernética sutil */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Encabezado principal */
+header {
+    text-align: center;
+    margin-bottom: 12px;
+    z-index: 1;
+}
+
+h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--border-cyan), 0 0 20px rgba(0, 255, 204, 0.6);
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* HUD Superior */
+#status-bar {
+    width: 900px;
+    max-width: 95vw;
+    display: grid;
+    grid-template-columns: auto auto auto 1fr;
+    gap: 12px;
+    align-items: center;
+    background: rgba(11, 18, 30, 0.88);
+    border: 1px solid rgba(0, 255, 204, 0.35);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: 10px 16px;
+    box-shadow: 0 -4px 15px rgba(0, 255, 204, 0.1);
+    z-index: 2;
+}
+
+.hud-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(4, 8, 14, 0.65);
+    border: 1px solid rgba(0, 255, 204, 0.2);
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+
+.hud-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--accent-amber);
+    letter-spacing: 1px;
+}
+
+.hud-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.hud-name .hud-value {
+    color: var(--border-cyan);
+    text-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
+}
+
+.hud-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hud-hint b {
+    color: var(--accent-amber);
+}
+
+/* Contenedor del Juego */
+#game-container {
+    position: relative;
+    width: 900px;
+    max-width: 95vw;
+    border: 2px solid var(--border-cyan);
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 0 25px var(--glow-cyan), inset 0 0 15px rgba(0, 255, 204, 0.15);
+    background-color: #0b111a;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Canvas escalado y pixelated */
+canvas#gameCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 600 / 400;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background-color: #101820;
+}
+
+/* Efecto Scanlines CRT cibernético sutil */
+.scanlines-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.22) 50%
+    );
+    background-size: 100% 3px;
+    z-index: 4;
+    opacity: 0.75;
+}
+
+/* Capa de viñeta sutil */
+.vignette-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.7);
+    z-index: 5;
+}
+
+/* Toast de notificación táctica */
+#tactical-toast {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-60px);
+    background: rgba(11, 22, 35, 0.95);
+    border: 1px solid var(--border-cyan);
+    color: #ffffff;
+    font-size: 12px;
+    padding: 8px 18px;
+    border-radius: 4px;
+    box-shadow: 0 0 20px var(--glow-cyan);
+    z-index: 25;
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#tactical-toast.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+#tactical-toast .toast-icon {
+    color: var(--accent-amber);
+    font-weight: bold;
+}
+
+/* Pantalla de Transición Fade */
+#transition-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: #04070c;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#transition-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.transition-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: var(--border-cyan);
+    letter-spacing: 2px;
+    text-shadow: 0 0 12px var(--border-cyan);
+    animation: pulse-text 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes pulse-text {
+    from { opacity: 0.5; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1.02); }
+}
+
+/* Pantallas superpuestas (Inicio, Victoria) */
+.screen-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 12, 20, 0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    z-index: 20;
+    text-align: center;
+}
+
+.screen-card {
+    background: rgba(14, 22, 36, 0.96);
+    border: 2px solid var(--border-cyan);
+    border-radius: 8px;
+    padding: 32px 36px;
+    max-width: 620px;
+    box-shadow: 0 0 35px var(--glow-cyan);
+    position: relative;
+}
+
+.screen-card.victory {
+    border-color: #39dfb5;
+    box-shadow: 0 0 40px rgba(57, 223, 181, 0.45);
+}
+
+.screen-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: #ffffff;
+    line-height: 1.6;
+    margin-bottom: 18px;
+    text-shadow: 0 0 10px var(--border-cyan);
+}
+
+.screen-card.victory .screen-title {
+    color: #48e4c4;
+    text-shadow: 0 0 12px rgba(72, 228, 196, 0.7);
+}
+
+.screen-desc {
+    font-size: 13px;
+    color: var(--text-main);
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+.screen-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-family: 'Press Start 2P', monospace;
+    background: rgba(0, 255, 204, 0.12);
+    border: 1px solid var(--border-cyan);
+    color: var(--border-cyan);
+    border-radius: 4px;
+    margin-bottom: 14px;
+}
+
+.instructions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.instruction-item {
+    background: rgba(5, 9, 15, 0.7);
+    border: 1px solid rgba(0, 255, 204, 0.2);
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.instruction-item b {
+    color: var(--accent-amber);
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+}
+
+/* Botones principales de pantalla */
+.cyber-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 14px 28px;
+    background: #0f2430;
+    color: var(--border-cyan);
+    border: 2px solid var(--border-cyan);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.25);
+    text-transform: uppercase;
+}
+
+.cyber-btn:hover {
+    background: var(--border-cyan);
+    color: #050a10;
+    box-shadow: 0 0 25px var(--border-cyan);
+    transform: translateY(-2px);
+}
+
+/* Modales */
+#terminal-modal, #clue-modal {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 520px;
+    max-width: calc(100% - 32px);
+    background: var(--panel-bg);
+    padding: 24px;
+    z-index: 15;
+    border-radius: 8px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.85);
+}
+
+#terminal-modal {
+    border: 2px solid var(--border-red);
+    box-shadow: 0 0 35px var(--glow-red);
+}
+
+#clue-modal {
+    border: 2px solid var(--border-cyan);
+    box-shadow: 0 0 35px var(--glow-cyan);
+}
+
+#terminal-modal h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    color: var(--border-red);
+    margin-top: 0;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--border-red);
+}
+
+#clue-modal h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    color: var(--border-cyan);
+    margin-top: 0;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--border-cyan);
+}
+
+#q-text, #clue-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-main);
+    margin-bottom: 16px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 4px;
+    border-left: 3px solid;
+}
+
+#q-text {
+    border-color: var(--border-red);
+}
+
+#clue-text {
+    border-color: var(--border-cyan);
+}
+
+/* Mensaje de error integrado en Terminal */
+#terminal-error {
+    display: none;
+    background: rgba(255, 0, 85, 0.15);
+    border: 1px solid var(--border-red);
+    color: #ffb3c6;
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+/* Animación Shake al fallar */
+@keyframes shake-modal {
+    0%, 100% { transform: translate(-50%, -50%); }
+    20%, 60% { transform: translate(calc(-50% - 9px), -50%); }
+    40%, 80% { transform: translate(calc(-50% + 9px), -50%); }
+}
+
+.shake {
+    animation: shake-modal 0.42s ease-in-out;
+}
+
+/* Opciones de respuesta */
+.option-btn {
+    display: block;
+    width: 100%;
+    background: #131c2a;
+    color: var(--text-main);
+    border: 1px solid rgba(0, 255, 204, 0.4);
+    padding: 12px 14px;
+    margin: 8px 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.option-btn:hover {
+    background: rgba(0, 255, 204, 0.15);
+    border-color: var(--border-cyan);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
+    transform: translateX(4px);
+}
+
+/* Botón cerrar modal de pista */
+.close-btn {
+    background: #111a28;
+    color: var(--border-cyan);
+    border: 1px solid var(--border-cyan);
+    padding: 10px 18px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+.close-btn:hover {
+    background: var(--border-cyan);
+    color: #050a10;
+    box-shadow: 0 0 15px var(--border-cyan);
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    #status-bar {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .hud-hint {
+        grid-column: span 2;
+        text-align: center;
+    }
+    .instructions-grid {
+        grid-template-columns: 1fr;
+    }
+    .screen-card {
+        padding: 20px;
+    }
+}
