@@ -10,23 +10,49 @@ window.Game = window.Game || {};
 
     // Helper seguro para rectángulos con esquinas redondeadas
     function drawRoundedRect(ctx, x, y, width, height, radius) {
-        if (ctx.roundRect) {
-            ctx.beginPath();
-            ctx.roundRect(x, y, width, height, radius);
-        } else {
-            ctx.beginPath();
-            const r = typeof radius === "number" ? radius : (radius[0] || 4);
-            ctx.moveTo(x + r, y);
-            ctx.lineTo(x + width - r, y);
-            ctx.quadraticCurveTo(x + width, y, x + width, y + r);
-            ctx.lineTo(x + width, y + height - r);
-            ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-            ctx.lineTo(x + r, y + height);
-            ctx.quadraticCurveTo(x, y + height, x, y + height - r);
-            ctx.lineTo(x, y + r);
-            ctx.quadraticCurveTo(x, y, x + r, y);
-            ctx.closePath();
+        if (width <= 0 || height <= 0) return;
+        try {
+            if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(x, y, width, height, radius);
+                return;
+            }
+        } catch (e) {
+            // Fallback manual si roundRect rechaza radios o no está disponible
         }
+        ctx.beginPath();
+        let tl = 4, tr = 4, br = 4, bl = 4;
+        if (typeof radius === "number") {
+            tl = tr = br = bl = radius;
+        } else if (Array.isArray(radius)) {
+            if (radius.length === 1) {
+                tl = tr = br = bl = radius[0];
+            } else if (radius.length === 2) {
+                tl = br = radius[0];
+                tr = bl = radius[1];
+            } else if (radius.length === 4) {
+                tl = radius[0];
+                tr = radius[1];
+                br = radius[2];
+                bl = radius[3];
+            }
+        }
+        const maxR = Math.min(width / 2, height / 2);
+        tl = Math.max(0, Math.min(tl || 0, maxR));
+        tr = Math.max(0, Math.min(tr || 0, maxR));
+        br = Math.max(0, Math.min(br || 0, maxR));
+        bl = Math.max(0, Math.min(bl || 0, maxR));
+
+        ctx.moveTo(x + tl, y);
+        ctx.lineTo(x + width - tr, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + tr);
+        ctx.lineTo(x + width, y + height - br);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - br, y + height);
+        ctx.lineTo(x + bl, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - bl);
+        ctx.lineTo(x, y + tl);
+        ctx.quadraticCurveTo(x, y, x + tl, y);
+        ctx.closePath();
     }
 
     const INK_OUTLINE = "#0B0F14";
@@ -294,7 +320,7 @@ window.Game = window.Game || {};
             ctx.fillText(label, x + 6, y + 50);
 
             // Marcador de cotejo de pista (Editorial: rombo/sello discreto)
-            const layout = window.Game.ROOM_LAYOUTS[currentRoom];
+            const layout = window.Game.ROOM_LAYOUTS ? window.Game.ROOM_LAYOUTS[currentRoom] : null;
             const deskData = layout && layout.desks ? layout.desks[index] : null;
             const isDoc = deskData && deskData.clueType === "document";
             const clueSpotX = isDoc ? docX + 8.5 : monitorX + 23;
@@ -870,7 +896,7 @@ window.Game = window.Game || {};
             ctx.restore();
 
             // Dibujar mamparas, decor y mobiliario
-            const layout = window.Game.ROOM_LAYOUTS[currentRoom];
+            const layout = window.Game.ROOM_LAYOUTS ? window.Game.ROOM_LAYOUTS[currentRoom] : null;
             if (layout) {
                 if (layout.walls) {
                     layout.walls.forEach((wall) => this.drawWallPartition(ctx, wall));
@@ -1356,10 +1382,6 @@ window.Game = window.Game || {};
             ctx.restore();
         },
 
-            ctx.restore();
-            ctx.restore();
-        },
-
         // =========================================================================
         // MARCADOR [E] FLOTANTE
         // =========================================================================
@@ -1442,7 +1464,7 @@ window.Game = window.Game || {};
             const offsetX = miniX + 5;
             const offsetY = miniY + 12;
 
-            const layout = window.Game.ROOM_LAYOUTS[state.currentRoom];
+            const layout = window.Game.ROOM_LAYOUTS ? window.Game.ROOM_LAYOUTS[state.currentRoom] : null;
 
             // Muros y mamparas internas en líneas de plano arquitectónico
             if (layout && layout.walls) {
@@ -1517,7 +1539,11 @@ window.Game = window.Game || {};
             ctx.translate(-Math.round(state.camera.x), -Math.round(state.camera.y));
 
             this.drawRoom(ctx, state);
-            this.drawPlayer(ctx, state);
+            try {
+                this.drawPlayer(ctx, state);
+            } catch (err) {
+                console.error("Error en drawPlayer:", err);
+            }
             this.drawInteractionMarker(ctx, state);
 
             ctx.restore();

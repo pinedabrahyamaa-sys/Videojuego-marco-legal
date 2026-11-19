@@ -215,7 +215,13 @@ window.Game = window.Game || {};
         if (moved) {
             State.isMoving = true;
             State.walkTimer += 0.22;
-            if (Audio && State.mode === "PLAYING") Audio.step();
+            if (Audio && State.mode === "PLAYING") {
+                try {
+                    Audio.step();
+                } catch (e) {
+                    // Silencioso para garantizar que el movimiento nunca se interrumpa
+                }
+            }
         } else {
             State.isMoving = false;
         }
@@ -623,8 +629,20 @@ window.Game = window.Game || {};
     // BUCLE DE RENDERIZADO
     // =========================================================================
     function loop() {
-        update();
-        Renderer.draw(ctx, State);
+        try {
+            update();
+        } catch (err) {
+            console.error("Error en update:", err);
+        }
+
+        try {
+            if (Renderer && Renderer.draw && ctx) {
+                Renderer.draw(ctx, State);
+            }
+        } catch (err) {
+            console.error("Error en Renderer.draw:", err);
+        }
+
         requestAnimationFrame(loop);
     }
 

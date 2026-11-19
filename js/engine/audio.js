@@ -50,48 +50,48 @@ window.Game = window.Game || {};
 
         // Pisada ligera y realista de zapato sobre piso de concreto (Web Audio API)
         step: function() {
-            if (isMuted) return;
-            const now = Date.now();
-            if (now - lastStepTime < 280) return;
-            lastStepTime = now;
-
-            const ac = getAudioContext();
-            if (!ac) return;
-
-            // Alternar sutilmente entre pie izquierdo y derecho para sonido orgánico
-            isLeftFoot = !isLeftFoot;
-            const t = ac.currentTime;
-            const duration = 0.045; // ~45 ms
-
-            // 1. Golpe grave suave de cuerpo / suela (116Hz / 124Hz)
-            const baseFreq = isLeftFoot ? 122 : 116;
-            const pitchJitter = (Math.random() - 0.5) * 4;
-            const oscFreq = baseFreq + pitchJitter;
-
-            const osc = ac.createOscillator();
-            const oscGain = ac.createGain();
-            const oscFilter = ac.createBiquadFilter();
-
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(oscFreq, t);
-            osc.frequency.exponentialRampToValueAtTime(38, t + duration);
-
-            oscFilter.type = "lowpass";
-            oscFilter.frequency.setValueAtTime(170, t);
-
-            oscGain.gain.setValueAtTime(0.075, t);
-            oscGain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-
-            osc.connect(oscFilter);
-            oscFilter.connect(oscGain);
-            oscGain.connect(ac.destination);
-
-            osc.start(t);
-            osc.stop(t + duration);
-
-            // 2. Pulso muy corto de ruido blanco con filtro pasa-banda (~900Hz) para textura de concreto
             try {
-                const sampleRate = ac.sampleRate;
+                if (isMuted) return;
+                const now = Date.now();
+                if (now - lastStepTime < 280) return;
+                lastStepTime = now;
+
+                const ac = getAudioContext();
+                if (!ac) return;
+
+                // Alternar sutilmente entre pie izquierdo y derecho para sonido orgánico
+                isLeftFoot = !isLeftFoot;
+                const t = ac.currentTime;
+                const duration = 0.045; // ~45 ms
+
+                // 1. Golpe grave suave de cuerpo / suela (116Hz / 124Hz)
+                const baseFreq = isLeftFoot ? 122 : 116;
+                const pitchJitter = (Math.random() - 0.5) * 4;
+                const oscFreq = baseFreq + pitchJitter;
+
+                const osc = ac.createOscillator();
+                const oscGain = ac.createGain();
+                const oscFilter = ac.createBiquadFilter();
+
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(oscFreq, t);
+                osc.frequency.exponentialRampToValueAtTime(38, t + duration);
+
+                oscFilter.type = "lowpass";
+                oscFilter.frequency.setValueAtTime(170, t);
+
+                oscGain.gain.setValueAtTime(0.075, t);
+                oscGain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+                osc.connect(oscFilter);
+                oscFilter.connect(oscGain);
+                oscGain.connect(ac.destination);
+
+                osc.start(t);
+                osc.stop(t + duration);
+
+                // 2. Pulso muy corto de ruido blanco con filtro pasa-banda (~900Hz) para textura de concreto
+                const sampleRate = ac.sampleRate || 44100;
                 const bufferSize = Math.max(1, Math.floor(sampleRate * duration));
                 const buffer = ac.createBuffer(1, bufferSize, sampleRate);
                 const data = buffer.getChannelData(0);
@@ -118,7 +118,7 @@ window.Game = window.Game || {};
                 noise.start(t);
                 noise.stop(t + duration);
             } catch (err) {
-                // Silencioso si buffer falla en algún contexto limitado
+                // Silencioso ante cualquier restricción de Web Audio API
             }
         },
 
