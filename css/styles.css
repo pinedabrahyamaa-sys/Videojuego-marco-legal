@@ -58,15 +58,17 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 8px 14px;
+    padding: 6px 14px 10px 14px;
     overflow-x: hidden;
     position: relative;
     -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
 }
 
 /* Encabezado Institucional Limpio */
 header {
     text-align: center;
+    margin-top: 2px;
     margin-bottom: 6px;
     z-index: 1;
 }
@@ -104,7 +106,7 @@ h1 {
 
 /* HUD Superior: Barra de Estado Forense Amplia */
 #status-bar {
-    width: min(1040px, 96vw, calc((100vh - 110px) * (840 / 520)));
+    width: min(1040px, 96vw, calc((100vh - 132px) * (840 / 520)));
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -216,7 +218,7 @@ h1 {
 /* Contenedor Principal del Juego */
 #game-container {
     position: relative;
-    width: min(1040px, 96vw, calc((100vh - 110px) * (840 / 520)));
+    width: min(1040px, 96vw, calc((100vh - 132px) * (840 / 520)));
     border: 1px solid var(--panel-border);
     border-radius: 0 0 8px 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
@@ -1288,4 +1290,37 @@ canvas#gameCanvas {
     .screen-card {
         padding: 20px 16px;
     }
+}
+
+/* =========================================================================
+   PANTALLA COMPLETA ADAPTABLE
+   ========================================================================= */
+:fullscreen body,
+:-webkit-full-screen body,
+body.is-fullscreen {
+    padding: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background-color: #0A0D12 !important;
+}
+
+:fullscreen header,
+:-webkit-full-screen header,
+body.is-fullscreen header {
+    display: none !important;
+}
+
+:fullscreen #status-bar,
+:-webkit-full-screen #status-bar,
+body.is-fullscreen #status-bar {
+    width: min(96vw, calc((100vh - 64px) * (840 / 520))) !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 6px 14px !important;
+}
+
+:fullscreen #game-container,
+:-webkit-full-screen #game-container,
+body.is-fullscreen #game-container {
+    width: min(96vw, calc((100vh - 64px) * (840 / 520))) !important;
+    border-radius: 0 0 8px 8px !important;
 }

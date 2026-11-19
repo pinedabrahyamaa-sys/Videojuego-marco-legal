@@ -581,6 +581,45 @@ window.Game = window.Game || {};
     }
 
     // =========================================================================
+    // CONTROL DE PANTALLA COMPLETA ADAPTABLE
+    // =========================================================================
+    function toggleFullscreen() {
+        if (Audio) Audio.uiClick();
+
+        try {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                const el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen().catch(() => {});
+                } else if (el.webkitRequestFullscreen) {
+                    el.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        } catch (err) {
+            console.warn("Fullscreen toggle error:", err);
+        }
+    }
+
+    function updateFullscreenUI() {
+        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        document.body.classList.toggle("is-fullscreen", isFull);
+
+        const btnFull = document.getElementById("btn-fullscreen");
+        if (btnFull) {
+            btnFull.innerHTML = isFull
+                ? `<span class="hud-btn-icon">🗗</span> SALIR [Esc]`
+                : `<span class="hud-btn-icon">⛶</span> PANTALLA [F]`;
+            btnFull.title = isFull ? "Salir de pantalla completa [Esc / F]" : "Alternar Pantalla Completa [F]";
+        }
+    }
+
+    // =========================================================================
     // BUCLE DE RENDERIZADO
     // =========================================================================
     function loop() {
@@ -626,25 +665,51 @@ window.Game = window.Game || {};
 
             if (key.startsWith("arrow")) e.preventDefault();
 
+            // Si el modal de pista está abierto, permitir cerrarlo con [Enter] o [Espacio]
+            // para evitar salir accidentalmente de pantalla completa al usar [Esc]
+            if (State.mode === "CLUE" && (key === "enter" || key === " " || key === "spacebar")) {
+                e.preventDefault();
+                closeClue();
+                return;
+            }
+
             // Tecla [Escape]: cierra cualquier modal abierto y regresa a PLAYING
             if (key === "escape") {
-                closeAnyOpenModal();
-                return;
+                if (State.mode === "CLUE" || State.mode === "TERMINAL" || State.mode === "MANUAL") {
+                    closeAnyOpenModal();
+                    return;
+                }
+            }
+
+            // Tecla [F]: alternar pantalla completa
+            if (key === "f") {
+                const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+                if (tag !== "input" && tag !== "textarea") {
+                    e.preventDefault();
+                    toggleFullscreen();
+                    return;
+                }
             }
 
             // Tecla [M]: abre o cierra el Manual de Consulta Legal
             if (key === "m") {
-                toggleManual();
-                return;
+                const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+                if (tag !== "input" && tag !== "textarea") {
+                    toggleManual();
+                    return;
+                }
             }
 
             // Tecla [N]: alternar audio
             if (key === "n") {
-                if (Audio) {
-                    Audio.toggleMute();
-                    State.updateHUD();
+                const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+                if (tag !== "input" && tag !== "textarea") {
+                    if (Audio) {
+                        Audio.toggleMute();
+                        State.updateHUD();
+                    }
+                    return;
                 }
-                return;
             }
 
             // Tecla [E]: interacción física en el escenario (solo en PLAYING)
@@ -707,6 +772,16 @@ window.Game = window.Game || {};
                 }
             });
         }
+
+        // Botón toggle pantalla completa en el HUD
+        const btnFullscreen = document.getElementById("btn-fullscreen");
+        if (btnFullscreen) {
+            btnFullscreen.addEventListener("click", toggleFullscreen);
+        }
+
+        // Sincronización de eventos de pantalla completa
+        document.addEventListener("fullscreenchange", updateFullscreenUI);
+        document.addEventListener("webkitfullscreenchange", updateFullscreenUI);
 
         // Botón cerrar manual
         const closeManualBtn = document.getElementById("close-manual");
