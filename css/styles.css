@@ -409,6 +409,116 @@ canvas#gameCanvas {
     text-align: center;
 }
 
+/* =========================================================================
+   ENCABEZADO INSTITUCIONAL UNEFA (PORTADA #start-screen)
+   ========================================================================= */
+.unefa-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 12px;
+    padding-right: 110px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.unefa-logo {
+    height: 56px;
+    max-height: 58px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+    flex-shrink: 0;
+}
+
+.unefa-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: left;
+}
+
+.unefa-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.3px;
+}
+
+.unefa-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--accent-amber);
+    letter-spacing: 0.2px;
+}
+
+/* =========================================================================
+   FICHA PERICIAL: EQUIPO DESARROLLADOR
+   ========================================================================= */
+.team-credits {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(14, 21, 32, 0.75);
+    border: 1px solid #28374D;
+    border-radius: 6px;
+    text-align: left;
+}
+
+.team-credits-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent-amber);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.team-icon {
+    font-size: 11px;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 12px;
+}
+
+.team-member {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(22, 32, 48, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #E2E8F0;
+}
+
+.team-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    color: #8FA2B8;
+    background: #101926;
+    border: 1px solid #2E3E56;
+    padding: 1px 4px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+}
+
+.team-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #F1F5F9;
+}
+
 .card-header-badge {
     display: inline-flex;
     align-items: center;
@@ -1285,6 +1395,15 @@ canvas#gameCanvas {
         order: 10;
     }
     .instructions-grid, .metrics-row {
+        grid-template-columns: 1fr;
+    }
+    .unefa-header {
+        padding-right: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .team-grid {
         grid-template-columns: 1fr;
     }
     .screen-card {
