@@ -3,11 +3,16 @@ window.Game = window.Game || {};
 (function() {
     // Máquina de estados centralizada, mundo amplio y cámara suave
     window.Game.State = {
-        // Máquina de estados: "MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY"
+        // Máquina de estados: "MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY", "NOTEBOOK"
         mode: "MENU",
 
         currentRoom: 1,
         readClues: new Set(),     // "sala_indice"
+        inspectedCluesByRoom: { 1: [], 2: [], 3: [], 4: [], 5: [] },
+        noteTags: {},             // key -> 'none' | 'relevant' | 'discarded'
+        quizSolvedByRoom: {},     // roomIndex -> boolean
+        doorCodeInput: "",        // buffer para el teclado numérico del Paso 3
+        notebookPreviousMode: "PLAYING",
         errors: 0,
         elapsedSeconds: 0,
         timerInterval: null,
@@ -91,7 +96,7 @@ window.Game = window.Game || {};
         // TRANSICIÓN DE ESTADOS SEGURA Y CENTRALIZADA
         // =========================================================================
         setMode: function(newMode) {
-            const validModes = ["MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY"];
+            const validModes = ["MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY", "NOTEBOOK"];
             if (!validModes.includes(newMode)) return;
 
             this.mode = newMode;
@@ -103,16 +108,48 @@ window.Game = window.Game || {};
             const terminalModal = document.getElementById("terminal-modal");
             const clueModal = document.getElementById("clue-modal");
             const manualModal = document.getElementById("manual-modal");
+            const notebookModal = document.getElementById("notebook-modal");
             const startScreen = document.getElementById("start-screen");
             const victoryScreen = document.getElementById("victory-screen");
 
             if (terminalModal) terminalModal.style.display = newMode === "TERMINAL" ? "block" : "none";
             if (clueModal) clueModal.style.display = newMode === "CLUE" ? "block" : "none";
             if (manualModal) manualModal.style.display = newMode === "MANUAL" ? "block" : "none";
+            if (notebookModal) notebookModal.style.display = newMode === "NOTEBOOK" ? "block" : "none";
             if (startScreen) startScreen.style.display = newMode === "MENU" ? "flex" : "none";
             if (victoryScreen) victoryScreen.style.display = newMode === "VICTORY" ? "flex" : "none";
 
             this.ensureTimerRunning();
+        },
+
+        // Registro de evidencias examinadas para la Bitácora de Campo [B]
+        recordInspectedClue: function(room, item) {
+            if (!this.inspectedCluesByRoom[room]) {
+                this.inspectedCluesByRoom[room] = [];
+            }
+            const list = this.inspectedCluesByRoom[room];
+            const key = item.key || `${room}_${item.index}`;
+            const exists = list.some((c) => c.key === key);
+            if (!exists) {
+                list.push({
+                    key: key,
+                    id: item.id || key,
+                    title: item.title,
+                    clueType: item.clueType || "document",
+                    text: item.text || item.clue,
+                    label: item.label,
+                    isNoise: !!item.isNoise
+                });
+            }
+        },
+
+        // Clasificación manual del jugador en la Bitácora ('relevant', 'discarded', 'none')
+        setNoteTag: function(key, tag) {
+            if (this.noteTags[key] === tag) {
+                this.noteTags[key] = "none";
+            } else {
+                this.noteTags[key] = tag;
+            }
         },
 
         clearMovementState: function() {
@@ -131,24 +168,57 @@ window.Game = window.Game || {};
             if (!window.Game.ROOM_LAYOUTS) return 0;
             let total = 0;
             for (const key in window.Game.ROOM_LAYOUTS) {
-                if (window.Game.ROOM_LAYOUTS[key].desks) {
-                    total += window.Game.ROOM_LAYOUTS[key].desks.length;
+                const layout = window.Game.ROOM_LAYOUTS[key];
+                if (layout.desks) {
+                    layout.desks.forEach((desk) => {
+                        if (!desk.isNoise) total++;
+                    });
                 }
+                const props = (layout.props || []).concat(layout.decor || []);
+                props.forEach((prop) => {
+                    if (prop.clue && !prop.isNoise) total++;
+                });
             }
             return total;
         },
 
         getTotalCluesCurrentRoom: function() {
             if (!window.Game.ROOM_LAYOUTS || !window.Game.ROOM_LAYOUTS[this.currentRoom]) return 0;
-            return window.Game.ROOM_LAYOUTS[this.currentRoom].desks ? window.Game.ROOM_LAYOUTS[this.currentRoom].desks.length : 0;
+            const layout = window.Game.ROOM_LAYOUTS[this.currentRoom];
+            let total = 0;
+            if (layout.desks) {
+                layout.desks.forEach((desk) => {
+                    if (!desk.isNoise) total++;
+                });
+            }
+            const props = (layout.props || []).concat(layout.decor || []);
+            props.forEach((prop) => {
+                if (prop.clue && !prop.isNoise) total++;
+            });
+            return total;
         },
 
         getReadCluesCurrentRoom: function() {
-            const total = this.getTotalCluesCurrentRoom();
+            if (!window.Game.ROOM_LAYOUTS || !window.Game.ROOM_LAYOUTS[this.currentRoom]) return 0;
+            const layout = window.Game.ROOM_LAYOUTS[this.currentRoom];
             let count = 0;
-            for (let i = 0; i < total; i++) {
-                if (this.readClues.has(`${this.currentRoom}_${i}`)) count++;
+            if (layout.desks) {
+                layout.desks.forEach((desk, idx) => {
+                    if (!desk.isNoise) {
+                        const key = `${this.currentRoom}_desk_${idx}`;
+                        if (this.readClues.has(key) || this.readClues.has(`${this.currentRoom}_${idx}`)) {
+                            count++;
+                        }
+                    }
+                });
             }
+            const props = (layout.props || []).concat(layout.decor || []);
+            props.forEach((prop, idx) => {
+                if (prop.clue && !prop.isNoise) {
+                    const key = prop.id || `${this.currentRoom}_prop_${idx}`;
+                    if (this.readClues.has(key)) count++;
+                }
+            });
             return count;
         },
 
@@ -260,6 +330,11 @@ window.Game = window.Game || {};
         resetMission: function() {
             this.currentRoom = 1;
             this.readClues.clear();
+            this.inspectedCluesByRoom = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+            this.noteTags = {};
+            this.quizSolvedByRoom = {};
+            this.doorCodeInput = "";
+            this.notebookPreviousMode = "PLAYING";
             this.errors = 0;
             this.elapsedSeconds = 0;
             this.terminalStep = 1;

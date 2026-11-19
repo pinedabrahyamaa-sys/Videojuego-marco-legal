@@ -44,6 +44,9 @@
             <span class="hud-label">OBSERVACIONES</span>
             <span class="hud-value" id="errors-counter">0</span>
         </div>
+        <button id="btn-notebook" class="hud-btn" type="button" title="Abrir Bitácora de Campo [B]">
+            <span class="hud-btn-icon">📋</span> BITÁCORA [B]
+        </button>
         <button id="btn-open-manual" class="hud-btn" type="button" title="Consultar Manual Legal [M]">
             <span class="hud-btn-icon">📖</span> MANUAL [M]
         </button>
@@ -54,7 +57,7 @@
             <span class="hud-btn-icon">⛶</span> PANTALLA [F]
         </button>
         <div class="hud-hint" id="interaction-hint">
-            Diligencia activa: usa <b>W A S D</b> para desplazarte. [E] examinar. [M] Manual. [N] Audio. [F] Pantalla.
+            Diligencia activa: usa <b>W A S D</b> para desplazarte. [E] examinar. [B] Bitácora. [M] Manual. [N] Audio. [F] Pantalla.
         </div>
     </div>
 
@@ -203,10 +206,15 @@
             </div>
         </div>
 
-        <!-- Modal de Terminal / Desafío Legal en Dos Pasos -->
+        <!-- Modal de Terminal / Desafío Legal en Dos Pasos y Código de Salida -->
         <div id="terminal-modal" role="dialog" aria-modal="true" aria-labelledby="q-title">
             <div class="modal-header">
-                <div id="terminal-step-badge" class="step-badge step-1">PASO 1 DE 2: TIPIFICACIÓN DEL DELITO</div>
+                <div class="terminal-header-top">
+                    <div id="terminal-step-badge" class="step-badge step-1">PASO 1 DE 2: TIPIFICACIÓN DEL DELITO</div>
+                    <button id="btn-terminal-notebook" class="terminal-header-btn" type="button" title="Consultar Bitácora de Campo [B]">
+                        <span>📋</span> CONSULTAR BITÁCORA [B]
+                    </button>
+                </div>
                 <h2 id="q-title">CONTROL PERICIAL // DICTAMEN REQUERIDO</h2>
                 <p id="q-summary" class="terminal-summary"></p>
             </div>
@@ -214,6 +222,67 @@
             <p id="q-text"></p>
             <div id="q-options"></div>
             <div id="terminal-verdict" style="display: none;"></div>
+
+            <!-- Paso 3: Teclado Numérico de Anulación de Puerta de Seguridad -->
+            <div id="terminal-keypad" style="display: none;">
+                <div class="keypad-status-banner">
+                    <span class="keypad-status-icon">✓</span>
+                    <span>Calificación jurídica validada y guardada. Ingrese el código numérico del panel de salida.</span>
+                </div>
+                <div class="keypad-instruction">
+                    El paso a la siguiente sección se encuentra retenido por una cerradura técnica de anulación. Ingrese la clave de 4 dígitos o consulte la Bitácora [B]:
+                </div>
+                <div class="keypad-display-wrapper">
+                    <div class="keypad-display" id="keypad-display">
+                        <span class="keypad-digit" id="digit-0">—</span>
+                        <span class="keypad-digit" id="digit-1">—</span>
+                        <span class="keypad-digit" id="digit-2">—</span>
+                        <span class="keypad-digit" id="digit-3">—</span>
+                    </div>
+                </div>
+                <div id="keypad-feedback" class="keypad-feedback"></div>
+                <div class="keypad-grid">
+                    <button class="keypad-btn" type="button" data-val="1">1</button>
+                    <button class="keypad-btn" type="button" data-val="2">2</button>
+                    <button class="keypad-btn" type="button" data-val="3">3</button>
+                    <button class="keypad-btn" type="button" data-val="4">4</button>
+                    <button class="keypad-btn" type="button" data-val="5">5</button>
+                    <button class="keypad-btn" type="button" data-val="6">6</button>
+                    <button class="keypad-btn" type="button" data-val="7">7</button>
+                    <button class="keypad-btn" type="button" data-val="8">8</button>
+                    <button class="keypad-btn" type="button" data-val="9">9</button>
+                    <button class="keypad-btn btn-action btn-clear" type="button" data-action="backspace" title="Borrar último dígito">⌫ BORRAR</button>
+                    <button class="keypad-btn" type="button" data-val="0">0</button>
+                    <button class="keypad-btn btn-action btn-submit" type="button" data-action="enter" title="Validar código">✓ VALIDAR</button>
+                </div>
+                <div class="keypad-actions-row">
+                    <button id="btn-close-keypad-search" class="cyber-btn-secondary" type="button">
+                        <span>🔍</span> Cerrar y buscar código
+                    </button>
+                    <button id="btn-keypad-notebook" class="cyber-btn-secondary" type="button">
+                        <span>📋</span> Consultar Bitácora [B]
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Libreta de Campo / Bitácora de Evidencias [B] -->
+        <div id="notebook-modal" role="dialog" aria-modal="true" aria-labelledby="notebook-title" style="display: none;">
+            <div class="notebook-header">
+                <div class="notebook-title-group">
+                    <span class="modal-badge-info">REGISTRO DE CAMPO // CICPC</span>
+                    <h2 id="notebook-title">BITÁCORA DE CAMPO // ÁREA ACTUAL</h2>
+                    <div id="notebook-room-info" class="notebook-room-subtitle">SECCIÓN 1: OFICINA DE SOPORTE</div>
+                </div>
+                <button id="close-notebook" class="modal-close-icon" type="button" title="Cerrar Bitácora [B / Escape]">✕</button>
+            </div>
+            <div class="notebook-instructions">
+                <span>Registros y notas inspeccionadas en este sector. Clasifica los elementos para fundamentar tu dictamen:</span>
+            </div>
+            <div id="notebook-list" class="notebook-items-container"></div>
+            <div class="notebook-footer">
+                <button id="btn-close-notebook-footer" class="cyber-btn" type="button">VOLVER A LA INSPECCIÓN [B]</button>
+            </div>
         </div>
 
         <!-- Modal de Evidencia Encontrada (Diegético: Gaceta Oficial / Estación Forense) -->
@@ -246,8 +315,8 @@
             <!-- Contenido del expediente / evidencia -->
             <div class="clue-body-wrap">
                 <div class="modal-header">
-                    <span class="modal-badge-info" id="clue-badge-label">EVIDENCIA CONSIGNADA</span>
-                    <h2 id="clue-title">ELEMENTO MATERIAL PROBATORIO</h2>
+                    <span class="modal-badge-info" id="clue-badge-label">REGISTRO INSPECCIONADO</span>
+                    <h2 id="clue-title">DOCUMENTO DE INSPECCIÓN</h2>
                 </div>
                 <p id="clue-text"></p>
             </div>

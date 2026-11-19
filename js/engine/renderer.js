@@ -326,53 +326,10 @@ window.Game = window.Game || {};
             const clueSpotX = isDoc ? docX + 8.5 : monitorX + 23;
             const clueSpotY = isDoc ? docY + 11.5 : y + 17.5;
 
-            if (!isRead) {
-                // Rombo editorial ámbar pulsante (#D99B26)
-                const pulse = 0.85 + Math.sin(now / 260) * 0.15;
-                const dSize = 7 * pulse;
+            const isDeskRead = state.readClues.has(`${currentRoom}_desk_${index}`) || state.readClues.has(`${currentRoom}_${index}`);
+            const isDeskNoise = deskData && !!deskData.isNoise;
 
-                ctx.save();
-                ctx.translate(clueSpotX, clueSpotY);
-                ctx.rotate(Math.PI / 4);
-
-                // Halo sutil
-                ctx.fillStyle = "rgba(217, 155, 38, 0.22)";
-                ctx.fillRect(-dSize - 2, -dSize - 2, (dSize + 2) * 2, (dSize + 2) * 2);
-
-                // Rombo principal
-                ctx.fillStyle = "#D99B26";
-                ctx.fillRect(-dSize, -dSize, dSize * 2, dSize * 2);
-                ctx.strokeStyle = "#FFFFFF";
-                ctx.lineWidth = 1.2;
-                ctx.strokeRect(-dSize, -dSize, dSize * 2, dSize * 2);
-                ctx.restore();
-
-                // Signo de exclamación técnico
-                ctx.fillStyle = "#11161F";
-                ctx.font = "bold 8.5px 'Inter', sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("!", clueSpotX, clueSpotY);
-                ctx.textAlign = "start";
-                ctx.textBaseline = "alphabetic";
-            } else {
-                // Sello verde esmeralda mate (#3FA37C) con check de inspección
-                ctx.fillStyle = "#3FA37C";
-                ctx.beginPath();
-                ctx.arc(clueSpotX, clueSpotY, 6.5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = "#D4EFE3";
-                ctx.lineWidth = 1.2;
-                ctx.stroke();
-
-                ctx.fillStyle = "#FFFFFF";
-                ctx.font = "bold 8px 'Inter', sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("✓", clueSpotX, clueSpotY);
-                ctx.textAlign = "start";
-                ctx.textBaseline = "alphabetic";
-            }
+            this.drawInspectionMarker(ctx, clueSpotX, clueSpotY, isDeskRead, isDeskNoise, now);
 
             ctx.restore();
         },
@@ -597,43 +554,674 @@ window.Game = window.Game || {};
             ctx.restore();
         },
 
-        drawDecor: function(ctx, decor) {
+        // =========================================================================
+        // MARCADOR DE COTEJO E INSPECCIÓN PERICIAL (EVIDENCIAS Y DESCARTE)
+        // =========================================================================
+        drawInspectionMarker: function(ctx, x, y, isRead, isNoise, now) {
             ctx.save();
+            if (!isRead) {
+                // Rombo editorial ámbar pulsante (#D99B26) idéntico para pistas reales y de descarte
+                const pulse = 0.85 + Math.sin(now / 260) * 0.15;
+                const dSize = 7 * pulse;
 
-            // Sombra
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(Math.PI / 4);
+
+                // Halo sutil
+                ctx.fillStyle = "rgba(217, 155, 38, 0.22)";
+                ctx.fillRect(-dSize - 2, -dSize - 2, (dSize + 2) * 2, (dSize + 2) * 2);
+
+                // Rombo principal
+                ctx.fillStyle = "#D99B26";
+                ctx.fillRect(-dSize, -dSize, dSize * 2, dSize * 2);
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.lineWidth = 1.2;
+                ctx.strokeRect(-dSize, -dSize, dSize * 2, dSize * 2);
+                ctx.restore();
+
+                // Signo de exclamación técnico
+                ctx.fillStyle = "#11161F";
+                ctx.font = "bold 8.5px 'Inter', sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("!", x, y);
+            } else if (!isNoise) {
+                // Sello verde esmeralda mate (#3FA37C) con check de inspección para pistas reales
+                ctx.fillStyle = "#3FA37C";
+                ctx.beginPath();
+                ctx.arc(x, y, 6.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#D4EFE3";
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "bold 8px 'Inter', sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("✓", x, y);
+            } else {
+                // Sello gris neutro (#475569) con guión (—) para registro inspeccionado auxiliar
+                ctx.fillStyle = "#475569";
+                ctx.beginPath();
+                ctx.arc(x, y, 6.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#94A3B8";
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                ctx.fillStyle = "#F1F5F9";
+                ctx.font = "bold 9px 'JetBrains Mono', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("—", x, y - 0.5);
+            }
+            ctx.restore();
+        },
+
+        // =========================================================================
+        // PROPS 2D HD PROCEDURALES LIMPIOS (ESTÉTICA NOVELA GRÁFICA / FORENSE)
+        // =========================================================================
+
+        // 1. ARCHIVADOR METÁLICO GRIS CON CAJONES Y ETIQUETAS
+        drawFilingCabinet: function(ctx, x, y, width, height, label) {
+            ctx.save();
+            // Sombra suave
             ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-            drawRoundedRect(ctx, decor.x + 3, decor.y + 4, decor.width, decor.height, 4);
+            drawRoundedRect(ctx, x + 3, y + 4, width, height, 4);
             ctx.fill();
 
-            if (decor.type === "cabinet" || decor.type === "vault") {
-                drawRoundedRect(ctx, decor.x, decor.y, decor.width, decor.height, 4);
-                ctx.fillStyle = decor.type === "vault" ? "#19222E" : "#222D3E";
+            // Cuerpo metálico principal con bisel
+            drawRoundedRect(ctx, x, y, width, height, 3);
+            const grad = ctx.createLinearGradient(x, y, x, y + height);
+            grad.addColorStop(0, "#3E4A59");
+            grad.addColorStop(1, "#28313C");
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.4;
+            ctx.stroke();
+
+            // Resalte superior
+            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+            ctx.fillRect(x + 2, y + 1, width - 4, 1.5);
+
+            // 3 cajones con tiradores y porta-etiquetas
+            const numDrawers = 3;
+            const drawerH = Math.floor((height - 8) / numDrawers);
+            for (let i = 0; i < numDrawers; i++) {
+                const dy = y + 4 + i * drawerH;
+                drawRoundedRect(ctx, x + 3, dy + 1, width - 6, drawerH - 2, 2);
+                ctx.fillStyle = i % 2 === 0 ? "#333D4A" : "#2E3743";
                 ctx.fill();
                 ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.4;
+                ctx.lineWidth = 0.9;
                 ctx.stroke();
 
-                // Tiradores de gavetas periciales
-                ctx.fillStyle = "#5A7291";
-                ctx.fillRect(decor.x + 5, decor.y + 8, decor.width - 10, 2.5);
-                ctx.fillRect(decor.x + 5, decor.y + 20, decor.width - 10, 2.5);
-            } else {
-                // Mesas auxiliares / de reunión
-                drawRoundedRect(ctx, decor.x, decor.y, decor.width, decor.height, 5);
-                ctx.fillStyle = "#26201E";
+                // Tirador metálico alargado
+                ctx.fillStyle = "#8FA0B5";
+                ctx.fillRect(x + Math.floor(width / 2) - 8, dy + Math.floor(drawerH / 2) + 1, 16, 2.2);
+
+                // Porta-etiqueta marfil
+                drawRoundedRect(ctx, x + Math.floor(width / 2) - 6, dy + 3, 12, 4.5, 1);
+                ctx.fillStyle = "#ECE6D8";
                 ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.4;
+                ctx.strokeStyle = "rgba(30,30,30,0.3)";
+                ctx.lineWidth = 0.6;
                 ctx.stroke();
+                ctx.fillStyle = "#3A4555";
+                ctx.fillRect(x + Math.floor(width / 2) - 4, dy + 5, 8, 0.8);
             }
 
-            if (decor.label) {
-                ctx.fillStyle = "#7D90A6";
-                ctx.font = "600 7px 'JetBrains Mono', monospace";
-                ctx.fillText(decor.label, decor.x + 6, decor.y + decor.height - 6);
+            if (label) {
+                ctx.fillStyle = "#7E92A8";
+                ctx.font = "600 6.5px 'JetBrains Mono', monospace";
+                ctx.fillText(label, x + 4, y + height + 9);
             }
-
             ctx.restore();
+        },
+
+        // 2. IMPRESORA MULTIFUNCIÓN DE OFICINA CON BANDEJA DE PAPEL
+        drawPrinter: function(ctx, x, y, width, height, label) {
+            ctx.save();
+            // Sombra
+            ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
+            drawRoundedRect(ctx, x + 3, y + 4, width, height, 4);
+            ctx.fill();
+
+            // Cuerpo base (chasis grafito)
+            drawRoundedRect(ctx, x, y + 12, width, height - 12, 3);
+            ctx.fillStyle = "#1E2632";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.4;
+            ctx.stroke();
+
+            // Cubierta superior plana / escáner en gris claro institucional
+            drawRoundedRect(ctx, x + 1, y, width - 2, 14, 2);
+            ctx.fillStyle = "#DDE3EB";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // Vidrio del escáner con reflejo
+            drawRoundedRect(ctx, x + 4, y + 2, width - 18, 9, 1);
+            ctx.fillStyle = "#C2CBD6";
+            ctx.fill();
+
+            // Panel de control digital / LCD
+            drawRoundedRect(ctx, x + width - 12, y + 2, 9, 10, 1);
+            ctx.fillStyle = "#0E141C";
+            ctx.fill();
+            ctx.fillStyle = "#3FA37C"; // LED de encendido verde
+            ctx.beginPath();
+            ctx.arc(x + width - 7.5, y + 5, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#4B6E94"; // Pantalla LCD
+            ctx.fillRect(x + width - 10, y + 7.5, 5, 3);
+
+            // Bandeja de salida frontal
+            const trayW = width - 14;
+            drawRoundedRect(ctx, x + 7, y + height - 8, trayW, 6, 1.5);
+            ctx.fillStyle = "#141A22";
+            ctx.fill();
+
+            // Hojas de papel saliendo de la bandeja con líneas simuladas
+            drawRoundedRect(ctx, x + 9, y + height - 12, trayW - 4, 7, 1);
+            ctx.fillStyle = "#F8FAFC";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(40,40,40,0.2)";
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+
+            ctx.fillStyle = "#64748B";
+            ctx.fillRect(x + 11, y + height - 10, trayW - 8, 0.9);
+            ctx.fillRect(x + 11, y + height - 8, trayW - 12, 0.9);
+
+            if (label) {
+                ctx.fillStyle = "#7E92A8";
+                ctx.font = "600 6.5px 'JetBrains Mono', monospace";
+                ctx.fillText(label, x + 3, y + height + 9);
+            }
+            ctx.restore();
+        },
+
+        // 3. PIZARRA BLANCA CON TRAZOS DE DIAGRAMAS Y NOTAS
+        drawWhiteboard: function(ctx, x, y, width, height, label) {
+            ctx.save();
+            // Sombra
+            ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+            drawRoundedRect(ctx, x + 2, y + 3, width, height, 3);
+            ctx.fill();
+
+            // Marco de aluminio
+            drawRoundedRect(ctx, x, y, width, height, 3);
+            ctx.fillStyle = "#5A6B7E";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.3;
+            ctx.stroke();
+
+            // Superficie de porcelana blanca
+            drawRoundedRect(ctx, x + 3, y + 3, width - 6, height - 6, 2);
+            ctx.fillStyle = "#F8FAFC";
+            ctx.fill();
+
+            // Diagramas técnicos dibujados en la pizarra
+            // Caja 1 (Frontend / Proceso)
+            drawRoundedRect(ctx, x + 6, y + 6, 18, 10, 1);
+            ctx.fillStyle = "#EFF6FF";
+            ctx.fill();
+            ctx.strokeStyle = "#3B82F6";
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            // Flecha conectora
+            ctx.strokeStyle = "#1E293B";
+            ctx.lineWidth = 0.9;
+            ctx.beginPath();
+            ctx.moveTo(x + 24, y + 11);
+            ctx.lineTo(x + 32, y + 11);
+            ctx.stroke();
+
+            // Caja 2 (Backend / Base de datos)
+            drawRoundedRect(ctx, x + 33, y + 6, 18, 10, 1);
+            ctx.fillStyle = "#F0FDF4";
+            ctx.fill();
+            ctx.strokeStyle = "#10B981";
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            // Flecha secundaria
+            if (width > 60) {
+                ctx.beginPath();
+                ctx.moveTo(x + 51, y + 11);
+                ctx.lineTo(x + 58, y + 11);
+                ctx.stroke();
+
+                drawRoundedRect(ctx, x + 59, y + 6, 15, 10, 1);
+                ctx.fillStyle = "#FEF3C7";
+                ctx.fill();
+                ctx.strokeStyle = "#F59E0B";
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+            }
+
+            // Notas técnicas y viñetas
+            ctx.fillStyle = "#334155";
+            ctx.fillRect(x + 6, y + 19, width - 20, 1);
+            ctx.fillRect(x + 6, y + 22, width - 28, 1);
+            ctx.fillStyle = "#DC2626"; // Viñeta roja urgente
+            ctx.beginPath();
+            ctx.arc(x + 8, y + 26, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#475569";
+            ctx.fillRect(x + 12, y + 25.5, width - 26, 1);
+
+            // Bandeja de marcadores inferior
+            ctx.fillStyle = "#334155";
+            ctx.fillRect(x + 6, y + height - 2.5, width - 12, 2.5);
+
+            // Marcadores en la bandeja
+            ctx.fillStyle = "#2563EB"; // Azul
+            ctx.fillRect(x + 10, y + height - 4, 6, 1.5);
+            ctx.fillStyle = "#DC2626"; // Rojo
+            ctx.fillRect(x + 18, y + height - 4, 6, 1.5);
+            ctx.fillStyle = "#0F172A"; // Negro
+            ctx.fillRect(x + 26, y + height - 4, 6, 1.5);
+
+            if (label) {
+                ctx.fillStyle = "#7E92A8";
+                ctx.font = "600 6.5px 'JetBrains Mono', monospace";
+                ctx.fillText(label, x + 3, y + height + 9);
+            }
+            ctx.restore();
+        },
+
+        // 4. UNIDAD INDUSTRIAL DE AIRE ACONDICIONADO / UPS (SALA SERVIDORES)
+        drawAcUnit: function(ctx, x, y, width, height, label) {
+            const now = Date.now();
+            ctx.save();
+            // Sombra
+            ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+            drawRoundedRect(ctx, x + 3, y + 4, width, height, 4);
+            ctx.fill();
+
+            // Carcasa de acero industrial
+            drawRoundedRect(ctx, x, y, width, height, 3);
+            const grad = ctx.createLinearGradient(x, y, x, y + height);
+            grad.addColorStop(0, "#1F2833");
+            grad.addColorStop(1, "#121820");
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Rejilla de ventilación industrial frontal (lamas horizontales biseladas)
+            const grilleX = x + 6;
+            const grilleY = y + 14;
+            const grilleW = width - 12;
+            const grilleH = height - 19;
+            drawRoundedRect(ctx, grilleX, grilleY, grilleW, grilleH, 2);
+            ctx.fillStyle = "#0B0E13";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 0.9;
+            ctx.stroke();
+
+            const numLouvers = 5;
+            const louverStep = grilleH / numLouvers;
+            for (let l = 0; l < numLouvers; l++) {
+                const ly = grilleY + l * louverStep;
+                ctx.fillStyle = "#25303D";
+                ctx.fillRect(grilleX + 2, ly + 1, grilleW - 4, 2);
+                ctx.fillStyle = "#0B0E13";
+                ctx.fillRect(grilleX + 2, ly + 3, grilleW - 4, 1.5);
+            }
+
+            // Visor LED / Telemetría digital superior
+            drawRoundedRect(ctx, x + 6, y + 3, width - 12, 8, 1.5);
+            ctx.fillStyle = "#080C10";
+            ctx.fill();
+
+            // Lectura de temperatura digital en cian brillante
+            ctx.fillStyle = "#22D3EE";
+            ctx.font = "bold 5.5px 'JetBrains Mono', monospace";
+            ctx.fillText("18°C", x + 9, y + 9);
+
+            // LEDs de estado parpadeantes
+            const isLedOn = Math.sin(now / 220) > 0;
+            ctx.fillStyle = isLedOn ? "#34D399" : "#065F46"; // Heartbeat verde
+            ctx.beginPath();
+            ctx.arc(x + width - 14, y + 7, 1.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#60A5FA"; // Potencia / AC azul
+            ctx.beginPath();
+            ctx.arc(x + width - 9, y + 7, 1.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (label) {
+                ctx.fillStyle = "#7E92A8";
+                ctx.font = "600 6.5px 'JetBrains Mono', monospace";
+                ctx.fillText(label, x + 3, y + height + 9);
+            }
+            ctx.restore();
+        },
+
+        // 5. CAJA FUERTE / BÓVEDA METÁLICA OSCURA CON DIAL Y MANIJA
+        drawSafe: function(ctx, x, y, width, height, label) {
+            ctx.save();
+            // Sombra
+            ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+            drawRoundedRect(ctx, x + 4, y + 5, width, height, 5);
+            ctx.fill();
+
+            // Carcasa de acero acorazado doble pared
+            drawRoundedRect(ctx, x, y, width, height, 4);
+            const grad = ctx.createLinearGradient(x, y, x + width, y + height);
+            grad.addColorStop(0, "#222B36");
+            grad.addColorStop(1, "#12171E");
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.6;
+            ctx.stroke();
+
+            // Puerta interior embutida
+            drawRoundedRect(ctx, x + 4, y + 4, width - 8, height - 8, 3);
+            ctx.fillStyle = "#182029";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // Bisagras de seguridad en el lateral derecho
+            ctx.fillStyle = "#4B5868";
+            ctx.fillRect(x + width - 5, y + 8, 3.5, 7);
+            ctx.fillRect(x + width - 5, y + height - 15, 3.5, 7);
+
+            // Dial de combinación rotatorio en el centro
+            const dialX = x + Math.floor(width / 2) - 4;
+            const dialY = y + Math.floor(height / 2);
+            const dialRad = 7.5;
+
+            ctx.fillStyle = "#0D1117";
+            ctx.beginPath();
+            ctx.arc(dialX, dialY, dialRad + 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dial plateado con bisel
+            const dialGrad = ctx.createLinearGradient(dialX - dialRad, dialY - dialRad, dialX + dialRad, dialY + dialRad);
+            dialGrad.addColorStop(0, "#CBD5E1");
+            dialGrad.addColorStop(1, "#475569");
+            ctx.fillStyle = dialGrad;
+            ctx.beginPath();
+            ctx.arc(dialX, dialY, dialRad, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Perilla central
+            ctx.fillStyle = "#0F172A";
+            ctx.beginPath();
+            ctx.arc(dialX, dialY, 2.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Manija de bóveda de 3 radios
+            const handleX = dialX + 13;
+            const handleY = dialY;
+            ctx.fillStyle = "#94A3B8";
+            ctx.beginPath();
+            ctx.arc(handleX, handleY, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(handleX, handleY - 6);
+            ctx.lineTo(handleX, handleY + 6);
+            ctx.moveTo(handleX - 5, handleY);
+            ctx.lineTo(handleX + 5, handleY);
+            ctx.stroke();
+
+            // Lector de tarjetas / teclado de acceso en lateral izquierdo
+            drawRoundedRect(ctx, x + 7, y + 9, 6, 9, 1);
+            ctx.fillStyle = "#0F172A";
+            ctx.fill();
+            ctx.fillStyle = "#EF4444"; // LED rojo de bloqueo
+            ctx.beginPath();
+            ctx.arc(x + 10, y + 11.5, 1, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (label) {
+                ctx.fillStyle = "#7E92A8";
+                ctx.font = "600 6.5px 'JetBrains Mono', monospace";
+                ctx.fillText(label, x + 3, y + height + 9);
+            }
+            ctx.restore();
+        },
+
+        // 6. MESA DE JUNTAS LARGA DE MADERA OSCURA CON SILLAS ALREDEDOR
+        drawConferenceTable: function(ctx, x, y, width, height, label) {
+            const textures = window.Game.Textures;
+            ctx.save();
+            // Sombra
+            ctx.fillStyle = "rgba(0, 0, 0, 0.44)";
+            drawRoundedRect(ctx, x + 4, y + 6, width, height, 7);
+            ctx.fill();
+
+            // Tablero principal de madera noble
+            drawRoundedRect(ctx, x, y, width, height, 6);
+            if (textures && textures.woodDesk) {
+                ctx.fillStyle = textures.woodDesk;
+            } else {
+                const woodGrad = ctx.createLinearGradient(x, y, x, y + height);
+                woodGrad.addColorStop(0, "#4A3223");
+                woodGrad.addColorStop(0.5, "#3D271A");
+                woodGrad.addColorStop(1, "#301D13");
+                ctx.fillStyle = woodGrad;
+            }
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Bisel satinado superior
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x + 6, y + 1.5);
+            ctx.lineTo(x + width - 6, y + 1.5);
+            ctx.stroke();
+
+            // Pasacables / caja multimedia central de aluminio
+            const grommetW = 32;
+            const grommetH = 10;
+            const grommetX = x + Math.floor((width - grommetW) / 2);
+            const grommetY = y + Math.floor((height - grommetH) / 2);
+            drawRoundedRect(ctx, grommetX, grommetY, grommetW, grommetH, 2);
+            ctx.fillStyle = "#1E2733";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Sillas ejecutivas alrededor de la mesa
+            const chairCount = 3;
+            const chairSpacing = (width - 30) / (chairCount + 1);
+            for (let c = 1; c <= chairCount; c++) {
+                const cx = x + 15 + c * chairSpacing;
+                // Silla norte
+                drawRoundedRect(ctx, cx - 8, y - 9, 16, 7, 2);
+                ctx.fillStyle = "#1E2633";
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Silla sur
+                drawRoundedRect(ctx, cx - 8, y + height + 2, 16, 7, 2);
+                ctx.fillStyle = "#1E2633";
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Carpetas de documentos en puestos de junta
+            ctx.fillStyle = "#E5DCCE";
+            ctx.fillRect(x + 20, y + 8, 12, 9);
+            ctx.fillRect(x + width - 32, y + 8, 12, 9);
+            ctx.fillRect(x + 20, y + height - 17, 12, 9);
+            ctx.fillRect(x + width - 32, y + height - 17, 12, 9);
+
+            if (label) {
+                ctx.fillStyle = "#8F9FA8";
+                ctx.font = "600 7px 'JetBrains Mono', monospace";
+                ctx.fillText(label, x + 8, y + Math.floor(height / 2) + 2.5);
+            }
+            ctx.restore();
+        },
+
+        // 7. CAJAS DE ARCHIVO / EVIDENCIA DEL CICPC CON PRECINTO AMARILLO
+        drawEvidenceBox: function(ctx, x, y, width, height, label) {
+            ctx.save();
+            // Sombra
+            ctx.fillStyle = "rgba(0, 0, 0, 0.36)";
+            drawRoundedRect(ctx, x + 3, y + 4, width, height, 3);
+            ctx.fill();
+
+            // Cuerpo de caja de cartón kraft
+            drawRoundedRect(ctx, x, y, width, height, 2.5);
+            const boxGrad = ctx.createLinearGradient(x, y, x, y + height);
+            boxGrad.addColorStop(0, "#8D6E4F");
+            boxGrad.addColorStop(1, "#6E5338");
+            ctx.fillStyle = boxGrad;
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.3;
+            ctx.stroke();
+
+            // Tapa de cartón con solapas
+            drawRoundedRect(ctx, x - 1, y, width + 2, 9, 2);
+            ctx.fillStyle = "#9C7B59";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.1;
+            ctx.stroke();
+
+            // Agarraderas troqueladas en los laterales
+            ctx.fillStyle = "#3E2D1D";
+            drawRoundedRect(ctx, x + 3, y + 15, 3.5, 6, 1.5);
+            ctx.fill();
+            drawRoundedRect(ctx, x + width - 6.5, y + 15, 3.5, 6, 1.5);
+            ctx.fill();
+
+            // Precinto amarillo de custodia pericial CICPC cruzando la caja
+            ctx.save();
+            const tapeY = y + 13;
+            ctx.fillStyle = "#FACC15";
+            ctx.fillRect(x, tapeY, width, 8);
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 0.8;
+            ctx.strokeRect(x, tapeY, width, 8);
+
+            // Texto técnico "CICPC // EVIDENCIA"
+            ctx.fillStyle = "#0B0F14";
+            ctx.font = "bold 5px 'JetBrains Mono', monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("CICPC // EVIDENCIA", x + width / 2, tapeY + 4);
+            ctx.restore();
+
+            // Etiqueta blanca de registro forense con código de barras simulado
+            drawRoundedRect(ctx, x + 6, y + 23, 14, 8, 1);
+            ctx.fillStyle = "#F8FAFC";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(40,40,40,0.3)";
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            ctx.fillStyle = "#1E293B";
+            ctx.fillRect(x + 8, y + 25, 10, 1);
+            ctx.fillRect(x + 8, y + 27, 8, 1);
+
+            if (label) {
+                ctx.fillStyle = "#8F9FA8";
+                ctx.font = "600 6.5px 'JetBrains Mono', monospace";
+                ctx.fillText(label, x + 2, y + height + 9);
+            }
+            ctx.restore();
+        },
+
+        // =========================================================================
+        // PROCESADOR DECOR / MOBILIARIO GENERAL
+        // =========================================================================
+        drawDecor: function(ctx, decor, state, idx) {
+            const propType = decor.propType || decor.type;
+            const now = Date.now();
+
+            switch (propType) {
+                case "filingCabinet":
+                    this.drawFilingCabinet(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                case "printer":
+                    this.drawPrinter(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                case "whiteboard":
+                    this.drawWhiteboard(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                case "acUnit":
+                    this.drawAcUnit(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                case "safe":
+                    this.drawSafe(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                case "conferenceTable":
+                    this.drawConferenceTable(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                case "evidenceBox":
+                    this.drawEvidenceBox(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                case "vault":
+                    this.drawSafe(ctx, decor.x, decor.y, decor.width, decor.height, decor.label);
+                    break;
+                default:
+                    // Mobiliario genérico (mesas auxiliares, mostradores)
+                    ctx.save();
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+                    drawRoundedRect(ctx, decor.x + 3, decor.y + 4, decor.width, decor.height, 4);
+                    ctx.fill();
+
+                    drawRoundedRect(ctx, decor.x, decor.y, decor.width, decor.height, 4);
+                    ctx.fillStyle = "#26201E";
+                    ctx.fill();
+                    ctx.strokeStyle = INK_OUTLINE;
+                    ctx.lineWidth = 1.4;
+                    ctx.stroke();
+
+                    if (decor.label) {
+                        ctx.fillStyle = "#7D90A6";
+                        ctx.font = "600 7px 'JetBrains Mono', monospace";
+                        ctx.fillText(decor.label, decor.x + 6, decor.y + decor.height - 6);
+                    }
+                    ctx.restore();
+                    break;
+            }
+
+            // Si el objeto es interactuable (evidencia o descarte de ruido), dibujar marcador
+            if (decor.clue && state) {
+                const key = decor.id || `${state.currentRoom}_prop_${idx}`;
+                const isRead = state.readClues.has(key);
+                const isNoise = !!decor.isNoise;
+                const spotX = decor.x + decor.width / 2;
+                const spotY = decor.y + Math.min(16, decor.height / 2);
+                this.drawInspectionMarker(ctx, spotX, spotY, isRead, isNoise, now);
+            }
         },
 
         // =========================================================================
@@ -895,6 +1483,45 @@ window.Game = window.Game || {};
             ctx.fill();
             ctx.restore();
 
+            // =========================================================================
+            // ZONA ACORDONADA DE CUARENTENA / EQUIPO INCAUTADO (SALA 5)
+            // =========================================================================
+            if (currentRoom === 5) {
+                ctx.save();
+                const qX = 760, qY = 50, qW = 250, qH = 130;
+                // Suelo tramado de advertencia pericial sutil
+                ctx.strokeStyle = "rgba(217, 155, 38, 0.14)";
+                ctx.lineWidth = 1;
+                for (let sx = qX - qH; sx < qX + qW; sx += 18) {
+                    ctx.beginPath();
+                    ctx.moveTo(sx, qY + qH);
+                    ctx.lineTo(sx + qH, qY);
+                    ctx.stroke();
+                }
+
+                // Cinta perimetral amarilla reflectiva con guiones
+                ctx.strokeStyle = "#EAB308";
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([8, 6]);
+                ctx.strokeRect(qX, qY, qW, qH);
+                ctx.setLineDash([]);
+
+                // Rótulo pericial de custodia
+                ctx.fillStyle = "rgba(17, 24, 39, 0.88)";
+                drawRoundedRect(ctx, qX + 10, qY - 7, 190, 14, 3);
+                ctx.fill();
+                ctx.strokeStyle = "#EAB308";
+                ctx.lineWidth = 1.1;
+                ctx.stroke();
+
+                ctx.fillStyle = "#EAB308";
+                ctx.font = "bold 6px 'JetBrains Mono', monospace";
+                ctx.textAlign = "start";
+                ctx.textBaseline = "middle";
+                ctx.fillText("CUARENTENA // EQUIPO INCAUTADO (CICPC)", qX + 16, qY);
+                ctx.restore();
+            }
+
             // Dibujar mamparas, decor y mobiliario
             const layout = window.Game.ROOM_LAYOUTS ? window.Game.ROOM_LAYOUTS[currentRoom] : null;
             if (layout) {
@@ -902,7 +1529,10 @@ window.Game = window.Game || {};
                     layout.walls.forEach((wall) => this.drawWallPartition(ctx, wall));
                 }
                 if (layout.decor) {
-                    layout.decor.forEach((dec) => this.drawDecor(ctx, dec));
+                    layout.decor.forEach((dec, idx) => this.drawDecor(ctx, dec, state, idx));
+                }
+                if (layout.props) {
+                    layout.props.forEach((prop, idx) => this.drawDecor(ctx, prop, state, idx));
                 }
                 if (layout.desks) {
                     layout.desks.forEach((desk, idx) => this.drawDesk(ctx, state, desk.x, desk.y, desk.width, desk.label, idx));
@@ -1479,11 +2109,12 @@ window.Game = window.Game || {};
                 });
             }
 
-            // Mobiliario en líneas finas
+            // Mobiliario en líneas finas (evidencias y descarte)
             if (layout && layout.desks) {
                 layout.desks.forEach((desk, idx) => {
-                    const isRead = state.readClues.has(`${state.currentRoom}_${idx}`);
-                    ctx.fillStyle = isRead ? "#3FA37C" : "#D99B26";
+                    const isDeskRead = state.readClues.has(`${state.currentRoom}_desk_${idx}`) || state.readClues.has(`${state.currentRoom}_${idx}`);
+                    const isDeskNoise = !!desk.isNoise;
+                    ctx.fillStyle = !isDeskRead ? "#D99B26" : (!isDeskNoise ? "#3FA37C" : "#64748B");
                     ctx.beginPath();
                     ctx.arc(
                         offsetX + Math.round((desk.x + desk.width / 2) * scaleX),
@@ -1495,6 +2126,26 @@ window.Game = window.Game || {};
                     ctx.fill();
                 });
             }
+
+            // Props / decor con pistas o descarte en el blueprint
+            const minimapProps = (layout && layout.decor ? layout.decor : []).concat(layout && layout.props ? layout.props : []);
+            minimapProps.forEach((dec, idx) => {
+                if (dec.clue) {
+                    const key = dec.id || `${state.currentRoom}_prop_${idx}`;
+                    const isPropRead = state.readClues.has(key);
+                    const isPropNoise = !!dec.isNoise;
+                    ctx.fillStyle = !isPropRead ? "#D99B26" : (!isPropNoise ? "#3FA37C" : "#64748B");
+                    ctx.beginPath();
+                    ctx.arc(
+                        offsetX + Math.round((dec.x + dec.width / 2) * scaleX),
+                        offsetY + Math.round((dec.y + dec.height / 2) * scaleY),
+                        2.5,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+            });
 
             // Puerta pericial
             ctx.fillStyle = state.door.locked ? "#C84B52" : "#3FA37C";

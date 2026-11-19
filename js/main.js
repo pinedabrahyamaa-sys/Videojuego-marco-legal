@@ -50,12 +50,11 @@ window.Game = window.Game || {};
             });
         }
 
-        // Mobiliario decorativo y archivadores
-        if (layout.decor) {
-            layout.decor.forEach((dec) => {
-                obstacles.push({ x: dec.x, y: dec.y, width: dec.width, height: dec.height });
-            });
-        }
+        // Mobiliario decorativo, archivadores y props
+        const decorList = (layout.decor || []).concat(layout.props || []);
+        decorList.forEach((dec) => {
+            obstacles.push({ x: dec.x, y: dec.y, width: dec.width, height: dec.height });
+        });
 
         // Puerta mientras permanezca cerrada
         if (State.door.locked) {
@@ -71,7 +70,7 @@ window.Game = window.Game || {};
     }
 
     // =========================================================================
-    // OBJETOS INTERACTIVOS (EVIDENCIAS Y TERMINAL)
+    // OBJETOS INTERACTIVOS (EVIDENCIAS REALES, RUIDO FORENSE Y TERMINAL)
     // =========================================================================
     function getRoomInteractables() {
         const layout = window.Game.ROOM_LAYOUTS[State.currentRoom];
@@ -79,47 +78,66 @@ window.Game = window.Game || {};
 
         const items = [];
 
+        // 1. Escritorios con evidencias
         if (layout.desks) {
             layout.desks.forEach((desk, idx) => {
-                if (desk.clueType === "document") {
-                    items.push({
-                        kind: "clue",
-                        index: idx,
-                        title: "Expediente: " + desk.label,
-                        text: desk.clue,
-                        clueType: "document",
-                        x: desk.x + desk.width - 33,
-                        y: desk.y + 35,
-                        width: 14,
-                        height: 13,
-                        range: 58
-                    });
-                } else {
-                    items.push({
-                        kind: "clue",
-                        index: idx,
-                        title: "Estación de trabajo: " + desk.label,
-                        text: desk.clue,
-                        clueType: "computer",
-                        x: desk.x + Math.floor(desk.width / 2) - 25,
-                        y: desk.y + 35,
-                        width: 50,
-                        height: 14,
-                        range: 58
-                    });
-                }
+                const key = `${State.currentRoom}_desk_${idx}`;
+                const isDoc = desk.clueType === "document";
+                items.push({
+                    kind: desk.isNoise ? "noise" : "clue",
+                    key: key,
+                    id: desk.id || key,
+                    isNoise: !!desk.isNoise,
+                    index: idx,
+                    sourceType: "desk",
+                    title: desk.title || (isDoc ? "Expediente: " + desk.label : "Estación de trabajo: " + desk.label),
+                    text: desk.clue,
+                    clueType: desk.clueType || (isDoc ? "document" : "computer"),
+                    x: isDoc ? desk.x + desk.width - 33 : desk.x + Math.floor(desk.width / 2) - 25,
+                    y: desk.y + 35,
+                    width: isDoc ? 14 : 50,
+                    height: isDoc ? 13 : 14,
+                    range: 62
+                });
             });
         }
 
+        // 2. Mobiliario, props y ruido forense interactuable
+        const decorList = (layout.decor || []).concat(layout.props || []);
+        decorList.forEach((dec, idx) => {
+            if (dec.clue) {
+                const key = dec.id || `${State.currentRoom}_prop_${idx}`;
+                items.push({
+                    kind: dec.isNoise ? "noise" : "clue",
+                    key: key,
+                    id: key,
+                    isNoise: !!dec.isNoise,
+                    index: idx,
+                    sourceType: "prop",
+                    prop: dec,
+                    title: dec.title || (dec.label ? `${dec.label}` : "Elemento Pericial"),
+                    text: dec.clue,
+                    clueType: dec.clueType || "document",
+                    x: dec.x,
+                    y: dec.y,
+                    width: dec.width,
+                    height: dec.height,
+                    range: 65
+                });
+            }
+        });
+
+        // 3. Terminal de salida (puzzle de tipificación)
         if (State.door.locked) {
             items.push({
                 kind: "puzzle",
+                key: "terminal_puzzle",
                 title: "Terminal de control pericial",
                 x: State.door.x - 10,
                 y: State.door.y,
                 width: State.door.width + 10,
                 height: State.door.height,
-                range: 35
+                range: 42
             });
         }
 
@@ -171,9 +189,20 @@ window.Game = window.Game || {};
         const hint = document.getElementById("interaction-hint");
         if (!hint) return;
 
-        hint.innerHTML = State.activeInteraction
-            ? `Pulsa <b>[E]</b> para examinar: <span style="color:#D99B26">${State.activeInteraction.title}</span>`
-            : `Diligencia activa: usa <b>W A S D</b> para desplazarte. [E] examinar. [M] Manual. [N] Audio.`;
+        if (State.activeInteraction) {
+            const item = State.activeInteraction;
+            if (item.kind === "puzzle") {
+                hint.innerHTML = `Pulsa <b>[E]</b> para validar en terminal: <span style="color:#3FA37C">${item.title}</span>`;
+            } else {
+                const isRead = State.readClues.has(item.key) || State.readClues.has(`${State.currentRoom}_${item.index}`);
+                const statusTag = isRead
+                    ? ` <span style="color:#94A3B8">[Inspeccionado]</span>`
+                    : ``;
+                hint.innerHTML = `Pulsa <b>[E]</b> para examinar: <span style="color:#D99B26">${item.title}</span>${statusTag}`;
+            }
+        } else {
+            hint.innerHTML = `Diligencia activa: usa <b>W A S D</b> para desplazarte. [E] examinar. [M] Manual. [N] Audio. [F] Pantalla.`;
+        }
     }
 
     // =========================================================================
@@ -292,9 +321,21 @@ window.Game = window.Game || {};
     }
 
     // =========================================================================
-    // MODAL DE TERMINAL EN DOS PASOS
+    // MODAL DE TERMINAL EN TRES PASOS (CALIFICACIÓN Y CÓDIGO DE PUERTA)
     // =========================================================================
     function openTerminal() {
+        const roomLayout = window.Game.ROOM_LAYOUTS && window.Game.ROOM_LAYOUTS[State.currentRoom];
+        const hasDoorCode = roomLayout && !!roomLayout.doorCode;
+
+        // Si la calificación ya fue aprobada previamente, ir directamente al Paso 3 de código
+        if (State.quizSolvedByRoom[State.currentRoom] && hasDoorCode) {
+            State.terminalStep = 3;
+            State.setMode("TERMINAL");
+            if (Audio) Audio.computer();
+            renderTerminalStep3();
+            return;
+        }
+
         State.terminalStep = 1;
         State.setMode("TERMINAL");
         if (Audio) Audio.computer();
@@ -311,6 +352,7 @@ window.Game = window.Game || {};
         const errorEl = document.getElementById("terminal-error");
         const optionsContainer = document.getElementById("q-options");
         const verdictContainer = document.getElementById("terminal-verdict");
+        const keypadContainer = document.getElementById("terminal-keypad");
         const stepBadgeEl = document.getElementById("terminal-step-badge");
 
         if (qTitleEl) qTitleEl.innerText = puzzle.title;
@@ -324,6 +366,10 @@ window.Game = window.Game || {};
         if (verdictContainer) {
             verdictContainer.style.display = "none";
             verdictContainer.innerHTML = "";
+        }
+
+        if (keypadContainer) {
+            keypadContainer.style.display = "none";
         }
 
         if (optionsContainer) {
@@ -370,7 +416,18 @@ window.Game = window.Game || {};
                 State.terminalStep = 2;
                 renderTerminalStep();
             } else {
-                renderTerminalVerdict(puzzle);
+                // Paso 2 aprobado: guardar calificación jurídica de la sala
+                State.quizSolvedByRoom[State.currentRoom] = true;
+                const roomLayout = window.Game.ROOM_LAYOUTS && window.Game.ROOM_LAYOUTS[State.currentRoom];
+                const hasDoorCode = roomLayout && !!roomLayout.doorCode;
+
+                if (hasDoorCode) {
+                    if (Audio) Audio.stepSuccess();
+                    State.terminalStep = 3;
+                    renderTerminalStep3();
+                } else {
+                    renderTerminalVerdict(puzzle);
+                }
             }
         } else {
             State.errors++;
@@ -378,7 +435,13 @@ window.Game = window.Game || {};
             if (Audio) Audio.error();
 
             if (errorEl) {
-                errorEl.innerText = `[DICTAMEN NO CONFORME] ${option.feedback}`;
+                const feedbackText = option.fiscalFeedback || option.feedback || "Revise las definiciones y tipos en el Manual Legal [M].";
+                errorEl.innerHTML = `
+                    <div style="font-family:'JetBrains Mono', monospace; font-weight:700; color:#F87171; margin-bottom:5px; font-size:11px; letter-spacing:0.5px;">
+                        ⚖ OBSERVACIÓN DE FISCALÍA // DICTAMEN NO CONFORME
+                    </div>
+                    <div style="font-size:12px; line-height:1.5;">${feedbackText}</div>
+                `;
                 errorEl.style.display = "block";
             }
 
@@ -390,10 +453,130 @@ window.Game = window.Game || {};
         }
     }
 
+    // Paso 3: Renderizado y control del Teclado Numérico de la Compuerta
+    function renderTerminalStep3() {
+        const puzzle = window.Game.PUZZLES[State.currentRoom];
+        const qTitleEl = document.getElementById("q-title");
+        const qSummaryEl = document.getElementById("q-summary");
+        const qTextEl = document.getElementById("q-text");
+        const errorEl = document.getElementById("terminal-error");
+        const optionsContainer = document.getElementById("q-options");
+        const verdictContainer = document.getElementById("terminal-verdict");
+        const stepBadgeEl = document.getElementById("terminal-step-badge");
+        const keypadContainer = document.getElementById("terminal-keypad");
+        const feedbackEl = document.getElementById("keypad-feedback");
+
+        if (qTitleEl) qTitleEl.innerText = puzzle ? puzzle.title : "CONTROL PERICIAL";
+        if (qSummaryEl) qSummaryEl.innerText = "Cerradura técnica de anulación del sector pericial.";
+
+        if (stepBadgeEl) {
+            stepBadgeEl.innerText = "PASO 3: CÓDIGO DE SEGURIDAD DE PUERTA";
+            stepBadgeEl.className = "step-badge step-keypad";
+        }
+
+        if (errorEl) {
+            errorEl.style.display = "none";
+            errorEl.innerText = "";
+        }
+        if (qTextEl) qTextEl.style.display = "none";
+        if (optionsContainer) optionsContainer.style.display = "none";
+        if (verdictContainer) verdictContainer.style.display = "none";
+
+        if (keypadContainer) {
+            keypadContainer.style.display = "block";
+        }
+
+        if (feedbackEl) {
+            feedbackEl.innerText = "";
+            feedbackEl.className = "keypad-feedback";
+        }
+
+        updateKeypadDisplay();
+    }
+
+    function updateKeypadDisplay() {
+        const input = State.doorCodeInput || "";
+        for (let i = 0; i < 4; i++) {
+            const digitEl = document.getElementById(`digit-${i}`);
+            if (digitEl) {
+                if (i < input.length) {
+                    digitEl.innerText = input[i];
+                    digitEl.classList.add("filled");
+                } else {
+                    digitEl.innerText = "—";
+                    digitEl.classList.remove("filled");
+                }
+            }
+        }
+    }
+
+    function handleKeypadInput(val) {
+        if (State.doorCodeInput.length < 4) {
+            State.doorCodeInput += val;
+            if (Audio) Audio.uiClick();
+            updateKeypadDisplay();
+        }
+    }
+
+    function handleKeypadBackspace() {
+        if (State.doorCodeInput.length > 0) {
+            State.doorCodeInput = State.doorCodeInput.slice(0, -1);
+            if (Audio) Audio.uiClick();
+            updateKeypadDisplay();
+        }
+    }
+
+    function validateDoorCode() {
+        const roomLayout = window.Game.ROOM_LAYOUTS && window.Game.ROOM_LAYOUTS[State.currentRoom];
+        const expected = roomLayout ? String(roomLayout.doorCode || "") : "";
+        const feedbackEl = document.getElementById("keypad-feedback");
+
+        if (State.doorCodeInput.length < 4) {
+            if (feedbackEl) {
+                feedbackEl.innerText = "Ingrese los 4 dígitos del código de seguridad.";
+                feedbackEl.className = "keypad-feedback warn";
+            }
+            if (Audio) Audio.error();
+            return;
+        }
+
+        if (State.doorCodeInput === expected) {
+            if (Audio) Audio.doorUnlock();
+            State.door.locked = false;
+            State.door.color = "#3FA37C";
+            if (feedbackEl) {
+                feedbackEl.innerText = "✓ CÓDIGO CORRECTO // COMPUERTA DESBLOQUEADA";
+                feedbackEl.className = "keypad-feedback success";
+            }
+            State.showTacticalToast("¡CÓDIGO CORRECTO! COMPUERTA DESBLOQUEADA. DIRÍGETE A LA SALIDA.");
+            setTimeout(() => {
+                State.setMode("PLAYING");
+                State.doorCodeInput = "";
+                updateInteractionHint();
+            }, 650);
+        } else {
+            if (Audio) Audio.error();
+            // Código incorrecto: NO suma errores al dictamen fiscal conforme a la instrucción
+            if (feedbackEl) {
+                feedbackEl.innerText = "Código denegado. Revise notas o archivos antiguos del sector.";
+                feedbackEl.className = "keypad-feedback error";
+            }
+            const keypadContainer = document.getElementById("terminal-keypad");
+            if (keypadContainer) {
+                keypadContainer.classList.remove("shake");
+                void keypadContainer.offsetWidth;
+                keypadContainer.classList.add("shake");
+            }
+            State.doorCodeInput = "";
+            updateKeypadDisplay();
+        }
+    }
+
     function renderTerminalVerdict(puzzle) {
         const qTextEl = document.getElementById("q-text");
         const optionsContainer = document.getElementById("q-options");
         const verdictContainer = document.getElementById("terminal-verdict");
+        const keypadContainer = document.getElementById("terminal-keypad");
         const stepBadgeEl = document.getElementById("terminal-step-badge");
 
         if (stepBadgeEl) {
@@ -403,6 +586,7 @@ window.Game = window.Game || {};
 
         if (qTextEl) qTextEl.style.display = "none";
         if (optionsContainer) optionsContainer.style.display = "none";
+        if (keypadContainer) keypadContainer.style.display = "none";
 
         if (verdictContainer) {
             verdictContainer.style.display = "block";
@@ -432,7 +616,7 @@ window.Game = window.Game || {};
     }
 
     // =========================================================================
-    // MODAL DE EVIDENCIA (CLUE)
+    // MODAL DE EVIDENCIA (CLUE DIEGÉTICO)
     // =========================================================================
     function openClue(item) {
         const clueModal = document.getElementById("clue-modal");
@@ -440,8 +624,10 @@ window.Game = window.Game || {};
         const clueTextEl = document.getElementById("clue-text");
 
         if (clueModal) {
-            clueModal.classList.remove("clue-document", "clue-computer");
-            if (item.clueType === "document") {
+            clueModal.classList.remove("clue-document", "clue-computer", "clue-old-note");
+            if (item.clueType === "oldNote") {
+                clueModal.classList.add("clue-old-note");
+            } else if (item.clueType === "document") {
                 clueModal.classList.add("clue-document");
             } else {
                 clueModal.classList.add("clue-computer");
@@ -451,10 +637,23 @@ window.Game = window.Game || {};
         if (clueTitleEl) clueTitleEl.innerText = item.title;
         if (clueTextEl) clueTextEl.innerText = item.text;
 
+        const clueBadgeLabel = document.getElementById("clue-badge-label");
+        if (clueBadgeLabel) {
+            if (item.clueType === "oldNote") {
+                clueBadgeLabel.innerText = "DOCUMENTO ARCHIVADO // NOTA PERSONAL";
+                clueBadgeLabel.style.color = "#5C4738";
+                clueBadgeLabel.style.borderColor = "#B89F70";
+            } else {
+                clueBadgeLabel.innerText = "REGISTRO INSPECCIONADO // CADENA DE CUSTODIA";
+                clueBadgeLabel.style.color = "#D99B26";
+                clueBadgeLabel.style.borderColor = "rgba(217, 155, 38, 0.4)";
+            }
+        }
+
         State.setMode("CLUE");
 
         if (Audio) {
-            if (item.clueType === "document") {
+            if (item.clueType === "document" || item.clueType === "oldNote") {
                 Audio.paper();
             } else {
                 Audio.computer();
@@ -467,6 +666,95 @@ window.Game = window.Game || {};
         State.setMode("PLAYING");
         State.activeInteraction = findNearestInteraction();
         updateInteractionHint();
+    }
+
+    // =========================================================================
+    // MODAL DE LIBRETA DE CAMPO / BITÁCORA DE EVIDENCIAS ([B])
+    // =========================================================================
+    function openNotebook() {
+        if (Audio) Audio.paper();
+        State.notebookPreviousMode = State.mode; // 'PLAYING' o 'TERMINAL'
+        State.setMode("NOTEBOOK");
+        renderNotebook();
+    }
+
+    function closeNotebook() {
+        if (Audio) Audio.uiClick();
+        if (State.notebookPreviousMode === "TERMINAL") {
+            State.setMode("TERMINAL");
+        } else {
+            State.setMode("PLAYING");
+        }
+        updateInteractionHint();
+    }
+
+    function renderNotebook() {
+        const roomInfoEl = document.getElementById("notebook-room-info");
+        const listEl = document.getElementById("notebook-list");
+        if (!listEl) return;
+
+        if (roomInfoEl) {
+            const roomName = (window.Game.ROOM_NAMES && window.Game.ROOM_NAMES[State.currentRoom]) || "ÁREA ACTUAL";
+            roomInfoEl.innerText = `SECCIÓN ${State.currentRoom}: ${roomName}`;
+        }
+
+        const clues = (State.inspectedCluesByRoom && State.inspectedCluesByRoom[State.currentRoom]) || [];
+
+        if (clues.length === 0) {
+            listEl.innerHTML = `
+                <div class="notebook-empty">
+                    No se han inspeccionado registros en esta sección todavía.<br><br>
+                    Explora los puestos de trabajo, archivadores y notas pulsando <b>[E]</b> para incorporarlos a tu bitácora.
+                </div>
+            `;
+            return;
+        }
+
+        listEl.innerHTML = "";
+
+        clues.forEach((clue) => {
+            const card = document.createElement("div");
+            const currentTag = State.noteTags[clue.key] || "none";
+            const tagClass = currentTag === "relevant" ? " is-relevant" : (currentTag === "discarded" ? " is-discarded" : "");
+            card.className = `notebook-card${tagClass}`;
+
+            let typeLabel = "DOCUMENTO";
+            if (clue.clueType === "oldNote") typeLabel = "NOTA PERSONAL";
+            else if (clue.clueType === "computer") typeLabel = "SISTEMA DIGITAL";
+
+            card.innerHTML = `
+                <div class="nb-card-header">
+                    <span class="nb-card-title">${clue.title}</span>
+                    <span class="nb-card-type">${typeLabel}</span>
+                </div>
+                <div class="nb-card-text">${clue.text}</div>
+                <div class="nb-card-actions">
+                    <button class="nb-tag-btn tag-btn-rel${currentTag === 'relevant' ? ' active' : ''}" type="button">
+                        ★ Relevante
+                    </button>
+                    <button class="nb-tag-btn tag-btn-disc${currentTag === 'discarded' ? ' active' : ''}" type="button">
+                        ✕ Descartado
+                    </button>
+                </div>
+            `;
+
+            const btnRel = card.querySelector(".tag-btn-rel");
+            const btnDisc = card.querySelector(".tag-btn-disc");
+
+            btnRel.onclick = () => {
+                if (Audio) Audio.uiClick();
+                State.setNoteTag(clue.key, "relevant");
+                renderNotebook();
+            };
+
+            btnDisc.onclick = () => {
+                if (Audio) Audio.uiClick();
+                State.setNoteTag(clue.key, "discarded");
+                renderNotebook();
+            };
+
+            listEl.appendChild(card);
+        });
     }
 
     // =========================================================================
@@ -530,6 +818,38 @@ window.Game = window.Game || {};
         if (errorsEl) errorsEl.innerText = State.errors;
 
         if (tableContainer && window.Game.PUZZLES) {
+            let evalTitle = "";
+            let evalClass = "";
+            let evalIcon = "";
+            let evalDesc = "";
+
+            if (State.errors <= 1) {
+                evalTitle = "DICTAMEN EXCELENTE — ADMITIDO POR FISCALÍA SIN REPAROS";
+                evalClass = "eval-excellent";
+                evalIcon = "✓";
+                evalDesc = "El Ministerio Público homologó la totalidad de las calificaciones jurídicas en primera instancia, reconociendo rigurosidad probatoria y apego irrestricto a la Gaceta Oficial N.° 37.313.";
+            } else if (State.errors <= 4) {
+                evalTitle = "DICTAMEN APROBADO CON OBSERVACIONES MENORES";
+                evalClass = "eval-approved";
+                evalIcon = "!";
+                evalDesc = "La Fiscalía admitió las tipificaciones tras subsanar observaciones técnicas puntuales durante la instrucción del expediente.";
+            } else {
+                evalTitle = "DICTAMEN DEVUELTO PARA AMPLIACIÓN PERICIAL";
+                evalClass = "eval-rejected";
+                evalIcon = "✕";
+                evalDesc = "El fiscal de la causa ordenó reabrir la investigación debido a reiteradas discrepancias en la tipificación penal y concurso de agravantes.";
+            }
+
+            const evalHtml = `
+                <div class="fiscal-evaluation-seal ${evalClass}">
+                    <div class="eval-icon-badge">${evalIcon}</div>
+                    <div class="eval-content-block">
+                        <div class="eval-seal-title">${evalTitle}</div>
+                        <p class="eval-seal-desc">${evalDesc} (Total de observaciones: <b>${State.errors}</b>)</p>
+                    </div>
+                </div>
+            `;
+
             const rows = [];
             const total = State.getTotalRooms();
             for (let r = 1; r <= total; r++) {
@@ -545,6 +865,7 @@ window.Game = window.Game || {};
             }
 
             tableContainer.innerHTML = `
+                ${evalHtml}
                 <table class="report-table">
                     <thead>
                         <tr>
@@ -567,16 +888,34 @@ window.Game = window.Game || {};
     // =========================================================================
     function interactWithObject(item) {
         if (item.kind === "puzzle") {
+            // Verificar si se han examinado todas las evidencias requeridas obligatorias
+            const interactables = getRoomInteractables();
+            const realClues = interactables.filter((i) => i.kind !== "puzzle" && !i.isNoise);
+            const unread = realClues.filter((i) => !State.readClues.has(i.key) && !State.readClues.has(`${State.currentRoom}_${i.index}`));
+
+            if (unread.length > 0) {
+                State.showTacticalToast(`EVIDENCIAS REQUERIDAS: Faltan ${unread.length} evidencia(s) obligatoria(s) por cotejar.`);
+                if (Audio) Audio.error();
+                return;
+            }
             openTerminal();
         } else {
-            State.readClues.add(`${State.currentRoom}_${item.index}`);
+            const wasAlreadyRead = State.readClues.has(item.key) || (item.sourceType === "desk" && State.readClues.has(`${State.currentRoom}_${item.index}`));
+            State.readClues.add(item.key);
+            if (item.sourceType === "desk") {
+                State.readClues.add(`${State.currentRoom}_${item.index}`);
+            }
+            State.recordInspectedClue(State.currentRoom, item);
             State.updateHUD();
+            if (!wasAlreadyRead) {
+                State.showTacticalToast("ELEMENTO INSPECCIONADO // REGISTRO EN ACTA");
+            }
             openClue(item);
         }
     }
 
     function closeAnyOpenModal() {
-        if (State.mode === "CLUE" || State.mode === "TERMINAL" || State.mode === "MANUAL") {
+        if (State.mode === "CLUE" || State.mode === "TERMINAL" || State.mode === "MANUAL" || State.mode === "NOTEBOOK") {
             if (Audio) Audio.uiClick();
             const qTextEl = document.getElementById("q-text");
             if (qTextEl) qTextEl.style.display = "block";
@@ -691,11 +1030,49 @@ window.Game = window.Game || {};
                 return;
             }
 
-            // Tecla [Escape]: cierra cualquier modal abierto y regresa a PLAYING
+            // Tecla [Escape]: cierra cualquier modal abierto y regresa al modo correspondiente
             if (key === "escape") {
+                if (State.mode === "NOTEBOOK") {
+                    closeNotebook();
+                    return;
+                }
                 if (State.mode === "CLUE" || State.mode === "TERMINAL" || State.mode === "MANUAL") {
                     closeAnyOpenModal();
                     return;
+                }
+            }
+
+            // Tecla [B]: abre o cierra la Bitácora de Campo (en PLAYING o TERMINAL)
+            if (key === "b") {
+                const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+                if (tag !== "input" && tag !== "textarea") {
+                    if (State.mode === "NOTEBOOK") {
+                        closeNotebook();
+                        return;
+                    } else if (State.mode === "PLAYING" || State.mode === "TERMINAL") {
+                        openNotebook();
+                        return;
+                    }
+                }
+            }
+
+            // Teclado numérico físico para el Paso 3 del Terminal (Código de Salida)
+            if (State.mode === "TERMINAL" && State.terminalStep === 3) {
+                const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+                if (tag !== "input" && tag !== "textarea") {
+                    if (key >= "0" && key <= "9") {
+                        e.preventDefault();
+                        handleKeypadInput(key);
+                        return;
+                    } else if (key === "backspace") {
+                        e.preventDefault();
+                        handleKeypadBackspace();
+                        return;
+                    } else if (key === "enter") {
+                        e.preventDefault();
+                        validateDoorCode();
+                        return;
+                    }
                 }
             }
 
@@ -776,6 +1153,64 @@ window.Game = window.Game || {};
         const btnOpenManual = document.getElementById("btn-open-manual");
         if (btnOpenManual) {
             btnOpenManual.addEventListener("click", toggleManual);
+        }
+
+        // Botón abrir bitácora en el HUD
+        const btnNotebook = document.getElementById("btn-notebook");
+        if (btnNotebook) {
+            btnNotebook.addEventListener("click", () => {
+                if (State.mode === "NOTEBOOK") closeNotebook();
+                else openNotebook();
+            });
+        }
+
+        // Botón abrir bitácora desde la cabecera del terminal
+        const btnTerminalNotebook = document.getElementById("btn-terminal-notebook");
+        if (btnTerminalNotebook) {
+            btnTerminalNotebook.addEventListener("click", openNotebook);
+        }
+
+        // Botón abrir bitácora desde el teclado numérico del terminal
+        const btnKeypadNotebook = document.getElementById("btn-keypad-notebook");
+        if (btnKeypadNotebook) {
+            btnKeypadNotebook.addEventListener("click", openNotebook);
+        }
+
+        // Botones de cierre de la bitácora
+        const closeNotebookBtn = document.getElementById("close-notebook");
+        if (closeNotebookBtn) {
+            closeNotebookBtn.addEventListener("click", closeNotebook);
+        }
+
+        const closeNotebookFooterBtn = document.getElementById("btn-close-notebook-footer");
+        if (closeNotebookFooterBtn) {
+            closeNotebookFooterBtn.addEventListener("click", closeNotebook);
+        }
+
+        // Botón cerrar teclado numérico y buscar código en el sector
+        const btnCloseKeypadSearch = document.getElementById("btn-close-keypad-search");
+        if (btnCloseKeypadSearch) {
+            btnCloseKeypadSearch.addEventListener("click", () => {
+                if (Audio) Audio.uiClick();
+                State.setMode("PLAYING");
+                updateInteractionHint();
+            });
+        }
+
+        // Delegación de clics en la cuadrícula del teclado numérico
+        const keypadGrid = document.querySelector(".keypad-grid");
+        if (keypadGrid) {
+            keypadGrid.addEventListener("click", (e) => {
+                const btn = e.target.closest(".keypad-btn");
+                if (!btn) return;
+                if (btn.dataset.val !== undefined) {
+                    handleKeypadInput(btn.dataset.val);
+                } else if (btn.dataset.action === "backspace") {
+                    handleKeypadBackspace();
+                } else if (btn.dataset.action === "enter") {
+                    validateDoorCode();
+                }
+            });
         }
 
         // Botón toggle audio en el HUD

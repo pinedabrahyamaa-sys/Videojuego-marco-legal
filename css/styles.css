@@ -774,7 +774,7 @@ canvas#gameCanvas {
 }
 
 /* Modales Amplios para Lectura Legal */
-#terminal-modal, #clue-modal, #manual-modal {
+#terminal-modal, #clue-modal, #manual-modal, #notebook-modal {
     display: none;
     position: absolute;
     top: 50%;
@@ -1017,6 +1017,67 @@ canvas#gameCanvas {
     line-height: 1.6;
 }
 
+/* =========================================================================
+   MODAL DE EVIDENCIA: MODO NOTA ANTIGUA / PAPEL ENVEJECIDO (SALAS 2, 3 Y 5)
+   ========================================================================= */
+#clue-modal.clue-old-note {
+    background: #EFE6D5 !important;
+    border: 2px solid #C4B496 !important;
+    box-shadow: 0 16px 42px rgba(54, 41, 26, 0.5) !important;
+    color: #36291A !important;
+}
+
+#clue-modal.clue-old-note .gaceta-masthead,
+#clue-modal.clue-old-note .workstation-titlebar {
+    display: none !important;
+}
+
+#clue-modal.clue-old-note .clue-body-wrap {
+    background: #E9DEC5;
+    border: 1px dashed #B89F70;
+    padding: 22px 24px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+
+#clue-modal.clue-old-note h2 {
+    font-family: 'Courier New', Georgia, serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #2E1F12;
+    letter-spacing: 0.2px;
+}
+
+#clue-modal.clue-old-note #clue-text {
+    font-family: 'Courier New', Georgia, serif;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #36291A;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+#clue-modal.clue-old-note .modal-badge-info {
+    background: #DCCFBA;
+    color: #5C4738;
+    border: 1px solid #B89F70;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+}
+
+#clue-modal.clue-old-note #close-clue {
+    background: #36291A;
+    color: #EFE6D5;
+    border: 1px solid #231B11;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+}
+
+#clue-modal.clue-old-note #close-clue:hover {
+    background: #4E3C27;
+}
+
 #manual-modal {
     width: 680px;
     border-top: 4px solid var(--accent-blue);
@@ -1054,6 +1115,386 @@ canvas#gameCanvas {
     background: rgba(63, 163, 124, 0.18);
     color: var(--accent-emerald);
     border: 1px solid rgba(63, 163, 124, 0.35);
+}
+
+.step-badge.step-keypad {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38BDF8;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+/* Cabecera superior del terminal con botón rápido de Bitácora */
+.terminal-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 12px;
+}
+
+.terminal-header-top .step-badge {
+    margin-bottom: 0;
+}
+
+.terminal-header-btn {
+    background: rgba(217, 155, 38, 0.12);
+    border: 1px solid rgba(217, 155, 38, 0.35);
+    color: #F1F5F9;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.terminal-header-btn:hover {
+    background: rgba(217, 155, 38, 0.22);
+    border-color: #D99B26;
+    color: #FFFFFF;
+}
+
+/* =========================================================================
+   PASO 3: TECLADO NUMÉRICO DE ANULACIÓN DE COMPUERTA TÉCNICA
+   ========================================================================= */
+#terminal-keypad {
+    margin-top: 14px;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.keypad-status-banner {
+    background: rgba(63, 163, 124, 0.14);
+    border: 1px solid rgba(63, 163, 124, 0.35);
+    color: #D4EFE3;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.keypad-status-icon {
+    font-size: 14px;
+    color: #3FA37C;
+}
+
+.keypad-instruction {
+    font-size: 12px;
+    color: #94A3B8;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+
+.keypad-display-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.keypad-display {
+    display: flex;
+    gap: 10px;
+    background: #0B0E14;
+    border: 1px solid #2B3747;
+    padding: 10px 18px;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.keypad-digit {
+    width: 44px;
+    height: 52px;
+    background: #11161F;
+    border: 1.5px solid #334155;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: #64748B;
+    transition: all 0.12s ease;
+}
+
+.keypad-digit.filled {
+    color: #38BDF8;
+    border-color: #38BDF8;
+    background: #0F1D2C;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.keypad-feedback {
+    min-height: 22px;
+    font-size: 11.5px;
+    text-align: center;
+    margin: 6px 0 12px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+}
+
+.keypad-feedback.error {
+    color: #F87171;
+}
+
+.keypad-feedback.success {
+    color: #3FA37C;
+}
+
+.keypad-feedback.warn {
+    color: #FBBF24;
+}
+
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-width: 310px;
+    margin: 0 auto;
+}
+
+.keypad-btn {
+    background: #1A2230;
+    border: 1px solid #334155;
+    color: #F1F5F9;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 10px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.keypad-btn:hover {
+    background: #28354A;
+    border-color: #475569;
+}
+
+.keypad-btn:active {
+    transform: scale(0.96);
+}
+
+.keypad-btn.btn-action {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+.keypad-btn.btn-clear {
+    background: #261619;
+    border-color: #5C1D24;
+    color: #FCA5A5;
+}
+
+.keypad-btn.btn-clear:hover {
+    background: #3B1B22;
+    border-color: #7F1D1D;
+}
+
+.keypad-btn.btn-submit {
+    background: #11281E;
+    border-color: #105938;
+    color: #86EFAC;
+}
+
+.keypad-btn.btn-submit:hover {
+    background: #173B2B;
+    border-color: #059669;
+}
+
+.keypad-actions-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.cyber-btn-secondary {
+    background: #161D27;
+    border: 1px solid #334155;
+    color: #CBD5E1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.cyber-btn-secondary:hover {
+    background: #202A38;
+    border-color: #64748B;
+    color: #FFFFFF;
+}
+
+/* =========================================================================
+   MODAL DE LIBRETA DE CAMPO / BITÁCORA DE EVIDENCIAS ([B])
+   ========================================================================= */
+#notebook-modal {
+    width: 680px;
+    border-top: 4px solid #D99B26;
+    background: #131922;
+    padding: 0;
+    display: none;
+    flex-direction: column;
+}
+
+.notebook-header {
+    padding: 18px 22px 14px 22px;
+    border-bottom: 1px solid #232D3B;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.notebook-header h2 {
+    font-size: 16px;
+    color: #F1F5F9;
+    font-weight: 700;
+    margin: 2px 0 0 0;
+}
+
+.notebook-room-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: #D99B26;
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+.notebook-instructions {
+    background: #0B0E14;
+    padding: 10px 22px;
+    font-size: 12px;
+    color: #94A3B8;
+    border-bottom: 1px solid #1E293B;
+}
+
+.notebook-items-container {
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 16px 22px;
+}
+
+.notebook-empty {
+    text-align: center;
+    padding: 40px 16px;
+    color: #64748B;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.notebook-card {
+    background: #18202B;
+    border: 1px solid #2B3747;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    transition: all 0.18s ease;
+}
+
+.notebook-card.is-relevant {
+    border: 1.5px solid #3FA37C;
+    background: rgba(63, 163, 124, 0.06);
+    box-shadow: 0 0 10px rgba(63, 163, 124, 0.15);
+}
+
+.notebook-card.is-discarded {
+    opacity: 0.52;
+    border: 1px dashed #475569;
+    background: #0F141C;
+}
+
+.notebook-card.is-discarded .nb-card-title {
+    text-decoration: line-through;
+    color: #64748B;
+}
+
+.nb-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+
+.nb-card-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #F1F5F9;
+}
+
+.nb-card-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: #232D3B;
+    color: #94A3B8;
+    text-transform: uppercase;
+}
+
+.nb-card-text {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #CBD5E1;
+    margin-bottom: 10px;
+    white-space: pre-line;
+}
+
+.nb-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.nb-tag-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #334155;
+    background: #11161F;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.nb-tag-btn:hover {
+    background: #232D3B;
+    color: #F1F5F9;
+}
+
+.tag-btn-rel.active {
+    background: #143525;
+    border-color: #3FA37C;
+    color: #6EE7B7;
+}
+
+.tag-btn-disc.active {
+    background: #252D3A;
+    border-color: #64748B;
+    color: #E2E8F0;
+}
+
+.notebook-footer {
+    padding: 12px 22px;
+    border-top: 1px solid #232D3B;
+    background: #0B0E14;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .modal-badge-info {
@@ -1382,6 +1823,88 @@ canvas#gameCanvas {
 
 .close-btn:active {
     transform: translateY(1px);
+}
+
+/* Sello de Calificación del Dictamen Pericial (Fiscalía) */
+.fiscal-evaluation-seal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 6px;
+    margin: 10px 0 16px 0;
+    text-align: left;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.fiscal-evaluation-seal.eval-excellent {
+    background: rgba(63, 163, 124, 0.15);
+    border: 1.5px solid #3FA37C;
+}
+
+.fiscal-evaluation-seal.eval-approved {
+    background: rgba(217, 155, 38, 0.15);
+    border: 1.5px solid #D99B26;
+}
+
+.fiscal-evaluation-seal.eval-rejected {
+    background: rgba(200, 75, 82, 0.18);
+    border: 1.5px solid #C84B52;
+}
+
+.eval-icon-badge {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.eval-excellent .eval-icon-badge {
+    background: rgba(63, 163, 124, 0.25);
+    color: #3FA37C;
+    border: 1.5px solid #3FA37C;
+}
+
+.eval-approved .eval-icon-badge {
+    background: rgba(217, 155, 38, 0.25);
+    color: #D99B26;
+    border: 1.5px solid #D99B26;
+}
+
+.eval-rejected .eval-icon-badge {
+    background: rgba(200, 75, 82, 0.25);
+    color: #C84B52;
+    border: 1.5px solid #C84B52;
+}
+
+.eval-content-block {
+    flex: 1;
+}
+
+.eval-seal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+}
+
+.eval-excellent .eval-seal-title { color: #52C498; }
+.eval-approved .eval-seal-title { color: #E5AC38; }
+.eval-rejected .eval-seal-title { color: #E86B72; }
+
+.eval-seal-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    margin: 0;
 }
 
 /* Responsividad */
