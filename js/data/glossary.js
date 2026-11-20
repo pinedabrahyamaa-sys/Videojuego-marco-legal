@@ -61,6 +61,11 @@ window.Game.GLOSSARY = {
     ],
     rules: [
         {
+            term: "Extraterritorialidad",
+            art: "Título I, Art. 3",
+            def: "Cuando alguno de los delitos previstos en la Ley se cometa fuera del territorio de la República, el sujeto activo quedará sometido a sus disposiciones si dentro del territorio se hubieren producido efectos del hecho punible y el responsable no ha sido juzgado por el mismo hecho o ha evadido el juzgamiento o la condena por tribunales extranjeros."
+        },
+        {
             term: "Responsabilidad de personas jurídicas",
             art: "Título I, Art. 5",
             def: "Responden penalmente cuando el delito se cometa por decisión de sus órganos directivos o administradores, en el ámbito de su actividad, con recursos sociales o en su interés exclusivo o preferente."

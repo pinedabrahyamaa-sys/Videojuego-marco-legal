@@ -82,6 +82,18 @@
             <div class="transition-sub">Preservando cadena de custodia digital</div>
         </div>
 
+        <!-- Capa de Transición Cinematográfica entre Sectores -->
+        <div id="room-transition-overlay" class="room-transition-overlay" style="display: none;">
+            <div class="room-trans-content">
+                <div class="room-trans-tag">INSPECCIÓN TÉCNICA EN CURSO // CICPC</div>
+                <h2 id="room-trans-title" class="room-trans-title">SECTOR 01 // OFICINA DE SOPORTE</h2>
+                <div class="room-trans-bar-wrap">
+                    <div class="room-trans-bar"></div>
+                </div>
+                <div class="room-trans-sub" id="room-trans-sub">Preservando cadena de custodia digital (G.O. N.° 37.313)</div>
+            </div>
+        </div>
+
         <!-- Pantalla de Inicio: Apertura de Expediente -->
         <div id="start-screen" class="screen-overlay">
             <div class="screen-card">
@@ -174,14 +186,42 @@
         <!-- Pantalla de Victoria: Informe Final de Auditoría -->
         <div id="victory-screen" class="screen-overlay" style="display: none;">
             <div class="screen-card victory report-card">
-                <div class="card-header-badge success">
+                <!-- Encabezado Institucional para Dictamen Oficial e Impresión PDF -->
+                <div class="print-official-header">
+                    <img src="assets/escudo-unefa.png" alt="Escudo UNEFA" class="print-unefa-logo">
+                    <div class="print-header-text">
+                        <div class="print-inst-top">REPÚBLICA BOLIVARIANA DE VENEZUELA</div>
+                        <div class="print-inst-unefa">UNIVERSIDAD NACIONAL EXPERIMENTAL POLITÉCNICA DE LA FUERZA ARMADA NACIONAL</div>
+                        <div class="print-inst-sub">UNEFA · DEPARTAMENTO DE INGENIERÍA DE SISTEMAS · CÁTEDRA DE MARCO LEGAL</div>
+                        <div class="print-main-title">EXPERTICIA INFORMÁTICA — DICTAMEN PERICIAL</div>
+                        <div class="print-law-sub">Ley Especial contra los Delitos Informáticos (Gaceta Oficial N.° 37.313)</div>
+                    </div>
+                </div>
+
+                <div class="card-header-badge success screen-only">
                     <span class="badge-icon">✓</span>
                     <span>DICTAMEN EMITIDO // INFORME PERICIAL CONSOLIDADO</span>
                 </div>
-                <h2 class="screen-title">EXPERTICIA INFORMÁTICA — DICTAMEN PERICIAL</h2>
+                <h2 class="screen-title screen-only">EXPERTICIA INFORMÁTICA — DICTAMEN PERICIAL</h2>
                 <p class="screen-desc">
                     Informe consolidado listo para remisión al Ministerio Público (Ley Especial contra los Delitos Informáticos, G.O. N.° 37.313). Se ha culminado la totalidad de las 5 secciones periciales, logrando tipificar con rigor legal las infracciones y determinando las sanciones principales, accesorias e indemnizaciones civiles correspondientes.
                 </p>
+
+                <!-- Barra de Metadatos de Emisión Pericial -->
+                <div class="report-meta-bar">
+                    <div class="report-meta-item">
+                        <span class="report-meta-label">EXPEDIENTE:</span>
+                        <span class="report-meta-val">K-26-0048</span>
+                    </div>
+                    <div class="report-meta-item">
+                        <span class="report-meta-label">FECHA DE EMISIÓN:</span>
+                        <span class="report-meta-val" id="victory-date">--/--/----</span>
+                    </div>
+                    <div class="report-meta-item">
+                        <span class="report-meta-label">DIVISIÓN:</span>
+                        <span class="report-meta-val">INVESTIGACIONES DE DELITOS INFORMÁTICOS</span>
+                    </div>
+                </div>
 
                 <!-- Resumen de Métricas de la Diligencia -->
                 <div class="metrics-row">
@@ -194,15 +234,60 @@
                         <span class="metric-val" id="victory-clues">0 / 0</span>
                     </div>
                     <div class="metric-box">
-                        <span class="metric-label">OBSERVACIONES / ERRORES</span>
+                        <span class="metric-label">OBSERVACIONES FISCALES</span>
                         <span class="metric-val" id="victory-errors">0</span>
                     </div>
                 </div>
 
-                <!-- Tabla de Delitos Resueltos -->
+                <!-- Tabla de Delitos Resueltos y Sello Fiscal -->
                 <div id="victory-table-container" class="table-scroll-container"></div>
 
-                <button id="btn-restart" class="cyber-btn" type="button">REINICIAR AUDITORÍA</button>
+                <!-- Bloque Pericial: Equipo Desarrollador UNEFA en Dictamen -->
+                <div class="victory-team-block">
+                    <div class="victory-team-header">
+                        <span class="team-icon">⚖</span>
+                        <span class="team-title">EQUIPO PERICIAL DESARROLLADOR // INGENIERÍA DE SISTEMAS</span>
+                    </div>
+                    <div class="victory-team-grid">
+                        <div class="victory-team-member">
+                            <span class="team-badge">PERITO</span>
+                            <span class="team-name">Brahyam Pineda</span>
+                        </div>
+                        <div class="victory-team-member">
+                            <span class="team-badge">PERITO</span>
+                            <span class="team-name">Samuel Chivata</span>
+                        </div>
+                        <div class="victory-team-member">
+                            <span class="team-badge">PERITO</span>
+                            <span class="team-name">Cleiderson Parada</span>
+                        </div>
+                        <div class="victory-team-member">
+                            <span class="team-badge">PERITO</span>
+                            <span class="team-name">Integrante 4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bloque de Firmas para Impresión Oficial -->
+                <div class="print-signatures-block">
+                    <div class="print-sig-col">
+                        <div class="sig-line"></div>
+                        <div class="sig-title">Perito Instructor Responsable</div>
+                        <div class="sig-sub">División de Investigaciones de Delitos Informáticos</div>
+                    </div>
+                    <div class="print-sig-col">
+                        <div class="sig-line"></div>
+                        <div class="sig-title">Fiscalía del Ministerio Público</div>
+                        <div class="sig-sub">Recepción y Homologación Judicial</div>
+                    </div>
+                </div>
+
+                <div class="victory-buttons-row">
+                    <button id="btn-print-report" class="cyber-btn btn-print" type="button" title="Imprimir o guardar como documento PDF">
+                        <span class="btn-icon">🖨</span> IMPRIMIR / GUARDAR DICTAMEN (PDF)
+                    </button>
+                    <button id="btn-restart" class="cyber-btn" type="button">REINICIAR AUDITORÍA</button>
+                </div>
             </div>
         </div>
 
@@ -222,6 +307,17 @@
             <p id="q-text"></p>
             <div id="q-options"></div>
             <div id="terminal-verdict" style="display: none;"></div>
+
+            <!-- Sello Pericial de Validación -->
+            <div id="terminal-stamp" class="terminal-stamp-wrapper" style="display: none;">
+                <div class="terminal-stamp">
+                    <div class="stamp-inner">
+                        <span class="stamp-icon">⚖</span>
+                        <span class="stamp-text">CALIFICACIÓN VALIDADA</span>
+                        <span class="stamp-sub">MINISTERIO PÚBLICO // CICPC</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- Paso 3: Teclado Numérico de Anulación de Puerta de Seguridad -->
             <div id="terminal-keypad" style="display: none;">

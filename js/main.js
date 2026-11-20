@@ -274,23 +274,61 @@ window.Game = window.Game || {};
     }
 
     // =========================================================================
-    // TRANSICIÓN ENTRE SALAS PERICIALES
+    // TRANSICIÓN CINEMATOGRÁFICA ENTRE SALAS // CICPC
     // =========================================================================
+    function playRoomTransition(roomNumber, onReady) {
+        State.setMode("TRANSITION");
+        State.keys = {}; // Limpiar estados de teclas para evitar bloqueos
+
+        const overlay = document.getElementById("room-transition-overlay");
+        const titleEl = document.getElementById("room-trans-title");
+        const subEl = document.getElementById("room-trans-sub");
+
+        const roomName = (window.Game.ROOM_NAMES && window.Game.ROOM_NAMES[roomNumber]) || "SECTOR PERICIAL";
+        if (titleEl) {
+            titleEl.innerText = `SECTOR 0${roomNumber} // ${roomName.toUpperCase()}`;
+        }
+        if (subEl) {
+            subEl.innerText = "Preservando cadena de custodia digital (G.O. N.° 37.313)";
+        }
+
+        if (overlay) {
+            overlay.style.display = "flex";
+            void overlay.offsetWidth;
+            overlay.classList.add("active");
+        }
+
+        setTimeout(() => {
+            if (onReady) onReady();
+
+            setTimeout(() => {
+                if (overlay) {
+                    overlay.classList.remove("active");
+                    setTimeout(() => {
+                        overlay.style.display = "none";
+                        State.keys = {}; // Asegurar que no queden teclas pegadas
+                        State.setMode("PLAYING");
+                    }, 350);
+                } else {
+                    State.keys = {};
+                    State.setMode("PLAYING");
+                }
+            }, 1000); // Mantener ~1.0s con animación de entrada
+        }, 350); // Fade-in inicial
+    }
+
     function triggerRoomTransition() {
         State.setMode("TRANSITION");
-        if (Audio) Audio.transition();
-
-        const overlay = document.getElementById("transition-overlay");
-        const statusText = document.getElementById("transition-status-text");
+        State.keys = {};
 
         const totalRooms = State.getTotalRooms();
 
         if (State.currentRoom < totalRooms) {
-            if (statusText) statusText.innerText = "ACCEDIENDO A LA SIGUIENTE SECCIÓN PERICIAL...";
-            if (overlay) overlay.classList.add("active");
+            const nextRoom = State.currentRoom + 1;
+            if (Audio) Audio.transition();
 
-            setTimeout(() => {
-                State.currentRoom++;
+            playRoomTransition(nextRoom, () => {
+                State.currentRoom = nextRoom;
                 State.player.x = 64;
                 State.player.y = 350;
                 State.player.facing = "down";
@@ -299,20 +337,28 @@ window.Game = window.Game || {};
                 State.snapCamera();
                 State.updateHUD();
 
-                setTimeout(() => {
-                    if (overlay) overlay.classList.remove("active");
-                    State.setMode("PLAYING");
-                    const sectorName = window.Game.ROOM_NAMES[State.currentRoom] || "";
-                    State.showTacticalToast("SECCIÓN " + State.currentRoom + ": " + sectorName);
-                }, 350);
-            }, 550);
+                // Control del zumbido ambiental de servidores (Sala 2)
+                if (Audio) {
+                    if (State.currentRoom === 2) {
+                        Audio.startServerHum();
+                    } else {
+                        Audio.stopServerHum();
+                    }
+                }
+
+                const sectorName = window.Game.ROOM_NAMES[State.currentRoom] || "";
+                State.showTacticalToast("SECCIÓN " + State.currentRoom + ": " + sectorName);
+            });
         } else {
             // Última sala completada: consolidar informe final de auditoría
+            const overlay = document.getElementById("transition-overlay");
+            const statusText = document.getElementById("transition-status-text");
             if (statusText) statusText.innerText = "CONSOLIDANDO DICTAMEN PERICIAL FINAL...";
             if (overlay) overlay.classList.add("active");
 
             setTimeout(() => {
                 if (overlay) overlay.classList.remove("active");
+                if (Audio) Audio.stopServerHum();
                 renderVictoryScreen();
                 State.setMode("VICTORY");
                 if (Audio) Audio.victory();
@@ -324,6 +370,9 @@ window.Game = window.Game || {};
     // MODAL DE TERMINAL EN TRES PASOS (CALIFICACIÓN Y CÓDIGO DE PUERTA)
     // =========================================================================
     function openTerminal() {
+        const stampWrap = document.getElementById("terminal-stamp");
+        if (stampWrap) stampWrap.style.display = "none";
+
         const roomLayout = window.Game.ROOM_LAYOUTS && window.Game.ROOM_LAYOUTS[State.currentRoom];
         const hasDoorCode = roomLayout && !!roomLayout.doorCode;
 
@@ -421,13 +470,30 @@ window.Game = window.Game || {};
                 const roomLayout = window.Game.ROOM_LAYOUTS && window.Game.ROOM_LAYOUTS[State.currentRoom];
                 const hasDoorCode = roomLayout && !!roomLayout.doorCode;
 
-                if (hasDoorCode) {
-                    if (Audio) Audio.stepSuccess();
-                    State.terminalStep = 3;
-                    renderTerminalStep3();
-                } else {
-                    renderTerminalVerdict(puzzle);
+                if (Audio) Audio.stepSuccess();
+
+                // Animación de golpe de sello pericial CALIFICACIÓN VALIDADA
+                const stampWrap = document.getElementById("terminal-stamp");
+                if (stampWrap) {
+                    stampWrap.style.display = "block";
+                    const stampInner = stampWrap.querySelector(".terminal-stamp");
+                    if (stampInner) {
+                        stampInner.classList.remove("stamp-animate");
+                        void stampInner.offsetWidth;
+                        stampInner.classList.add("stamp-animate");
+                    }
                 }
+
+                setTimeout(() => {
+                    if (stampWrap) stampWrap.style.display = "none";
+
+                    if (hasDoorCode) {
+                        State.terminalStep = 3;
+                        renderTerminalStep3();
+                    } else {
+                        renderTerminalVerdict(puzzle);
+                    }
+                }, 850);
             }
         } else {
             State.errors++;
@@ -653,10 +719,10 @@ window.Game = window.Game || {};
         State.setMode("CLUE");
 
         if (Audio) {
-            if (item.clueType === "document" || item.clueType === "oldNote") {
-                Audio.paper();
+            if (item.clueType === "computer") {
+                Audio.keyboardClick();
             } else {
-                Audio.computer();
+                Audio.paperRustle();
             }
         }
     }
@@ -808,14 +874,29 @@ window.Game = window.Game || {};
     // PANTALLA DE VICTORIA: INFORME FINAL DE AUDITORÍA
     // =========================================================================
     function renderVictoryScreen() {
+        if (Audio) Audio.stopServerHum();
+
         const timeEl = document.getElementById("victory-time");
         const cluesEl = document.getElementById("victory-clues");
         const errorsEl = document.getElementById("victory-errors");
+        const dateEl = document.getElementById("victory-date");
         const tableContainer = document.getElementById("victory-table-container");
 
         if (timeEl) timeEl.innerText = State.formatTime(State.elapsedSeconds);
         if (cluesEl) cluesEl.innerText = `${State.readClues.size} / ${State.getTotalCluesAllRooms()}`;
         if (errorsEl) errorsEl.innerText = State.errors;
+
+        if (dateEl) {
+            const now = new Date();
+            dateEl.innerText = now.toLocaleString("es-VE", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            });
+        }
 
         if (tableContainer && window.Game.PUZZLES) {
             let evalTitle = "";
@@ -919,6 +1000,8 @@ window.Game = window.Game || {};
             if (Audio) Audio.uiClick();
             const qTextEl = document.getElementById("q-text");
             if (qTextEl) qTextEl.style.display = "block";
+            const stampWrap = document.getElementById("terminal-stamp");
+            if (stampWrap) stampWrap.style.display = "none";
             State.setMode("PLAYING");
             State.activeInteraction = findNearestInteraction();
             updateInteractionHint();
@@ -1022,6 +1105,11 @@ window.Game = window.Game || {};
 
             if (key.startsWith("arrow")) e.preventDefault();
 
+            // Bloquear entrada de teclado durante transiciones cinematográficas
+            if (State.mode === "TRANSITION") {
+                return;
+            }
+
             // Si el modal de pista está abierto, permitir cerrarlo con [Enter] o [Espacio]
             // para evitar salir accidentalmente de pantalla completa al usar [Esc]
             if (State.mode === "CLUE" && (key === "enter" || key === " " || key === "spacebar")) {
@@ -1100,8 +1188,11 @@ window.Game = window.Game || {};
                 const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
                 if (tag !== "input" && tag !== "textarea") {
                     if (Audio) {
-                        Audio.toggleMute();
+                        const isMuted = Audio.toggleMute();
                         State.updateHUD();
+                        if (!isMuted && State.currentRoom === 2 && State.mode === "PLAYING") {
+                            Audio.startServerHum();
+                        }
                     }
                     return;
                 }
@@ -1133,10 +1224,13 @@ window.Game = window.Game || {};
                 if (Audio) {
                     Audio.init();
                     Audio.uiClick();
+                    Audio.stopServerHum();
                 }
-                State.setMode("PLAYING");
-                State.updateHUD();
-                State.showTacticalToast("DILIGENCIA INICIADA // SECCIÓN 1");
+
+                playRoomTransition(1, () => {
+                    State.updateHUD();
+                    State.showTacticalToast("DILIGENCIA INICIADA // SECCIÓN 1");
+                });
             });
         }
 
@@ -1144,8 +1238,20 @@ window.Game = window.Game || {};
         const btnRestart = document.getElementById("btn-restart");
         if (btnRestart) {
             btnRestart.addEventListener("click", () => {
-                if (Audio) Audio.uiClick();
+                if (Audio) {
+                    Audio.uiClick();
+                    Audio.stopServerHum();
+                }
                 State.resetMission();
+            });
+        }
+
+        // Botón imprimir dictamen pericial en PDF
+        const btnPrintReport = document.getElementById("btn-print-report");
+        if (btnPrintReport) {
+            btnPrintReport.addEventListener("click", () => {
+                if (Audio) Audio.uiClick();
+                window.print();
             });
         }
 
@@ -1219,9 +1325,12 @@ window.Game = window.Game || {};
             btnAudio.addEventListener("click", () => {
                 if (Audio) {
                     Audio.init();
-                    Audio.toggleMute();
+                    const isMuted = Audio.toggleMute();
                     Audio.uiClick();
                     State.updateHUD();
+                    if (!isMuted && State.currentRoom === 2 && State.mode === "PLAYING") {
+                        Audio.startServerHum();
+                    }
                 }
             });
         }

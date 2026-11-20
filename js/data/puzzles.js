@@ -257,40 +257,40 @@ window.Game.PUZZLES = {
             ]
         },
         step2: {
-            prompt: "PASO 2/2 — Determina la agravante por lucro y el régimen sancionatorio de la persona jurídica:",
+            prompt: "PASO 2/2 — Conforme al origen internacional de la conexión y las consecuencias comprobadas, determina la competencia jurisdiccional y agravantes aplicables:",
             options: [
                 {
-                    text: "Aumento de 1/3 a 1/2 por fin de lucro (Art. 22), multa por el doble del monto a la persona jurídica (Arts. 5 y 28) y suspensión de directivos hasta 3 años (Art. 29).",
+                    text: "Aplicación de la Ley penal venezolana por extraterritorialidad (Art. 3), al ejecutarse el delito desde el extranjero pero surtir efectos dentro de la República sin juzgamiento foráneo, con aumento de 1/3 a 1/2 por fin de lucro (Art. 22).",
                     correct: true,
-                    feedback: "Dictamen fiscal conforme: El fin de lucro agrava la cesión (Art. 22); el Art. 28 impone multa doble a la empresa y el Art. 29 sanciona a sus administradores.",
-                    fiscalFeedback: "Régimen sancionatorio corporativo y agravante por lucro admitidos."
+                    feedback: "Dictamen fiscal conforme: Se configuran plenamente los supuestos del Art. 3 (extraterritorialidad) y la agravante por ánimo de lucro económico del Art. 22.",
+                    fiscalFeedback: "Calificación de extraterritorialidad y agravante por lucro admitidas por el Ministerio Público."
                 },
                 {
-                    text: "Exención de responsabilidad penal corporativa y sanción individual privativa exclusiva para los técnicos de red.",
+                    text: "Incompetencia de los tribunales de la República por territorialidad estricta, debiendo remitirse la causa a los tribunales del país donde operaba el servidor proxy.",
                     correct: false,
-                    feedback: "Observación fiscal: El Art. 5 consagra responsabilidad de la persona jurídica por decisiones de sus directivos.",
-                    fiscalFeedback: "Fiscalía observa: El acta de asamblea acreditó que la interceptación fue ordenada por la junta directiva usando fondos de la empresa; el Art. 5 y Art. 28 obligan a sancionar pecuniariamente a la persona jurídica."
+                    feedback: "Observación fiscal: El Art. 3 consagra el principio de extraterritorialidad cuando los efectos se producen en Venezuela y no ha habido juicio previo afuera.",
+                    fiscalFeedback: "Fiscalía observa: El Art. 3 de la Ley Especial consagra expresamente la extraterritorialidad de la ley penal cuando los efectos del delito se produzcan dentro del territorio nacional y el imputado no haya sido juzgado en el exterior. Revise el Art. 3 en el Manual [M]."
                 },
                 {
-                    text: "Comiso judicial definitivo de la totalidad de la empresa y cese automático de operaciones.",
+                    text: "Exoneración penal por falta de tratado bilateral de extradición y conmutación obligatoria por expulsión preventiva de extranjeros (Art. 30).",
                     correct: false,
-                    feedback: "Observación fiscal: La sanción a la persona jurídica consiste en multa doble del daño y suspensión de directivos, no confiscación societaria.",
-                    fiscalFeedback: "Fiscalía observa: La Ley Especial no contempla la disolución ni expropiación corporativa automática; el Art. 28 establece como sanción exclusiva la multa por el doble del monto del delito, junto a la suspensión del Art. 29."
+                    feedback: "Observación fiscal: El juzgamiento no depende de tratados bilaterales previos si los efectos recaen en el país (Art. 3); la expulsión es accesoria posterior.",
+                    fiscalFeedback: "Fiscalía observa: El juzgamiento no queda subordinado a tratados de extradición si el daño se produjo en el territorio de la República (Art. 3); además, la expulsión del Art. 30 opera solo después de cumplida la pena principal impuesta."
                 },
                 {
-                    text: "Sanción restringida a trabajo comunitario voluntario para los directores sin responsabilidad societaria.",
+                    text: "Atenuación facultativa de la pena a un tercio por concurrencia de jurisdicciones foráneas y falta de allanamiento telemático internacional (Art. 8).",
                     correct: false,
-                    feedback: "Observación fiscal: La mediación de lucro económico y decisión societaria formal prohíbe conmutar las sanciones corporativas pecuniarias.",
-                    fiscalFeedback: "Fiscalía observa: El lucro verificado agrava la conducta (Art. 22) y el Art. 28 impone obligatoriamente la multa del doble del monto a la persona jurídica, imposibilitando penas meramente comunitarias."
+                    feedback: "Observación fiscal: La Ley no atenúa por el uso de servidores extranjeros; la conducta dolosa con fin de lucro mantiene la plenitud punitiva.",
+                    fiscalFeedback: "Fiscalía observa: La Ley Especial no contempla atenuantes de culpa (Art. 8) por operar desde el extranjero; al surtirse los efectos lesivos en territorio venezolano mediando ánimo de lucro, se aplica la agravación del Art. 22 bajo el imperio del Art. 3."
                 }
             ]
         },
-        verdict: "DICTAMEN VALIDADO: Violación a la privacidad de comunicaciones y cesión con fin de lucro (Arts. 21 y 22), con responsabilidad penal corporativa (Arts. 5 y 28) e inhabilitación directiva (Art. 29).",
+        verdict: "DICTAMEN VALIDADO: Violación a la privacidad de comunicaciones con aplicación de la Ley venezolana por extraterritorialidad (Art. 3) y agravante por fin de lucro (Art. 22).",
         report: {
             room: "Sala 4: Comunicaciones",
-            crime: "Interceptación y Revelación Lucrativa Corporativa",
-            articles: "Arts. 5, 21, 22, 28 y 29",
-            penalty: "Prisión de 2 a 6 años (+ 1/3 a 1/2) | Multa PJ doble del delito | Suspensión directiva hasta 3 años"
+            crime: "Interceptación Extraterritorial y Lucro Ilícito",
+            articles: "Arts. 3, 21 y 22",
+            penalty: "Prisión de 2 a 6 años (+ 1/3 a 1/2 por lucro) | Multa 200–500 UT | Sujeción plena a la ley venezolana (Art. 3)"
         }
     },
 
@@ -330,40 +330,40 @@ window.Game.PUZZLES = {
             ]
         },
         step2: {
-            prompt: "PASO 2/2 — Determina la concurrencia de agravantes específicas, accesorias e indemnizaciones:",
+            prompt: "PASO 2/2 — Al comprobarse que la apropiación del software se ejecutó por acuerdo societario de la contratista, determina el régimen sancionatorio y consecuencias patrimoniales:",
             options: [
                 {
-                    text: "Aumento de 1/3 a 1/2 por abuso de posición de acceso y custodia (Art. 27), inhabilitación profesional hasta 3 años (Art. 29) e indemnización civil obligatoria fijada por peritos (Art. 31, Capítulo V).",
+                    text: "Responsabilidad penal societaria con sanción exclusiva de multa por el doble del monto del delito (Arts. 5 y 28), prevalimiento de cargo (Art. 27), inhabilitación profesional (Art. 29) e indemnización civil obligatoria fijada por peritos (Art. 31).",
                     correct: true,
-                    feedback: "Dictamen fiscal conforme: Concurren el abuso de cargo técnico (Art. 27), la inhabilitación del Art. 29 y la indemnización civil preceptiva del Capítulo V (Art. 31).",
-                    fiscalFeedback: "Acumulación de agravantes, accesorias y reparación civil admitida."
+                    feedback: "Dictamen fiscal conforme: El Art. 5 vincula a la persona jurídica por acuerdo directivo con sus medios, sancionándola con multa doble (Art. 28), inhabilitación del técnico (Art. 29) e indemnización imperativa del Capítulo V (Art. 31).",
+                    fiscalFeedback: "Régimen sancionatorio especial corporativo y reparación civil homologados."
                 },
                 {
-                    text: "Atenuación facultativa por favorecimiento culposo o negligencia inexcusable del personal de control (Art. 8).",
+                    text: "Disolución corporativa obligatoria y comiso definitivo de la totalidad del patrimonio social de la empresa contratista a favor del Estado (Art. 29).",
                     correct: false,
-                    feedback: "Observación fiscal: Existió lucro comercial premeditado y venta activa de licencias, incompatible con la figura culposa del Art. 8.",
-                    fiscalFeedback: "Fiscalía observa: El investigado actuó con dolo directo patrimonial cobrando suscripciones ilícitas; no cabe atenuar la pena invocando negligencia o impericia de los custodios del Art. 8."
+                    feedback: "Observación fiscal: El Art. 28 circunscribe la sanción societaria a la multa pecuniaria por el doble del monto del delito cometido, no a la disolución mercantil.",
+                    fiscalFeedback: "Fiscalía observa: El Art. 28 establece de forma taxativa que la sanción aplicable a las personas jurídicas es exclusivamente patrimonial de multa por el doble del monto del delito; la ley no autoriza la disolución o confiscación empresarial societaria."
                 },
                 {
-                    text: "Comiso exclusivo de tarjetas plásticas inteligentes (Art. 19) sin responsabilidad civil compensatoria.",
+                    text: "Exclusión de responsabilidad penal de la persona jurídica, imponiéndose penas corporales privativas de libertad exclusivamente a los directivos y programadores (Art. 5).",
                     correct: false,
-                    feedback: "Observación fiscal: El Art. 19 rige sobre medios de pago plásticos; el Capítulo V obliga a la indemnización integral por daños (Art. 31).",
-                    fiscalFeedback: "Fiscalía observa: El medio de comisión no involucró tarjetas inteligentes ni instrumentos magnéticos; al tratarse de un delito del Capítulo V, el juez debe imponer inexcusablemente la indemnización civil de daños tasada por expertos (Art. 31)."
+                    feedback: "Observación fiscal: El Art. 5 consagra la responsabilidad penal societaria cuando el delito se comete por decisión de los administradores con recursos sociales o en su interés.",
+                    fiscalFeedback: "Fiscalía observa: El Art. 5 impone expresamente la responsabilidad penal de las personas jurídicas cuando el hecho se ejecuta por decisión de sus órganos directivos y en beneficio corporativo, activando la multa del doble del Art. 28."
                 },
                 {
-                    text: "Pena accesoria restringida a trabajo comunitario voluntario sin inhabilitación profesional.",
+                    text: "Sanción corporativa conmutada a trabajo comunitario voluntario para los directores (Art. 29), extinguiendo la fijación judicial de indemnización civil de daños.",
                     correct: false,
-                    feedback: "Observación fiscal: El prevalimiento del cargo de líder técnico activa de forma vinculante la inhabilitación profesional del Art. 29.",
-                    fiscalFeedback: "Fiscalía observa: Por haberse cometido el hecho mediante abuso deliberado de funciones y facultades privilegiadas de acceso técnico, la ley impone de forma obligatoria la inhabilitación profesional del Art. 29, además del aumento de pena del Art. 27."
+                    feedback: "Observación fiscal: Las penas de trabajo comunitario no extinguen la multa societaria ni la indemnización civil inexcusable del Art. 31.",
+                    fiscalFeedback: "Fiscalía observa: La imposición de accesorias individuales no sustituye la sanción pecuniaria del Art. 28 sobre la empresa; además, al integrar el Capítulo V (orden económico), el Art. 31 obliga al juez a tasar pericialmente la indemnización integral de los daños causados."
                 }
             ]
         },
-        verdict: "DICTAMEN VALIDADO: Apropiación indebida de propiedad intelectual de software (Art. 25) con agravante de prevalimiento de cargo (Art. 27), inhabilitación profesional (Art. 29) e indemnización del daño (Art. 31).",
+        verdict: "DICTAMEN VALIDADO: Apropiación de software (Art. 25) con responsabilidad corporativa y multa doble (Arts. 5 y 28), prevalimiento de funciones (Art. 27), inhabilitación (Art. 29) e indemnización civil integral (Art. 31).",
         report: {
             room: "Sala 5: Software",
-            crime: "Apropiación Ilícita de Propiedad Intelectual",
-            articles: "Arts. 25, 27, 29 y 31",
-            penalty: "Prisión de 1 a 5 años (+ 1/3 a 1/2) | Multa 100–500 UT | Inhabilitación profesional e indemnización civil"
+            crime: "Apropiación Intelectual y Responsabilidad Corporativa",
+            articles: "Arts. 5, 25, 27, 28, 29 y 31",
+            penalty: "Prisión de 1 a 5 años (+ 1/3 a 1/2) | Multa PJ doble del delito (Art. 28) | Inhabilitación profesional e indemnización civil preceptiva"
         }
     }
 };

@@ -271,7 +271,7 @@ window.Game.ROOM_LAYOUTS = {
             {
                 x: 480, y: 260, width: 160, label: "CORREO",
                 clueType: "computer",
-                clue: "Captura de paquetes en enrutador de borde: El sniffer de red reveló una regla de desvío clandestina instalada en el conmutador troncal. La regla interceptaba y duplicaba en tiempo real los mensajes de datos, flujos de correo electrónico y paquetes de comunicación en tránsito emitidos por entidades corporativas competidoras."
+                clue: "Captura de paquetes y trazas de enrutamiento internacional: El sniffer de red constató que la interceptación clandestina y desvío de los mensajes de datos y correos corporativos se ejecutó mediante un servidor alojado físicamente fuera del territorio nacional. No obstante, las transmisiones interceptadas correspondían a empresas domiciliadas en el país, sus efectos lesivos se consumaron íntegramente dentro del territorio de la República y no existe proceso judicial ni condena previa en tribunales extranjeros."
             },
             {
                 x: 200, y: 70, width: 160, label: "GERENCIA",
@@ -345,12 +345,12 @@ window.Game.ROOM_LAYOUTS = {
             {
                 x: 440, y: 540, width: 160, label: "PROPIEDAD",
                 clueType: "document",
-                clue: "Evidencia electrónica de comercialización digital: Se recolectaron correos electrónicos y facturas proforma que demuestran que el código fuente sustraído fue reproducido, renombrado y comercializado ilícitamente a clientes externos bajo cobro de licencias de suscripción para beneficio monetario del infractor, sin que mediara engaño publicitario sobre el producto."
+                clue: "Acta de asamblea y correspondencia corporativa interna: Se constató que la reproducción clandestina y comercialización ilícita del software propietario se ejecutó por decisión formal de la junta directiva y administradores de la empresa contratista, valiéndose de los servidores, canales de venta y recursos de la corporación para lucrarse en su interés exclusivo y preferente."
             },
             {
                 x: 140, y: 540, width: 160, label: "DICTAMEN",
                 clueType: "document",
-                clue: "Ficha técnica de recursos humanos y auditoría pericial: El imputado se desempeñaba como líder técnico del proyecto de ingeniería, cargo que le otorgaba custodia y acceso privilegiado a las claves maestras del repositorio. El informe pericial constata un severo perjuicio patrimonial sobre los activos de propiedad industrial de la compañía, exigiendo la fijación de la indemnización compensatoria con auxilio de expertos."
+                clue: "Ficha técnica de recursos humanos y auditoría pericial: El imputado principal actuó como líder técnico del proyecto, cargo que le otorgaba custodia y acceso privilegiado a los repositorios. La comercialización del código protegido generó un perjuicio cuantificable al patrimonio del titular del software, acreditándose los extremos para la sanción corporativa a la persona jurídica, la inhabilitación del responsable y la indemnización civil obligatoria por expertos."
             }
         ],
         racks: [

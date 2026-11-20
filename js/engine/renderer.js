@@ -176,6 +176,18 @@ window.Game = window.Game || {};
             ctx.fillRect(x + 3, y + 52, width - 6, 4);
 
             const monitorX = x + Math.floor((width - 46) / 2);
+            const isClueDesk = (index === 0 || index === 2);
+
+            // Resplandor tenue de pantalla sobre el tablero del escritorio frente al monitor
+            const screenGlow = ctx.createRadialGradient(monitorX + 23, y + 26, 4, monitorX + 23, y + 36, 32);
+            const glowCol = isClueDesk ? "rgba(96, 165, 250, 0.12)" : "rgba(59, 130, 246, 0.08)";
+            screenGlow.addColorStop(0, glowCol);
+            screenGlow.addColorStop(0.6, isClueDesk ? "rgba(96, 165, 250, 0.04)" : "rgba(59, 130, 246, 0.025)");
+            screenGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+            ctx.fillStyle = screenGlow;
+            ctx.beginPath();
+            ctx.arc(monitorX + 23, y + 36, 32, 0, Math.PI * 2);
+            ctx.fill();
 
             // Base y peana del monitor
             ctx.fillStyle = "#1E252E";
@@ -196,24 +208,39 @@ window.Game = window.Game || {};
             ctx.lineWidth = 1.4;
             ctx.stroke();
 
-            // Pantalla LCD con consola forense
+            // Pantalla LCD con consola forense activa y scroll suave de logs
             drawRoundedRect(ctx, monitorX + 2.5, y + 9, 41, 17, 2);
-            ctx.fillStyle = "#0C1219";
+            ctx.fillStyle = "#0A0F16";
             ctx.fill();
 
-            // Líneas de registro de consola pericial en pantalla
-            const isClueDesk = (index === 0 || index === 2);
-            ctx.fillStyle = isClueDesk ? "#567A99" : "#3B4E63";
-            ctx.fillRect(monitorX + 5, y + 12, 14, 1.5);
-            ctx.fillRect(monitorX + 5, y + 15, 22, 1.5);
-            ctx.fillRect(monitorX + 5, y + 18, 18, 1.5);
-            ctx.fillRect(monitorX + 5, y + 21, 26, 1.5);
+            ctx.save();
+            drawRoundedRect(ctx, monitorX + 2.5, y + 9, 41, 17, 2);
+            ctx.clip();
 
-            // Cursor parpadeante sutil en el monitor
-            if (Math.sin(now / 350) > 0) {
-                ctx.fillStyle = isClueDesk ? "#86B4DB" : "#4A6B8A";
-                ctx.fillRect(monitorX + 32, y + 21, 3, 2);
+            // Scroll vertical continuo y suave de líneas de terminal
+            const logScroll = (now * 0.007) % 3.6;
+            const logLines = [
+                { w: 18, col: isClueDesk ? "#93C5FD" : "#60A5FA" },
+                { w: 26, col: isClueDesk ? "#60A5FA" : "#3B82F6" },
+                { w: 14, col: isClueDesk ? "#93C5FD" : "#4B6E94" },
+                { w: 23, col: isClueDesk ? "#3B82F6" : "#2563EB" },
+                { w: 28, col: isClueDesk ? "#60A5FA" : "#3B82F6" }
+            ];
+
+            logLines.forEach((line, lIdx) => {
+                const lineY = y + 11.5 + lIdx * 3.4 - logScroll;
+                if (lineY >= y + 9.5 && lineY <= y + 24.5) {
+                    ctx.fillStyle = line.col;
+                    ctx.fillRect(monitorX + 5, lineY, line.w, 1.2);
+                }
+            });
+
+            // Cursor parpadeante activo al final de línea
+            if (Math.sin(now * 0.008) > 0) {
+                ctx.fillStyle = isClueDesk ? "#BFDBFE" : "#93C5FD";
+                ctx.fillRect(monitorX + 31, y + 21, 3, 1.8);
             }
+            ctx.restore();
 
             // Teclado estilizado con teclas
             const kbX = monitorX + 4;
@@ -245,6 +272,48 @@ window.Game = window.Game || {};
             ctx.strokeStyle = INK_OUTLINE;
             ctx.lineWidth = 0.8;
             ctx.stroke();
+
+            // Carpeta manila / expediente secundario rotado a la izquierda para romper rigidez
+            const folderX = x + 12;
+            const folderY = y + 15;
+            ctx.save();
+            ctx.translate(folderX + 9, folderY + 11);
+            ctx.rotate(-0.07);
+            drawRoundedRect(ctx, -9, -11, 18, 22, 2);
+            ctx.fillStyle = "#9A7B56";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+
+            // Pestaña de archivo
+            drawRoundedRect(ctx, -9, -13, 7, 2.5, 1);
+            ctx.fillStyle = "#B39169";
+            ctx.fill();
+
+            // Hoja interna asomada
+            drawRoundedRect(ctx, -7, -9, 14, 18, 1);
+            ctx.fillStyle = "#EAE2D0";
+            ctx.fill();
+            ctx.restore();
+
+            // Pequeña nota adhesiva amarilla (post-it) rotada cerca del monitor
+            const postitX = monitorX - 9;
+            const postitY = y + 37;
+            ctx.save();
+            ctx.translate(postitX + 4, postitY + 4);
+            ctx.rotate(0.1);
+            ctx.fillStyle = "rgba(0, 0, 0, 0.22)";
+            ctx.fillRect(-3.5, -3.5, 8, 8);
+            ctx.fillStyle = "#FEF08A";
+            ctx.fillRect(-4, -4, 7.5, 7.5);
+            ctx.strokeStyle = "rgba(180, 140, 20, 0.35)";
+            ctx.lineWidth = 0.6;
+            ctx.strokeRect(-4, -4, 7.5, 7.5);
+            ctx.fillStyle = "rgba(100, 80, 20, 0.55)";
+            ctx.fillRect(-2.5, -2, 4.5, 0.7);
+            ctx.fillRect(-2.5, 0, 3.5, 0.7);
+            ctx.restore();
 
             // Hojas de expediente impreso (color marfil / archivo #F4EFE6)
             const docX = x + width - 36;
@@ -388,7 +457,7 @@ window.Game = window.Game || {};
                     ctx.fillRect(x + 15 + v * 6, bayY + 5, 4.5, 6);
                 }
 
-                // LEDs de estado discretos y realistas (sin halos gigantes)
+                // LEDs de estado y tráfico de red dinámicos (verde y ámbar)
                 const phase1 = (x * 19 + bay * 37);
                 const isBlink1On = Math.sin((now / 240) + phase1) > -0.15;
                 const isAlertNode = (bay === 2 && currentRoom === 3) || (bay === 1 && currentRoom === 2);
@@ -400,14 +469,28 @@ window.Game = window.Game || {};
 
                 ctx.fillStyle = ledColor;
                 ctx.beginPath();
-                ctx.arc(x + 36, bayY + 6, 1.6, 0, Math.PI * 2);
+                ctx.arc(x + 34, bayY + 6, 1.5, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Matriz de mini-LEDs parpadeantes simulando tráfico telemático continuo
+                for (let l = 0; l < 3; l++) {
+                    const lx = x + 37.5 + l * 2.8;
+                    const pSeed = (x * 17 + bay * 31 + l * 43);
+                    const blink = Math.sin((now / 95) + pSeed) * Math.cos((now / 150) + pSeed * 1.2);
+                    const isAmberLed = (l === 1 || (bay === 1 && currentRoom === 2));
+                    let trafficColor = isAmberLed ? "#D99B26" : "#3FA37C";
+                    if (blink < -0.1) {
+                        trafficColor = isAmberLed ? "#3A2609" : "#0F281D";
+                    }
+                    ctx.fillStyle = trafficColor;
+                    ctx.fillRect(lx, bayY + 5.2, 1.8, 1.8);
+                }
 
                 const phase2 = (x * 31 + bay * 53);
                 const isBlink2On = Math.sin((now / 150) + phase2) > 0.40;
                 ctx.fillStyle = isBlink2On ? "#6EA4D6" : "#1B2A38";
                 ctx.beginPath();
-                ctx.arc(x + 40.5, bayY + 6, 1.4, 0, Math.PI * 2);
+                ctx.arc(x + 46, bayY + 6, 1.3, 0, Math.PI * 2);
                 ctx.fill();
             }
 
@@ -415,6 +498,32 @@ window.Game = window.Game || {};
             ctx.fillStyle = "rgba(10, 15, 22, 0.25)";
             drawRoundedRect(ctx, x + 7, y + 5, 42, 96, 2);
             ctx.fill();
+
+            // Cables de red discretos entrando al rack por la base (UTP Cat6 azul y gris)
+            ctx.save();
+            ctx.lineWidth = 1.6;
+            ctx.lineCap = "round";
+            // Cable azul de datos
+            ctx.strokeStyle = "#1D4ED8";
+            ctx.beginPath();
+            ctx.moveTo(x + 14, y + 104);
+            ctx.bezierCurveTo(x + 14, y + 112, x + 6, y + 110, x + 2, y + 118);
+            ctx.stroke();
+
+            // Cable gris de consola
+            ctx.strokeStyle = "#475569";
+            ctx.beginPath();
+            ctx.moveTo(x + 22, y + 104);
+            ctx.bezierCurveTo(x + 22, y + 115, x + 30, y + 113, x + 34, y + 120);
+            ctx.stroke();
+
+            // Cable cian de fibra/enlace
+            ctx.strokeStyle = "#0284C7";
+            ctx.beginPath();
+            ctx.moveTo(x + 40, y + 104);
+            ctx.bezierCurveTo(x + 40, y + 111, x + 46, y + 114, x + 50, y + 118);
+            ctx.stroke();
+            ctx.restore();
 
             // Etiqueta de precinto pericial ("EVIDENCIA - ART. 29") en racks comprometidos
             if (currentRoom === 3 || currentRoom === 2) {
@@ -551,6 +660,38 @@ window.Game = window.Game || {};
             ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
             ctx.fillRect(wall.x, wall.y, wall.width, 1);
 
+            ctx.restore();
+        },
+
+        // =========================================================================
+        // MARCADOR AMARILLO TRIANGULAR FORENSE NUMERADO (DETALLE AMBIENTAL)
+        // =========================================================================
+        drawEvidenceMarker: function(ctx, x, y, number) {
+            ctx.save();
+            // Sombra ovalada en el suelo
+            ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
+            ctx.beginPath();
+            ctx.ellipse(x + 1.5, y + 7, 7, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Marcador triangular amarillo reflectivo (#EAB308)
+            ctx.beginPath();
+            ctx.moveTo(x, y - 8);
+            ctx.lineTo(x + 7.5, y + 6);
+            ctx.lineTo(x - 7.5, y + 6);
+            ctx.closePath();
+            ctx.fillStyle = "#EAB308";
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.1;
+            ctx.stroke();
+
+            // Número pericial en negro
+            ctx.fillStyle = "#0B0F14";
+            ctx.font = "bold 6.5px 'JetBrains Mono', monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(String(number), x, y + 1.2);
             ctx.restore();
         },
 
@@ -1237,9 +1378,25 @@ window.Game = window.Game || {};
 
             ctx.save();
 
-            // Base de suelo técnico institucional
-            if (textures && textures.floorConcrete) {
-                ctx.fillStyle = textures.floorConcrete;
+            // Selección automática del patrón de suelo según el índice de la sala:
+            // 0 y 3: floorConcrete; 1: floorServerGrid; 2: floorFinanceCarpet; 4: floorLabTile
+            const roomIdx = (typeof currentRoom === "number" && currentRoom >= 1) ? currentRoom - 1 : 0;
+            let floorPattern = null;
+
+            if (textures) {
+                if (roomIdx === 1) { // Sala 2: Núcleo de Servidores
+                    floorPattern = textures.floorServerGrid || textures.floorConcrete;
+                } else if (roomIdx === 2) { // Sala 3: Área Financiera
+                    floorPattern = textures.floorFinanceCarpet || textures.floorConcrete;
+                } else if (roomIdx === 4) { // Sala 5: Laboratorio de Software
+                    floorPattern = textures.floorLabTile || textures.floorConcrete;
+                } else { // Salas 1 y 4 (índices 0 y 3): Oficina de Soporte y Central de Comunicaciones
+                    floorPattern = textures.floorConcrete;
+                }
+            }
+
+            if (floorPattern) {
+                ctx.fillStyle = floorPattern;
                 ctx.fillRect(0, 0, worldW, worldH);
             } else {
                 ctx.fillStyle = "#161D26";
@@ -1440,7 +1597,7 @@ window.Game = window.Game || {};
             ctx.strokeRect(0.5, 0.5, worldW - 1, 21.5);
             ctx.strokeRect(0.5, worldH - 22.5, worldW - 1, 22);
 
-            // Luminarias empotradas en el techo con conos de luz arquitectónica cálida-neutra
+            // Luminarias empotradas en el techo con conos y halos de luz hacia el suelo
             for (let lx = 35; lx < worldW - 40; lx += 80) {
                 drawRoundedRect(ctx, lx, 5, 50, 9, 3);
                 ctx.fillStyle = "#1E2734";
@@ -1454,16 +1611,26 @@ window.Game = window.Game || {};
                 ctx.fill();
 
                 // Cono de luz arquitectónica suave
-                const coneGrad = ctx.createLinearGradient(lx + 25, 20, lx + 25, 85);
-                coneGrad.addColorStop(0, "rgba(245, 248, 252, 0.05)");
+                const coneGrad = ctx.createLinearGradient(lx + 25, 20, lx + 25, 95);
+                coneGrad.addColorStop(0, "rgba(245, 248, 252, 0.06)");
                 coneGrad.addColorStop(1, "rgba(245, 248, 252, 0.0)");
                 ctx.fillStyle = coneGrad;
                 ctx.beginPath();
                 ctx.moveTo(lx + 2, 20);
                 ctx.lineTo(lx + 48, 20);
-                ctx.lineTo(lx + 60, 85);
-                ctx.lineTo(lx - 10, 85);
+                ctx.lineTo(lx + 62, 95);
+                ctx.lineTo(lx - 12, 95);
                 ctx.closePath();
+                ctx.fill();
+
+                // Halo suave proyectado sobre el suelo bajo la luminaria
+                const haloGrad = ctx.createRadialGradient(lx + 25, 75, 4, lx + 25, 75, 55);
+                haloGrad.addColorStop(0, "rgba(245, 248, 252, 0.04)");
+                haloGrad.addColorStop(0.5, "rgba(245, 248, 252, 0.015)");
+                haloGrad.addColorStop(1, "rgba(245, 248, 252, 0.0)");
+                ctx.fillStyle = haloGrad;
+                ctx.beginPath();
+                ctx.arc(lx + 25, 75, 55, 0, Math.PI * 2);
                 ctx.fill();
             }
 
@@ -1522,6 +1689,28 @@ window.Game = window.Game || {};
                 ctx.restore();
             }
 
+            // Marcadores amarillos triangulares decorativos numerados (1, 2, 3) en puntos forenses
+            if (currentRoom === 1) {
+                this.drawEvidenceMarker(ctx, 130, 105, 1);
+                this.drawEvidenceMarker(ctx, 760, 235, 2);
+            } else if (currentRoom === 2) {
+                this.drawEvidenceMarker(ctx, 425, 110, 1);
+                this.drawEvidenceMarker(ctx, 425, 555, 2);
+                this.drawEvidenceMarker(ctx, 990, 465, 3);
+            } else if (currentRoom === 3) {
+                this.drawEvidenceMarker(ctx, 55, 125, 1);
+                this.drawEvidenceMarker(ctx, 750, 110, 2);
+                this.drawEvidenceMarker(ctx, 860, 245, 3);
+            } else if (currentRoom === 4) {
+                this.drawEvidenceMarker(ctx, 660, 280, 1);
+                this.drawEvidenceMarker(ctx, 660, 420, 2);
+                this.drawEvidenceMarker(ctx, 930, 115, 3);
+            } else if (currentRoom === 5) {
+                this.drawEvidenceMarker(ctx, 775, 120, 1);
+                this.drawEvidenceMarker(ctx, 410, 110, 2);
+                this.drawEvidenceMarker(ctx, 775, 245, 3);
+            }
+
             // Dibujar mamparas, decor y mobiliario
             const layout = window.Game.ROOM_LAYOUTS ? window.Game.ROOM_LAYOUTS[currentRoom] : null;
             if (layout) {
@@ -1545,17 +1734,42 @@ window.Game = window.Game || {};
                 }
             }
 
-            // Partículas ambientales de micro-polvo pericial
-            if (state.ambientParticles && state.ambientParticles.length > 0) {
-                for (let i = 0; i < state.ambientParticles.length; i++) {
-                    const p = state.ambientParticles[i];
-                    const pAlpha = p.baseAlpha * (0.6 + 0.4 * Math.sin(now / 800 + p.pulseSeed));
-                    ctx.fillStyle = `rgba(225, 235, 245, ${pAlpha})`;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+            // Paleta ambiental sutil por sector (globalAlpha entre 0.04 y 0.08)
+            ctx.save();
+            let ambientColor = "rgba(255, 246, 235, 0.05)"; // Sala 1: blanco cálido neutro
+            if (currentRoom === 2) {
+                ambientColor = "rgba(59, 130, 246, 0.07)"; // Sala 2: azul frío de refrigeración
+            } else if (currentRoom === 3) {
+                ambientColor = "rgba(234, 179, 8, 0.05)"; // Sala 3: ámbar/dorado sobrio muy tenue
+            } else if (currentRoom === 4) {
+                ambientColor = "rgba(6, 182, 212, 0.06)"; // Sala 4: cian técnico apagado
+            } else if (currentRoom === 5) {
+                ambientColor = "rgba(224, 242, 254, 0.05)"; // Sala 5: blanco clínico frío
             }
+            ctx.fillStyle = ambientColor;
+            ctx.fillRect(0, 0, worldW, worldH);
+            ctx.restore();
+
+            // 14 motas de polvo ambiental sutiles flotando lentamente en el aire
+            ctx.save();
+            const perfNow = (window.performance && window.performance.now) ? window.performance.now() : now;
+            const tFloat = perfNow * 0.0005;
+            for (let p = 0; p < 14; p++) {
+                const pSeed = p * 137.5;
+                const pBaseX = (pSeed * 79) % worldW;
+                const pBaseY = (pSeed * 103) % worldH;
+                const pDriftX = Math.sin(tFloat + pSeed) * 20 + Math.cos(tFloat * 0.4 + p) * 10;
+                const pDriftY = Math.cos(tFloat * 0.7 + pSeed) * 16 + Math.sin(tFloat * 0.3 + p) * 8;
+                const px = (pBaseX + pDriftX + worldW) % worldW;
+                const py = (pBaseY + pDriftY + worldH) % worldH;
+                const pAlpha = 0.035 + Math.abs(Math.sin(tFloat * 1.5 + pSeed)) * 0.055;
+                const pSize = 0.9 + (p % 3) * 0.35;
+                ctx.fillStyle = `rgba(230, 240, 255, ${pAlpha})`;
+                ctx.beginPath();
+                ctx.arc(px, py, pSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
 
             ctx.restore();
         },
@@ -1578,11 +1792,48 @@ window.Game = window.Game || {};
             const bob = isMoving ? Math.abs(Math.sin(walkTimer)) * 1.8 : 0;
             const sway = isMoving ? Math.sin(walkTimer) * 0.04 : 0;
 
-            // Sombra ovalada suave proyectada en el suelo
+            // Cono / halo de inspección del perito orientado según su dirección (facing)
+            ctx.save();
+            let inspectOffX = 0;
+            let inspectOffY = 0;
+            if (facing === "up") inspectOffY = -18;
+            else if (facing === "down") inspectOffY = 18;
+            else if (facing === "left") inspectOffX = -18;
+            else if (facing === "right") inspectOffX = 18;
+
+            const inspectTargetX = centerX + inspectOffX;
+            const inspectTargetY = (player.y + 13) + inspectOffY;
+
+            const inspectHalo = ctx.createRadialGradient(inspectTargetX, inspectTargetY, 8, inspectTargetX, inspectTargetY, 95);
+            inspectHalo.addColorStop(0, "rgba(255, 255, 255, 0.07)");
+            inspectHalo.addColorStop(0.5, "rgba(240, 245, 255, 0.03)");
+            inspectHalo.addColorStop(1, "rgba(240, 245, 255, 0.0)");
+
+            ctx.fillStyle = inspectHalo;
+            ctx.beginPath();
+            ctx.arc(inspectTargetX, inspectTargetY, 95, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Sombra ovalada suave proyectada en el suelo con balanceo sutil
+            const shadowSway = isMoving ? Math.sin(walkTimer * 2) * 1.1 : 0;
+            const shadowScale = isMoving ? 1 + Math.sin(walkTimer * 2) * 0.06 : 1;
             ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
             ctx.beginPath();
-            ctx.ellipse(centerX, footY - 1, 15, 6, 0, 0, Math.PI * 2);
+            ctx.ellipse(centerX + shadowSway, footY - 1, 15 * shadowScale, 6 / shadowScale, 0, 0, Math.PI * 2);
             ctx.fill();
+
+            // Pequeñas ondas muy sutiles en el suelo al dar pasos mientras isMoving es verdadero
+            if (isMoving) {
+                const stepPhase = (walkTimer % Math.PI) / Math.PI;
+                const waveRadius = 6 + stepPhase * 11;
+                const waveAlpha = (1 - stepPhase) * 0.12;
+                ctx.strokeStyle = `rgba(215, 230, 250, ${waveAlpha})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.ellipse(centerX, footY - 1, waveRadius, waveRadius * 0.42, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
 
             // Piernas y calzado táctico con paso fluido (~50px altura visual total)
             const leftLegOffset = isMoving ? stepCycle * 4.5 : 0;

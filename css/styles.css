@@ -331,6 +331,111 @@ canvas#gameCanvas {
     color: var(--text-dim);
 }
 
+/* =========================================================================
+   CAPA DE TRANSICIÓN CINEMATOGRÁFICA ENTRE SECTORES // CICPC
+   ========================================================================= */
+#room-transition-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(16, 24, 38, 0.96) 0%, rgba(7, 10, 15, 0.98) 100%);
+    z-index: 35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+#room-transition-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.room-trans-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 560px;
+    padding: 24px;
+    animation: roomTransContentAnim 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes roomTransContentAnim {
+    0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.room-trans-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent-amber);
+    background: rgba(217, 155, 38, 0.12);
+    border: 1px solid rgba(217, 155, 38, 0.35);
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+}
+
+.room-trans-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: #FFFFFF;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+    margin: 0 0 16px 0;
+    text-transform: uppercase;
+}
+
+.room-trans-bar-wrap {
+    width: 280px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+.room-trans-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #D99B26, #F59E0B, #E5B842);
+    box-shadow: 0 0 12px rgba(229, 184, 66, 0.7);
+    transform-origin: left center;
+    transform: scaleX(0);
+}
+
+#room-transition-overlay.active .room-trans-bar {
+    animation: roomTransBarAnim 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes roomTransBarAnim {
+    0% {
+        transform: scaleX(0);
+    }
+    100% {
+        transform: scaleX(1);
+    }
+}
+
+.room-trans-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
 /* Pantallas superpuestas (Inicio y Dictamen Final) */
 .screen-overlay {
     position: absolute;
@@ -796,7 +901,7 @@ canvas#gameCanvas {
 @keyframes modalEnter {
     from {
         opacity: 0;
-        transform: translate(-50%, -48%) scale(0.98);
+        transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
     }
     to {
         opacity: 1;
@@ -1156,6 +1261,79 @@ canvas#gameCanvas {
     background: rgba(217, 155, 38, 0.22);
     border-color: #D99B26;
     color: #FFFFFF;
+}
+
+/* =========================================================================
+   SELLO PERICIAL DE VALIDACIÓN LEGAL (TERMINAL STAMP)
+   ========================================================================= */
+.terminal-stamp-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 30;
+}
+
+.terminal-stamp {
+    display: inline-block;
+    padding: 16px 32px;
+    text-transform: uppercase;
+    border: 4px double #3FA37C;
+    background: rgba(14, 28, 20, 0.95);
+    box-shadow: 0 0 30px rgba(63, 163, 124, 0.45), inset 0 0 20px rgba(63, 163, 124, 0.3);
+    border-radius: 6px;
+    text-align: center;
+    transform: rotate(-8deg);
+}
+
+.stamp-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stamp-icon {
+    font-size: 24px;
+    color: #D99B26;
+    line-height: 1;
+}
+
+.stamp-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #3FA37C;
+    text-shadow: 0 0 10px rgba(63, 163, 124, 0.7);
+}
+
+.stamp-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #D99B26;
+}
+
+.terminal-stamp.stamp-animate {
+    animation: stampSlam 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes stampSlam {
+    0% {
+        opacity: 0;
+        transform: scale(2) rotate(-16deg);
+    }
+    70% {
+        opacity: 1;
+        transform: scale(0.95) rotate(-7deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(-8deg);
+    }
 }
 
 /* =========================================================================
@@ -1965,4 +2143,516 @@ body.is-fullscreen #status-bar {
 body.is-fullscreen #game-container {
     width: min(96vw, calc((100vh - 64px) * (840 / 520))) !important;
     border-radius: 0 0 8px 8px !important;
+}
+
+/* =========================================================================
+   ELEMENTOS DE DICTAMEN PERICIAL Y PANTALLA DE VICTORIA
+   ========================================================================= */
+.print-official-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.print-unefa-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+    flex-shrink: 0;
+}
+
+.print-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.print-inst-top {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #94A3B8;
+    letter-spacing: 1px;
+}
+
+.print-inst-unefa {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.3px;
+}
+
+.print-inst-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-amber);
+    letter-spacing: 0.4px;
+}
+
+.print-main-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.print-law-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+.report-meta-bar {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: #121822;
+    border: 1px solid var(--panel-border-subtle);
+    padding: 8px 14px;
+    border-radius: 5px;
+    margin-bottom: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+}
+
+.report-meta-item {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.report-meta-label {
+    color: var(--accent-amber);
+    font-weight: 700;
+}
+
+.report-meta-val {
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+.victory-team-block {
+    background: rgba(14, 21, 32, 0.75);
+    border: 1px solid #28374D;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.victory-team-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--accent-amber);
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+}
+
+.victory-team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.victory-team-member {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(22, 32, 48, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.victory-team-member .team-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--accent-emerald);
+    background: rgba(63, 163, 124, 0.15);
+    border: 1px solid rgba(63, 163, 124, 0.3);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.victory-team-member .team-name {
+    font-weight: 600;
+    color: #F1F5F9;
+    font-size: 11px;
+}
+
+.print-signatures-block {
+    display: none;
+    margin-top: 30px;
+    padding-top: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    text-align: center;
+}
+
+.print-sig-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sig-line {
+    width: 220px;
+    border-bottom: 1.5px solid #111111;
+    margin-bottom: 6px;
+}
+
+.sig-title {
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.sig-sub {
+    font-size: 9.5px;
+    color: #555555;
+}
+
+.victory-buttons-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-print {
+    background: #1B3A2D !important;
+    border-color: #3FA37C !important;
+    color: #A7F3D0 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-print:hover {
+    background: #244C3B !important;
+    color: #FFFFFF !important;
+    border-color: #6EE7B7 !important;
+}
+
+/* =========================================================================
+   HOJA DE ESTILOS PARA IMPRESIÓN OFICIAL Y EXPORTACIÓN PDF (@media print)
+   ========================================================================= */
+@media print {
+    @page {
+        size: letter portrait;
+        margin: 1.5cm 1.2cm 1.5cm 1.2cm;
+    }
+
+    /* Ocultar elementos irrelevantes para el acta formal */
+    #status-bar,
+    #game-container > canvas,
+    .vignette-layer,
+    #tactical-toast,
+    #transition-overlay,
+    #room-transition-overlay,
+    #start-screen,
+    #terminal-modal,
+    #terminal-stamp,
+    #clue-modal,
+    #manual-modal,
+    #notebook-modal,
+    header,
+    .hud-btn,
+    .cyber-btn,
+    .victory-buttons-row,
+    .academic-stamp,
+    .screen-only,
+    ::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    body {
+        background: #FFFFFF !important;
+        color: #111111 !important;
+        font-family: 'Times New Roman', Times, Georgia, serif !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+        display: block !important;
+    }
+
+    #game-container {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        position: static !important;
+        overflow: visible !important;
+    }
+
+    #victory-screen {
+        display: block !important;
+        position: static !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        animation: none !important;
+    }
+
+    .screen-card.victory {
+        background: #FFFFFF !important;
+        color: #111111 !important;
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        text-align: left !important;
+        position: static !important;
+        animation: none !important;
+    }
+
+    /* Encabezado Oficial */
+    .print-official-header {
+        display: flex !important;
+        align-items: center;
+        gap: 16px;
+        border-bottom: 2px solid #111111 !important;
+        padding-bottom: 10px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .print-unefa-logo {
+        height: 64px !important;
+        filter: none !important;
+    }
+
+    .print-inst-top {
+        color: #333333 !important;
+        font-size: 8.5pt !important;
+    }
+
+    .print-inst-unefa {
+        color: #000000 !important;
+        font-size: 11pt !important;
+        font-weight: bold !important;
+    }
+
+    .print-inst-sub {
+        color: #222222 !important;
+        font-size: 9pt !important;
+    }
+
+    .print-main-title {
+        color: #000000 !important;
+        font-size: 15pt !important;
+        font-weight: bold !important;
+        margin-top: 4px !important;
+    }
+
+    .print-law-sub {
+        color: #444444 !important;
+        font-size: 10pt !important;
+        font-style: italic !important;
+    }
+
+    .screen-desc {
+        color: #222222 !important;
+        font-size: 10pt !important;
+        line-height: 1.45 !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* Metadatos */
+    .report-meta-bar {
+        background: #F4F4F4 !important;
+        border: 1px solid #CCCCCC !important;
+        color: #111111 !important;
+        padding: 6px 12px !important;
+        margin-bottom: 12px !important;
+        font-size: 9pt !important;
+        page-break-inside: avoid;
+    }
+
+    .report-meta-label {
+        color: #222222 !important;
+    }
+
+    .report-meta-val {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+
+    /* Métricas */
+    .metrics-row {
+        gap: 8px !important;
+        margin-bottom: 14px !important;
+        page-break-inside: avoid;
+    }
+
+    .metric-box {
+        background: #FAFAFA !important;
+        border: 1px solid #CCCCCC !important;
+        padding: 6px 10px !important;
+    }
+
+    .metric-label {
+        color: #333333 !important;
+        font-size: 8pt !important;
+    }
+
+    .metric-val {
+        color: #000000 !important;
+        font-size: 12pt !important;
+    }
+
+    /* Sello fiscal */
+    .fiscal-evaluation-seal {
+        background: #F7F7F7 !important;
+        border: 1.5px solid #222222 !important;
+        color: #111111 !important;
+        padding: 8px 12px !important;
+        margin-bottom: 12px !important;
+        page-break-inside: avoid;
+    }
+
+    .eval-seal-title {
+        color: #000000 !important;
+        font-size: 10.5pt !important;
+        font-weight: bold !important;
+    }
+
+    .eval-seal-desc {
+        color: #333333 !important;
+        font-size: 9pt !important;
+    }
+
+    .eval-icon-badge {
+        background: #E5E5E5 !important;
+        color: #000000 !important;
+        border: 1px solid #999999 !important;
+    }
+
+    /* Tabla */
+    .table-scroll-container {
+        max-height: none !important;
+        overflow: visible !important;
+        border: 1px solid #000000 !important;
+        margin-bottom: 14px !important;
+        background: #FFFFFF !important;
+        page-break-inside: avoid;
+    }
+
+    .report-table {
+        font-size: 9pt !important;
+        color: #111111 !important;
+    }
+
+    .report-table th {
+        background: #EAEAEA !important;
+        color: #000000 !important;
+        border-bottom: 1.5px solid #000000 !important;
+        padding: 6px 8px !important;
+        font-size: 8.5pt !important;
+    }
+
+    .report-table td {
+        padding: 6px 8px !important;
+        border-bottom: 1px solid #DDDDDD !important;
+        color: #111111 !important;
+        page-break-inside: avoid;
+    }
+
+    .col-room {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+
+    .col-crime {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+
+    .col-art {
+        color: #222222 !important;
+        font-weight: bold !important;
+    }
+
+    .col-penalty {
+        color: #333333 !important;
+    }
+
+    /* Equipo pericial */
+    .victory-team-block {
+        background: #FAFAFA !important;
+        border: 1px solid #CCCCCC !important;
+        padding: 8px 12px !important;
+        margin-bottom: 14px !important;
+        page-break-inside: avoid;
+    }
+
+    .victory-team-header {
+        color: #111111 !important;
+        font-size: 8.5pt !important;
+        margin-bottom: 6px !important;
+    }
+
+    .victory-team-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    .victory-team-member {
+        background: #FFFFFF !important;
+        border: 1px solid #DDDDDD !important;
+        color: #111111 !important;
+        padding: 4px 6px !important;
+    }
+
+    .victory-team-member .team-badge {
+        color: #000000 !important;
+        background: #EAEAEA !important;
+        border-color: #AAAAAA !important;
+    }
+
+    .victory-team-member .team-name {
+        color: #000000 !important;
+        font-weight: bold !important;
+    }
+
+    /* Firmas */
+    .print-signatures-block {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 40px !important;
+        margin-top: 36px !important;
+        padding-top: 10px !important;
+        page-break-inside: avoid;
+    }
+
+    .sig-line {
+        border-bottom: 1.5px solid #000000 !important;
+    }
+
+    .sig-title {
+        color: #000000 !important;
+        font-size: 9.5pt !important;
+        font-weight: bold !important;
+    }
+
+    .sig-sub {
+        color: #444444 !important;
+        font-size: 8pt !important;
+    }
 }

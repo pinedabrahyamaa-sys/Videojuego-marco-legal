@@ -7,6 +7,13 @@ window.Game = window.Game || {};
     let lastStepTime = 0;
     let isLeftFoot = false;
 
+    // Nodos de Web Audio API para el zumbido ambiental de servidores (Sala 2)
+    let humGain = null;
+    let humOsc1 = null;
+    let humOsc2 = null;
+    let humFilter = null;
+    let humActive = false;
+
     // Cargar preferencia persistente
     try {
         isMuted = localStorage.getItem("escape_room_muted") === "true";
@@ -41,6 +48,9 @@ window.Game = window.Game || {};
             try {
                 localStorage.setItem("escape_room_muted", isMuted ? "true" : "false");
             } catch (e) {}
+            if (isMuted && humActive) {
+                this.stopServerHum();
+            }
             return isMuted;
         },
 
@@ -368,6 +378,163 @@ window.Game = window.Game || {};
                 osc.start(start);
                 osc.stop(start + c.d);
             });
+        },
+
+        // Sonido suave y breve de hojeo de papel para documentos y notas (~140ms, pasa-banda ~2000Hz)
+        paperRustle: function() {
+            if (isMuted) return;
+            const ac = getAudioContext();
+            if (!ac) return;
+
+            try {
+                const duration = 0.14; // ~140ms
+                const bufferSize = Math.max(1, Math.floor(ac.sampleRate * duration));
+                const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.45));
+                }
+
+                const noise = ac.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = ac.createBiquadFilter();
+                filter.type = "bandpass";
+                filter.frequency.value = 2000;
+                filter.Q.value = 1.4;
+
+                const gain = ac.createGain();
+                const t = ac.currentTime;
+                gain.gain.setValueAtTime(0.06, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(ac.destination);
+
+                noise.start(t);
+                noise.stop(t + duration);
+            } catch (e) {}
+        },
+
+        // Secuencia corta de clics mecánicos nítidos para terminales y computadoras (~18ms, pasa-altos ~2800Hz)
+        keyboardClick: function() {
+            if (isMuted) return;
+            const ac = getAudioContext();
+            if (!ac) return;
+
+            try {
+                const t = ac.currentTime;
+                const clicks = [0, 0.034, 0.072]; // 3 clics rápidos mecánicos
+                clicks.forEach((offset) => {
+                    const clickTime = t + offset;
+                    const duration = 0.018; // ~18ms
+
+                    const bufferSize = Math.max(1, Math.floor(ac.sampleRate * duration));
+                    const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+                    }
+
+                    const noise = ac.createBufferSource();
+                    noise.buffer = buffer;
+
+                    const filter = ac.createBiquadFilter();
+                    filter.type = "highpass";
+                    filter.frequency.value = 2800;
+
+                    const gain = ac.createGain();
+                    gain.gain.setValueAtTime(0.04, clickTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, clickTime + duration);
+
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(ac.destination);
+
+                    noise.start(clickTime);
+                    noise.stop(clickTime + duration);
+                });
+            } catch (e) {}
+        },
+
+        // Zumbido ambiental suave y de baja frecuencia para racks de servidores (Sala 2)
+        startServerHum: function() {
+            if (isMuted) return;
+            const ac = getAudioContext();
+            if (!ac) return;
+            if (humActive) return;
+
+            try {
+                const t = ac.currentTime;
+                humOsc1 = ac.createOscillator();
+                humOsc2 = ac.createOscillator();
+                humFilter = ac.createBiquadFilter();
+                humGain = ac.createGain();
+
+                humOsc1.type = "sine";
+                humOsc1.frequency.setValueAtTime(60, t); // 60Hz
+
+                humOsc2.type = "sine";
+                humOsc2.frequency.setValueAtTime(120, t); // 120Hz (armónico)
+
+                humFilter.type = "lowpass";
+                humFilter.frequency.setValueAtTime(180, t); // Pasa-bajos ~180Hz
+
+                humGain.gain.setValueAtTime(0.0001, t);
+                humGain.gain.linearRampToValueAtTime(0.018, t + 0.3); // 300ms fade-in suave
+
+                humOsc1.connect(humFilter);
+                humOsc2.connect(humFilter);
+                humFilter.connect(humGain);
+                humGain.connect(ac.destination);
+
+                humOsc1.start(t);
+                humOsc2.start(t);
+                humActive = true;
+            } catch (e) {
+                humActive = false;
+            }
+        },
+
+        // Apagado suave con fade-out de 300ms del zumbido ambiental
+        stopServerHum: function() {
+            if (!humActive || !humGain) return;
+            const ac = getAudioContext();
+            if (!ac) return;
+
+            try {
+                const t = ac.currentTime;
+                humGain.gain.cancelScheduledValues(t);
+                humGain.gain.setValueAtTime(humGain.gain.value, t);
+                humGain.gain.linearRampToValueAtTime(0.0001, t + 0.3); // 300ms fade-out
+
+                const o1 = humOsc1;
+                const o2 = humOsc2;
+                const g = humGain;
+                const f = humFilter;
+
+                setTimeout(() => {
+                    try {
+                        if (o1) { o1.stop(); o1.disconnect(); }
+                        if (o2) { o2.stop(); o2.disconnect(); }
+                        if (f) f.disconnect();
+                        if (g) g.disconnect();
+                    } catch (e) {}
+                }, 320);
+
+                humOsc1 = null;
+                humOsc2 = null;
+                humFilter = null;
+                humGain = null;
+                humActive = false;
+            } catch (e) {
+                humActive = false;
+            }
+        },
+
+        isHumActive: function() {
+            return humActive;
         }
     };
 })();
