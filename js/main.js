@@ -1258,14 +1258,23 @@ window.Game = window.Game || {};
             }
 
             if (key === "e") {
+                if (e.repeat) return;
+                State.keys[key] = true;
+                if (State.mode === "CLUE") {
+                    e.preventDefault();
+                    closeClue();
+                    return;
+                }
                 if (State.mode === "INTERVIEW") {
+                    e.preventDefault();
                     closeInterview();
                     return;
                 }
-                if (!State.keys[key] && State.mode === "PLAYING") {
+                if (State.mode === "PLAYING") {
                     const target = findNearestInteraction();
                     if (target) interactWithObject(target);
                 }
+                return;
             }
 
             State.keys[key] = true;

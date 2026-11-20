@@ -2026,27 +2026,23 @@ window.Game = window.Game || {};
 
             const centerX = npc.x + 13;
             const footY = npc.y + 26;
+            const breath = Math.sin(time / 550) * 0.9;
 
-            const breath = Math.sin(time / 600) * 1.2;
-
-            let facing = "down";
+            // Orientación respetando que el rostro SIEMPRE sea visible
             const dx = (player.x + 13) - centerX;
             const dy = (player.y + 13) - (footY - 13);
             const dist = Math.hypot(dx, dy);
+            const isNear = dist < 150;
+            const headDir = isNear ? (dx > 12 ? 1 : (dx < -12 ? -1 : 0)) : 0;
+            const headOffsetX = headDir * 2;
 
-            if (dist < 140) {
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    facing = dx > 0 ? "right" : "left";
-                } else {
-                    facing = dy < 0 ? "up" : "down";
-                }
-            }
-
-            ctx.fillStyle = "rgba(0, 0, 0, 0.40)";
+            // Sombra en el suelo
+            ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
             ctx.beginPath();
             ctx.ellipse(centerX, footY - 1, 14, 5.5, 0, 0, Math.PI * 2);
             ctx.fill();
 
+            // Piernas y zapatos
             const pantsColor = "#1E293B";
             drawRoundedRect(ctx, centerX - 9, footY - 19, 6.5, 14, 2);
             ctx.fillStyle = pantsColor;
@@ -2070,164 +2066,300 @@ window.Game = window.Game || {};
             ctx.fill();
             ctx.stroke();
 
+            // Torso superior con respiración
             ctx.save();
             ctx.translate(centerX, footY - 20 + breath);
 
             const isFemale = npc.gender === "female";
             const outfitColor = npc.outfitColor || "#334155";
             const hairColor = npc.hairColor || "#2B1D16";
-            const skinColor = "#E5B288";
+            const skinColor = "#F0C49F";
 
-            if (facing === "up") {
-                drawRoundedRect(ctx, -14.5, -17, 5, 14, 2);
-                ctx.fillStyle = outfitColor;
-                ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.1;
-                ctx.stroke();
+            // Brazos y manos visibles a los lados
+            drawRoundedRect(ctx, -14.5, -17, 5, 14, 2);
+            ctx.fillStyle = outfitColor;
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.1;
+            ctx.stroke();
 
-                drawRoundedRect(ctx, 9.5, -17, 5, 14, 2);
-                ctx.fillStyle = outfitColor;
-                ctx.fill();
-                ctx.stroke();
+            ctx.fillStyle = skinColor;
+            ctx.beginPath();
+            ctx.arc(-12, -2, 2.5, 0, Math.PI * 2);
+            ctx.fill();
 
-                drawRoundedRect(ctx, -10, -18, 20, 15, 3);
-                ctx.fillStyle = outfitColor;
-                ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.3;
-                ctx.stroke();
+            drawRoundedRect(ctx, 9.5, -17, 5, 14, 2);
+            ctx.fillStyle = outfitColor;
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.1;
+            ctx.stroke();
 
-                drawRoundedRect(ctx, -3.5, -22, 7, 3.5, 1.5);
-                ctx.fillStyle = skinColor;
-                ctx.fill();
+            ctx.fillStyle = skinColor;
+            ctx.beginPath();
+            ctx.arc(12, -2, 2.5, 0, Math.PI * 2);
+            ctx.fill();
 
-                if (isFemale) {
-                    drawRoundedRect(ctx, -8.5, -29, 17, 16, [7, 7, 4, 4]);
-                    ctx.fillStyle = hairColor;
-                    ctx.fill();
-                    ctx.strokeStyle = INK_OUTLINE;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                } else {
-                    ctx.fillStyle = hairColor;
-                    ctx.beginPath();
-                    ctx.arc(0, -25.5, 7.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = INK_OUTLINE;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
-            } else {
-                const isSide = facing === "left" || facing === "right";
-                const headDir = facing === "left" ? -1 : (facing === "right" ? 1 : 0);
+            // Torso principal
+            drawRoundedRect(ctx, -10, -18, 20, 15, 3);
+            ctx.fillStyle = outfitColor;
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.3;
+            ctx.stroke();
 
-                drawRoundedRect(ctx, -14.5, -17, 5, 14, 2);
-                ctx.fillStyle = outfitColor;
-                ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.1;
-                ctx.stroke();
-
-                ctx.fillStyle = skinColor;
+            // Detalles de vestimenta y solapas según el personaje
+            if (isFemale) {
+                // Blusa clara escote sobrio
+                ctx.fillStyle = "#F8FAFC";
                 ctx.beginPath();
-                ctx.arc(-12, -2, 2.5, 0, Math.PI * 2);
+                ctx.moveTo(-4, -18);
+                ctx.lineTo(4, -18);
+                ctx.lineTo(0, -10);
+                ctx.closePath();
                 ctx.fill();
 
-                drawRoundedRect(ctx, 9.5, -17, 5, 14, 2);
-                ctx.fillStyle = outfitColor;
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.fillStyle = skinColor;
-                ctx.beginPath();
-                ctx.arc(12, -2, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                drawRoundedRect(ctx, -10, -18, 20, 15, 3);
-                ctx.fillStyle = outfitColor;
-                ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.3;
-                ctx.stroke();
-
-                if (isFemale) {
-                    ctx.fillStyle = "#F8FAFC";
-                    ctx.beginPath();
-                    ctx.moveTo(-4, -18);
-                    ctx.lineTo(4, -18);
-                    ctx.lineTo(0, -9);
-                    ctx.closePath();
-                    ctx.fill();
-
-                    ctx.strokeStyle = INK_OUTLINE;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(-7, -18);
-                    ctx.lineTo(-2, -9);
-                    ctx.lineTo(-2, -3);
-                    ctx.moveTo(7, -18);
-                    ctx.lineTo(2, -9);
-                    ctx.lineTo(2, -3);
-                    ctx.stroke();
-                } else if (npc.id === "carlos_mendez") {
-                    ctx.fillStyle = "#1E293B";
-                    ctx.beginPath();
-                    ctx.moveTo(-1.5, -17);
-                    ctx.lineTo(1.5, -17);
-                    ctx.lineTo(2, -8);
-                    ctx.lineTo(0, -6);
-                    ctx.lineTo(-2, -8);
-                    ctx.closePath();
-                    ctx.fill();
-                } else if (npc.id === "javier_rojas") {
-                    ctx.strokeStyle = "#1A3026";
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(-4, -18);
-                    ctx.lineTo(0, -12);
-                    ctx.lineTo(4, -18);
-                    ctx.stroke();
-                }
-
-                drawRoundedRect(ctx, -3.5, -22, 7, 3.5, 1.5);
-                ctx.fillStyle = skinColor;
-                ctx.fill();
-
-                ctx.fillStyle = skinColor;
-                ctx.fillRect(-8, -26, 2, 3.5);
-                ctx.fillRect(6, -26, 2, 3.5);
-
-                ctx.fillStyle = skinColor;
-                ctx.beginPath();
-                ctx.arc(0, -25, 7.2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
+                // Solapas del blazer
+                ctx.strokeStyle = "#451A03";
                 ctx.lineWidth = 1.1;
+                ctx.beginPath();
+                ctx.moveTo(-7, -18);
+                ctx.lineTo(-2, -10);
+                ctx.lineTo(-2, -4);
+                ctx.moveTo(7, -18);
+                ctx.lineTo(2, -10);
+                ctx.lineTo(2, -4);
                 ctx.stroke();
-
+            } else if (npc.id === "carlos_mendez") {
+                // Corbata delgada y cuello
                 ctx.fillStyle = "#1E293B";
-                if (isSide) {
-                    const eyeX = headDir > 0 ? 3 : -3;
-                    ctx.fillRect(eyeX - 1, -26, 2, 2.2);
-                } else {
-                    ctx.fillRect(-3.5, -26, 2, 2.2);
-                    ctx.fillRect(1.5, -26, 2, 2.2);
-                }
+                ctx.beginPath();
+                ctx.moveTo(-1.5, -18);
+                ctx.lineTo(1.5, -18);
+                ctx.lineTo(2, -9);
+                ctx.lineTo(0, -6);
+                ctx.lineTo(-2, -9);
+                ctx.closePath();
+                ctx.fill();
+            } else if (npc.id === "luis_herrera") {
+                // Cremallera vertical técnica
+                ctx.strokeStyle = "#64748B";
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(0, -18);
+                ctx.lineTo(0, -4);
+                ctx.stroke();
+            } else if (npc.id === "miguel_torres") {
+                // Cuello abierto
+                ctx.fillStyle = "#042F2E";
+                ctx.beginPath();
+                ctx.moveTo(-3, -18);
+                ctx.lineTo(0, -12);
+                ctx.lineTo(3, -18);
+                ctx.stroke();
+            } else if (npc.id === "javier_rojas") {
+                // Chaleco institucional CICPC con mini placa
+                ctx.strokeStyle = "#0F172A";
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(0, -18);
+                ctx.lineTo(0, -4);
+                ctx.stroke();
+
+                drawRoundedRect(ctx, -6.5, -13, 4.5, 5.5, 1);
+                ctx.fillStyle = "#D99B26";
+                ctx.fill();
+                ctx.strokeStyle = "#111827";
+                ctx.lineWidth = 0.6;
+                ctx.stroke();
+            }
+
+            // Gafete / carnet corporativo colgante en el pecho
+            if (npc.id !== "javier_rojas") {
+                const cardX = 2;
+                const cardY = -12.5;
+                ctx.strokeStyle = isFemale ? "#D97706" : (npc.id === "miguel_torres" ? "#EA580C" : "#2563EB");
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(-1, -18);
+                ctx.lineTo(cardX + 2.5, cardY);
+                ctx.lineTo(3, -18);
+                ctx.stroke();
+
+                drawRoundedRect(ctx, cardX, cardY, 5, 6.5, 1);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 0.7;
+                ctx.stroke();
+                ctx.fillStyle = isFemale ? "#E5B842" : (npc.id === "miguel_torres" ? "#10B981" : "#38BDF8");
+                ctx.fillRect(cardX + 0.5, cardY + 0.5, 4, 1.6);
+            }
+
+            // Cuello anatómico
+            ctx.fillStyle = skinColor;
+            drawRoundedRect(ctx, -3.5 + headOffsetX * 0.4, -22, 7, 4.2, 1.5);
+            ctx.fill();
+            ctx.fillStyle = "rgba(180, 110, 75, 0.35)";
+            ctx.fillRect(-3.5 + headOffsetX * 0.4, -22, 7, 1.5);
+
+            // Cabeza base y contorno definido
+            ctx.fillStyle = skinColor;
+            ctx.beginPath();
+            ctx.arc(headOffsetX, -26.5, 7.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = INK_OUTLINE;
+            ctx.lineWidth = 1.3;
+            ctx.stroke();
+
+            // Mentón
+            drawRoundedRect(ctx, -4.5 + headOffsetX, -23.5, 9, 4, 2);
+            ctx.fillStyle = skinColor;
+            ctx.fill();
+
+            // Sombreado facial inferior
+            ctx.fillStyle = "rgba(35, 25, 20, 0.18)";
+            ctx.beginPath();
+            ctx.arc(headOffsetX, -24.5, 6.5, 0.2, Math.PI - 0.2);
+            ctx.fill();
+
+            // Orejas
+            ctx.fillStyle = "#E5B288";
+            ctx.fillRect(-8.4 + (headDir > 0 ? 0.8 : 0), -27, 2, 4.2);
+            ctx.fillRect(6.4 + (headDir < 0 ? -0.8 : 0), -27, 2, 4.2);
+
+            if (isFemale) {
+                // Zarcillos discretos dorados
+                ctx.fillStyle = "#F59E0B";
+                ctx.fillRect(-8.2 + (headDir > 0 ? 0.8 : 0), -24, 1.4, 1.8);
+                ctx.fillRect(6.8 + (headDir < 0 ? -0.8 : 0), -24, 1.4, 1.8);
+            }
+
+            // Ojos: esclerótica clara + pupila oscura + brillo nítido
+            const eyeY = -27;
+            const leftEyeX = -3.5 + headOffsetX * 0.6;
+            const rightEyeX = 3.5 + headOffsetX * 0.6;
+
+            // Esclerótica
+            ctx.fillStyle = "#F8FAFC";
+            drawRoundedRect(ctx, leftEyeX - 1.8, eyeY - 1.2, 3.6, 2.5, 1);
+            ctx.fill();
+            drawRoundedRect(ctx, rightEyeX - 1.8, eyeY - 1.2, 3.6, 2.5, 1);
+            ctx.fill();
+
+            // Pestañas sutiles en personaje femenino
+            if (isFemale) {
+                ctx.strokeStyle = "#1C1917";
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(leftEyeX - 2.0, eyeY - 1.3);
+                ctx.lineTo(leftEyeX + 1.8, eyeY - 1.3);
+                ctx.moveTo(rightEyeX - 1.8, eyeY - 1.3);
+                ctx.lineTo(rightEyeX + 2.0, eyeY - 1.3);
+                ctx.stroke();
+            }
+
+            // Pupilas oscuras
+            const pupOffset = headDir * 0.4;
+            ctx.fillStyle = "#0E141D";
+            ctx.beginPath();
+            ctx.arc(leftEyeX + pupOffset, eyeY, 1.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(rightEyeX + pupOffset, eyeY, 1.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Brillo blanco en la pupila
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(leftEyeX + pupOffset - 0.4, eyeY - 0.7, 0.7, 0.7);
+            ctx.fillRect(rightEyeX + pupOffset - 0.4, eyeY - 0.7, 0.7, 0.7);
+
+            // Cejas acordes al color del cabello
+            ctx.fillStyle = hairColor;
+            ctx.fillRect(leftEyeX - 2.0, eyeY - 2.8, 3.8, 1.2);
+            ctx.fillRect(rightEyeX - 1.8, eyeY - 2.8, 3.8, 1.2);
+
+            // Nariz sutil
+            ctx.strokeStyle = "rgba(180, 110, 75, 0.65)";
+            ctx.lineWidth = 0.9;
+            ctx.beginPath();
+            const noseX = headOffsetX * 0.6;
+            ctx.moveTo(noseX, -28);
+            ctx.lineTo(noseX + 0.6 + headDir * 0.4, -25.2);
+            ctx.lineTo(noseX - 0.7 + headDir * 0.4, -24.8);
+            ctx.stroke();
+
+            // Boca seria/neutra
+            ctx.fillStyle = "#8C5542";
+            ctx.fillRect(-1.8 + headOffsetX * 0.5, -22.5, 3.6, 1.0);
+
+            // Rasgos faciales diferenciadores
+            if (npc.id === "carlos_mendez") {
+                // Lentes metálicos finos
+                ctx.strokeStyle = "#475569";
+                ctx.lineWidth = 0.85;
+                ctx.strokeRect(leftEyeX - 2.2, eyeY - 1.7, 4.4, 3.3);
+                ctx.strokeRect(rightEyeX - 2.2, eyeY - 1.7, 4.4, 3.3);
+                ctx.beginPath();
+                ctx.moveTo(leftEyeX + 2.2, eyeY - 0.5);
+                ctx.lineTo(rightEyeX - 2.2, eyeY - 0.5);
+                ctx.stroke();
+            } else if (npc.id === "luis_herrera") {
+                // Sombra de barba / candado recortado técnico
+                ctx.fillStyle = "rgba(30, 41, 59, 0.28)";
+                drawRoundedRect(ctx, -3.2 + headOffsetX * 0.5, -23.8, 6.4, 3.5, 1.2);
+                ctx.fill();
+            } else if (npc.id === "miguel_torres") {
+                // Auricular técnico en la oreja
+                ctx.fillStyle = "#0F172A";
+                ctx.fillRect(6.2 + (headDir < 0 ? -0.8 : 0), -27.5, 2.4, 3.0);
+                ctx.strokeStyle = "#64748B";
+                ctx.lineWidth = 0.7;
+                ctx.beginPath();
+                ctx.moveTo(7.2, -26);
+                ctx.lineTo(4.5, -23.5);
+                ctx.stroke();
+            }
+
+            // Cabello modelado
+            if (isFemale) {
+                // Melena con volumen superior y caída en capas sobre hombros
+                drawRoundedRect(ctx, -8.5 + headOffsetX * 0.4, -34, 17, 9.5, [7, 7, 2, 2]);
+                ctx.fillStyle = hairColor;
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 1.0;
+                ctx.stroke();
+
+                ctx.fillStyle = "#D97706";
+                drawRoundedRect(ctx, -6.5 + headOffsetX * 0.4, -34.6, 13, 4.5, [5, 5, 0, 0]);
+                ctx.fill();
+
+                drawRoundedRect(ctx, -9.6, -26, 3.4, 15, [1, 1, 3, 3]);
+                ctx.fillStyle = hairColor;
+                ctx.fill();
+                ctx.stroke();
+
+                drawRoundedRect(ctx, 6.2, -26, 3.4, 15, [1, 1, 3, 3]);
+                ctx.fillStyle = hairColor;
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                // Corte masculino prolijo con raya y volumen
+                drawRoundedRect(ctx, -8 + headOffsetX * 0.4, -34, 16, 9.5, [7, 7, 2, 2]);
+                ctx.fillStyle = hairColor;
+                ctx.fill();
+                ctx.strokeStyle = INK_OUTLINE;
+                ctx.lineWidth = 1.0;
+                ctx.stroke();
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+                drawRoundedRect(ctx, -6.5 + headOffsetX * 0.4, -34.8, 13, 4.8, [5, 5, 0, 0]);
+                ctx.fill();
 
                 ctx.fillStyle = hairColor;
-                if (isFemale) {
-                    drawRoundedRect(ctx, -8.5, -31.5, 17, 8, [6, 6, 2, 2]);
-                    ctx.fill();
-                    ctx.fillRect(-8.5, -26, 2.5, 8);
-                    ctx.fillRect(6, -26, 2.5, 8);
-                } else {
-                    drawRoundedRect(ctx, -7.5, -31, 15, 6.5, [5, 5, 1, 1]);
-                    ctx.fill();
-                    if (isSide) {
-                        ctx.fillRect(headDir > 0 ? -7 : 4, -28, 3, 4);
-                    }
-                }
+                ctx.fillRect(-7.8 + headOffsetX * 0.3, -27.5, 2.2, 3.2);
+                ctx.fillRect(5.6 + headOffsetX * 0.3, -27.5, 2.2, 3.2);
             }
 
             ctx.restore();
