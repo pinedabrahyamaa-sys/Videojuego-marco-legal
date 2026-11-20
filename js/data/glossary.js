@@ -1,62 +1,87 @@
 window.Game = window.Game || {};
 
-// Glosario técnico y marco legal - Ley Especial contra los Delitos Informáticos (Gaceta Oficial N.° 37.313)
+// articulos de la ley para el manual
 window.Game.GLOSSARY = {
     definitions: [
         {
-            term: "Sistema",
+            term: "Tecnología de información",
             art: "Art. 2, lit. a",
-            def: "Arreglo organizado de recursos y procedimientos diseñados para el uso de tecnologías de información, unidos por interacción o interdependencia para cumplir funciones específicas o integrar componentes en un paquete funcional."
+            def: "Rama de la tecnología dedicada al estudio, aplicación y procesamiento de datos (obtención, creación, almacenamiento, administración, modificación, manejo, movimiento, control, visualización, transmisión o recepción automática de información)."
+        },
+        {
+            term: "Sistema",
+            art: "Art. 2, lit. b",
+            def: "Arreglo organizado de recursos y procedimientos diseñados para el uso de tecnologías de información, unidos y regulados por interacción o interdependencia para cumplir funciones específicas, o componentes combinados en un paquete funcional."
         },
         {
             term: "Data (datos)",
-            art: "Art. 2, lit. b",
-            def: "Hechos, conceptos, instrucciones o caracteres representados para ser comunicados, transmitidos o procesados por humanos o medios automáticos, a los cuales se asigna o puede asignarse significado."
+            art: "Art. 2, lit. c",
+            def: "Hechos, conceptos, instrucciones o caracteres representados de manera apropiada para ser comunicados, transmitidos o procesados por seres humanos o medios automáticos, y a los cuales se les asigna o puede asignar un significado."
         },
         {
             term: "Información",
-            art: "Art. 2, lit. c",
-            def: "Significado que el ser humano le asigna a la data utilizando convenciones conocidas y generalmente aceptadas."
+            art: "Art. 2, lit. d",
+            def: "Significado que el ser humano le asigna a la data utilizando las convenciones conocidas y generalmente aceptadas."
         },
         {
             term: "Documento",
-            art: "Art. 2, lit. d",
-            def: "Registro incorporado en un sistema (escrito, video, audio u otro medio) que contiene data o información sobre un hecho o acto capaz de causar efectos jurídicos."
+            art: "Art. 2, lit. e",
+            def: "Registro incorporado en un sistema en forma de escrito, video, audio o cualquier otro medio, que contiene data o información acerca de un hecho o acto capaces de causar efectos jurídicos."
+        },
+        {
+            term: "Computador",
+            art: "Art. 2, lit. f",
+            def: "Dispositivo o unidad funcional que acepta data, la procesa de acuerdo con un programa guardado y genera resultados, incluidas operaciones aritméticas o lógicas."
         },
         {
             term: "Hardware",
-            art: "Art. 2, lit. e",
-            def: "Equipos o dispositivos físicos considerados independientemente de su capacidad o función, que conforman un computador o sus componentes periféricos (herramientas, implementos, conexiones, ensamblajes y partes)."
+            art: "Art. 2, lit. g",
+            def: "Equipos o dispositivos físicos considerados en forma independiente de su capacidad o función, que conforman un computador o sus componentes periféricos (herramientas, implementos, instrumentos, conexiones, ensamblajes y partes)."
+        },
+        {
+            term: "Firmware",
+            art: "Art. 2, lit. h",
+            def: "Programa o segmento de programa incorporado de manera permanente en algún componente del hardware."
         },
         {
             term: "Software",
-            art: "Art. 2, lit. f",
-            def: "Información organizada en programas de computación, procedimientos y documentación asociados para operar un sistema y proveer instrucciones y data al computador."
+            art: "Art. 2, lit. i",
+            def: "Información organizada en forma de programas de computación, procedimientos y documentación asociados, concebidos para realizar la operación de un sistema y proveer instrucciones y data a los computadores."
+        },
+        {
+            term: "Programa",
+            art: "Art. 2, lit. j",
+            def: "Plan, rutina o secuencia de instrucciones utilizados para realizar un trabajo en particular o resolver un problema dado a través de un computador."
+        },
+        {
+            term: "Procesamiento de datos",
+            art: "Art. 2, lit. k",
+            def: "Realización sistemática de operaciones sobre data o sobre información, tales como manejo, fusión, organización o cómputo."
         },
         {
             term: "Seguridad",
-            art: "Art. 2, lit. g",
-            def: "Condición resultante de medidas de protección que garantizan inviolabilidad frente a influencias o actos hostiles que propicien accesos no autorizados o afecten la operatividad del sistema."
+            art: "Art. 2, lit. l",
+            def: "Condición que resulta del establecimiento y mantenimiento de medidas de protección que garanticen un estado de inviolabilidad frente a actos hostiles que propicien accesos no autorizados o afecten la operatividad del sistema."
         },
         {
             term: "Virus",
-            art: "Art. 2, lit. h",
-            def: "Programa o segmento de programa indeseado que se desarrolla incontroladamente y genera efectos destructivos o perturbadores en un programa o componente del sistema."
+            art: "Art. 2, lit. m",
+            def: "Programa o segmento de programa indeseado que se desarrolla incontroladamente y que genera efectos destructivos o perturbadores en un programa o componente del sistema."
         },
         {
             term: "Tarjeta inteligente",
-            art: "Art. 2, lit. i",
-            def: "Rótulo, cédula o carnet usado como instrumento de identificación, acceso a un sistema, pago o crédito, que contiene data o información de uso restringido al usuario autorizado."
+            art: "Art. 2, lit. n",
+            def: "Rótulo, cédula o carnet que se utiliza como instrumento de identificación, de acceso a un sistema, de pago o de crédito, que contiene data o información de uso restringido sobre el usuario autorizado para portarla."
         },
         {
             term: "Contraseña (password)",
-            art: "Art. 2, lit. j",
-            def: "Secuencia alfabética, numérica o combinada, protegida por confidencialidad, utilizada para verificar la autenticidad de la autorización expedida a un usuario para acceder a data o información."
+            art: "Art. 2, lit. o",
+            def: "Secuencia alfabética, numérica o combinación de ambas, protegida por reglas de confidencialidad, utilizada para verificar la autenticidad de la autorización expedida a un usuario para acceder a data o información en un sistema."
         },
         {
             term: "Mensaje de datos",
-            art: "Art. 2, lit. k",
-            def: "Pensamiento, idea, imagen, audio, data o información, en lenguaje explícito o encriptado, preparado en formato adecuado para transmitirse por un sistema de comunicaciones."
+            art: "Art. 2, lit. p",
+            def: "Cualquier pensamiento, idea, imagen, audio, data o información, expresados en un lenguaje conocido (explícito o secreto/encriptado), preparados en formato adecuado para ser transmitidos por un sistema de comunicaciones."
         }
     ],
     rules: [
@@ -83,7 +108,7 @@ window.Game.GLOSSARY = {
         {
             term: "Favorecimiento culposo de sabotaje",
             art: "Capítulo I, Art. 8",
-            def: "Reducción de pena entre un tercio y la mitad. Aplica exclusivamente si el sabotaje del Art. 7 se facilitó por imprudencia, negligencia o impericia del personal de custodia o administración (ausencia de dolo directo)."
+            def: "Reducción de la pena entre la mitad y dos tercios. Aplica si el sabotaje o daño del Art. 7 se cometiere por imprudencia, negligencia, impericia o inobservancia de las normas establecidas (ausencia de dolo directo)."
         },
         {
             term: "Sistemas protegidos (Agravante)",
@@ -98,7 +123,7 @@ window.Game.GLOSSARY = {
         {
             term: "Espionaje informático",
             art: "Capítulo I, Art. 11",
-            def: "Prisión de 3 a 6 años y multa de 300 a 600 UT. Requiere expresamente la obtención, difusión o comercialización indebida de data o información clasificada que comprometa la seguridad del Estado o intereses de la República."
+            def: "Prisión de 3 a 6 años y multa de 300 a 600 UT para quien indebidamente obtenga, revele o difunda data o información de un sistema. Aumenta de 1/3 a 1/2 si es por beneficio personal/ajeno, y de 1/2 a 2/3 si pone en peligro la seguridad del Estado, la confiabilidad de instituciones o causa daño."
         },
         {
             term: "Falsificación de documentos informáticos",
@@ -118,7 +143,7 @@ window.Game.GLOSSARY = {
         {
             term: "Obtención indebida de bienes o servicios",
             art: "Capítulo II, Art. 15",
-            def: "Prisión de 1 a 5 años y multa de 10 a 50 UT por acceder, consumir o disfrutar de bienes o servicios ajenos sin el pago correspondiente, valiéndose de mecanismos electrónicos."
+            def: "Prisión de 2 a 6 años y multa de 200 a 600 UT para quien, sin autorización para portarlos, utilice una tarjeta inteligente ajena o instrumento similar; o utilice indebidamente tecnologías de información para requerir la obtención de cualquier efecto, bien o servicio; o para proveer su pago sin asumir el compromiso de la contraprestación debida."
         },
         {
             term: "Manejo fraudulento de tarjetas inteligentes",
@@ -143,7 +168,7 @@ window.Game.GLOSSARY = {
         {
             term: "Revelación indebida de comunicaciones",
             art: "Capítulo III, Art. 22",
-            def: "Prisión de 2 a 5 años y multa de 200 a 500 UT por divulgar la data interceptada. Aparte único: si la revelación o cesión se efectúa con fin de lucro económico, la pena se incrementa entre 1/3 y 1/2."
+            def: "Prisión de 2 a 6 años y multa de 200 a 600 UT para quien revele, difunda o ceda, en todo o en parte, los hechos descubiertos, imágenes, audio o data obtenidos por los medios de los Arts. 20 y 21. Si se realiza con fin de lucro o resulta perjuicio para otro, la pena se aumentará de un tercio a la mitad."
         },
         {
             term: "Apropiación de propiedad intelectual",
@@ -158,7 +183,7 @@ window.Game.GLOSSARY = {
         {
             term: "Agravantes generales (Título III)",
             art: "Título III, Art. 27",
-            def: "Aumento de 1/3 a 1/2 de la pena en caso de: uso de contraseña ajena (obtenida, quitada, retenida o perdida); abuso de funciones o prevalimiento de cargo con acceso privilegiado; o vulneración de correspondencia mercantil."
+            def: "Aumento de un tercio a la mitad de la pena: 1. Si se hizo uso de contraseña ajena indebidamente obtenida, quitada, retenida o que se hubiere perdido. 2. Si se cometió mediante abuso de la posición de acceso a data o información reservada, o al conocimiento privilegiado de contraseñas, en razón del ejercicio de un cargo o función."
         },
         {
             term: "Sanción especial a personas jurídicas",

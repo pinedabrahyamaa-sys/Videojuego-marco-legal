@@ -77,5 +77,4 @@ Si deseas ejecutar el proyecto de forma local en tu computadora:
 
 ## ⚖️ Marco Legal de Referencia
 - **Gaceta Oficial N.° 37.313** del 30 de octubre de 2001: *Ley Especial contra los Delitos Informáticos*.
-- **Código Penal Venezolano**.
-- **Ley Orgánica de Ciberseguridad y Tecnologías de Información**.
+- **Código Penal de Venezuela**.

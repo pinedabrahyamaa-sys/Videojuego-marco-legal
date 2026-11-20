@@ -1,20 +1,18 @@
 window.Game = window.Game || {};
 
 (function() {
-    // Motor de audio sintetizado con Web Audio API (sin archivos externos)
+    // sonidos (pasos, clics y ambiente)
     let ctx = null;
     let isMuted = false;
     let lastStepTime = 0;
     let isLeftFoot = false;
 
-    // Nodos de Web Audio API para el zumbido ambiental de servidores (Sala 2)
     let humGain = null;
     let humOsc1 = null;
     let humOsc2 = null;
     let humFilter = null;
     let humActive = false;
 
-    // Cargar preferencia persistente
     try {
         isMuted = localStorage.getItem("escape_room_muted") === "true";
     } catch (e) {
@@ -54,11 +52,7 @@ window.Game = window.Game || {};
             return isMuted;
         },
 
-        // =====================================================================
-        // EFECTOS DE SONIDO SINTETIZADOS SUTILES Y SOBRIOS
-        // =====================================================================
 
-        // Pisada ligera y realista de zapato sobre piso de concreto (Web Audio API)
         step: function() {
             try {
                 if (isMuted) return;
@@ -69,12 +63,10 @@ window.Game = window.Game || {};
                 const ac = getAudioContext();
                 if (!ac) return;
 
-                // Alternar sutilmente entre pie izquierdo y derecho para sonido orgánico
                 isLeftFoot = !isLeftFoot;
                 const t = ac.currentTime;
-                const duration = 0.045; // ~45 ms
+                const duration = 0.045;
 
-                // 1. Golpe grave suave de cuerpo / suela (116Hz / 124Hz)
                 const baseFreq = isLeftFoot ? 122 : 116;
                 const pitchJitter = (Math.random() - 0.5) * 4;
                 const oscFreq = baseFreq + pitchJitter;
@@ -100,7 +92,6 @@ window.Game = window.Game || {};
                 osc.start(t);
                 osc.stop(t + duration);
 
-                // 2. Pulso muy corto de ruido blanco con filtro pasa-banda (~900Hz) para textura de concreto
                 const sampleRate = ac.sampleRate || 44100;
                 const bufferSize = Math.max(1, Math.floor(sampleRate * duration));
                 const buffer = ac.createBuffer(1, bufferSize, sampleRate);
@@ -128,11 +119,9 @@ window.Game = window.Game || {};
                 noise.start(t);
                 noise.stop(t + duration);
             } catch (err) {
-                // Silencioso ante cualquier restricción de Web Audio API
             }
         },
 
-        // Sonido de folio / expediente de papel
         paper: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -165,7 +154,6 @@ window.Game = window.Game || {};
             noise.start(t);
         },
 
-        // Sonido de terminal informática / pantalla de datos
         computer: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -190,7 +178,6 @@ window.Game = window.Game || {};
             });
         },
 
-        // Clic discreto de interfaz
         uiClick: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -214,14 +201,13 @@ window.Game = window.Game || {};
             osc.stop(t + 0.025);
         },
 
-        // Acorde sobrio ascendente al superar el Paso 1 de la terminal
         stepSuccess: function() {
             if (isMuted) return;
             const ac = getAudioContext();
             if (!ac) return;
 
             const t = ac.currentTime;
-            const notes = [440, 554.37, 659.25]; // La, Do#, Mi (A mayor)
+            const notes = [440, 554.37, 659.25];
 
             notes.forEach((freq, i) => {
                 const osc = ac.createOscillator();
@@ -247,7 +233,6 @@ window.Game = window.Game || {};
             });
         },
 
-        // Golpe sutil amortiguado al cometer un error en la terminal
         error: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -276,7 +261,6 @@ window.Game = window.Game || {};
             osc.stop(t + 0.18);
         },
 
-        // Clic de desbloqueo mecánico + confirmación de salida
         doorUnlock: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -284,7 +268,6 @@ window.Game = window.Game || {};
 
             const t = ac.currentTime;
 
-            // Clic de cerrojo mecánico
             const clickOsc = ac.createOscillator();
             const clickGain = ac.createGain();
             clickOsc.type = "square";
@@ -297,8 +280,7 @@ window.Game = window.Game || {};
             clickOsc.start(t);
             clickOsc.stop(t + 0.04);
 
-            // Tono armónico posterior
-            const notes = [523.25, 659.25, 783.99]; // Do, Mi, Sol
+            const notes = [523.25, 659.25, 783.99];
             notes.forEach((freq, i) => {
                 const osc = ac.createOscillator();
                 const gain = ac.createGain();
@@ -316,7 +298,6 @@ window.Game = window.Game || {};
             });
         },
 
-        // Barrido suave al cruzar de sala
         transition: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -350,7 +331,6 @@ window.Game = window.Game || {};
             noise.start(t);
         },
 
-        // Progresión elegante de 3 notas al completar el peritaje
         victory: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -358,9 +338,9 @@ window.Game = window.Game || {};
 
             const t = ac.currentTime;
             const chords = [
-                { f: 523.25, d: 0.25 }, // C5
-                { f: 659.25, d: 0.28 }, // E5
-                { f: 783.99, d: 0.45 }  // G5
+                { f: 523.25, d: 0.25 },
+                { f: 659.25, d: 0.28 },
+                { f: 783.99, d: 0.45 } 
             ];
 
             chords.forEach((c, idx) => {
@@ -380,14 +360,13 @@ window.Game = window.Game || {};
             });
         },
 
-        // Sonido suave y breve de hojeo de papel para documentos y notas (~140ms, pasa-banda ~2000Hz)
         paperRustle: function() {
             if (isMuted) return;
             const ac = getAudioContext();
             if (!ac) return;
 
             try {
-                const duration = 0.14; // ~140ms
+                const duration = 0.14;
                 const bufferSize = Math.max(1, Math.floor(ac.sampleRate * duration));
                 const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -417,7 +396,6 @@ window.Game = window.Game || {};
             } catch (e) {}
         },
 
-        // Secuencia corta de clics mecánicos nítidos para terminales y computadoras (~18ms, pasa-altos ~2800Hz)
         keyboardClick: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -425,10 +403,10 @@ window.Game = window.Game || {};
 
             try {
                 const t = ac.currentTime;
-                const clicks = [0, 0.034, 0.072]; // 3 clics rápidos mecánicos
+                const clicks = [0, 0.034, 0.072];
                 clicks.forEach((offset) => {
                     const clickTime = t + offset;
-                    const duration = 0.018; // ~18ms
+                    const duration = 0.018;
 
                     const bufferSize = Math.max(1, Math.floor(ac.sampleRate * duration));
                     const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
@@ -458,7 +436,6 @@ window.Game = window.Game || {};
             } catch (e) {}
         },
 
-        // Zumbido ambiental suave y de baja frecuencia para racks de servidores (Sala 2)
         startServerHum: function() {
             if (isMuted) return;
             const ac = getAudioContext();
@@ -473,16 +450,16 @@ window.Game = window.Game || {};
                 humGain = ac.createGain();
 
                 humOsc1.type = "sine";
-                humOsc1.frequency.setValueAtTime(60, t); // 60Hz
+                humOsc1.frequency.setValueAtTime(60, t);
 
                 humOsc2.type = "sine";
-                humOsc2.frequency.setValueAtTime(120, t); // 120Hz (armónico)
+                humOsc2.frequency.setValueAtTime(120, t);
 
                 humFilter.type = "lowpass";
-                humFilter.frequency.setValueAtTime(180, t); // Pasa-bajos ~180Hz
+                humFilter.frequency.setValueAtTime(180, t);
 
                 humGain.gain.setValueAtTime(0.0001, t);
-                humGain.gain.linearRampToValueAtTime(0.018, t + 0.3); // 300ms fade-in suave
+                humGain.gain.linearRampToValueAtTime(0.018, t + 0.3);
 
                 humOsc1.connect(humFilter);
                 humOsc2.connect(humFilter);
@@ -497,7 +474,6 @@ window.Game = window.Game || {};
             }
         },
 
-        // Apagado suave con fade-out de 300ms del zumbido ambiental
         stopServerHum: function() {
             if (!humActive || !humGain) return;
             const ac = getAudioContext();
@@ -507,7 +483,7 @@ window.Game = window.Game || {};
                 const t = ac.currentTime;
                 humGain.gain.cancelScheduledValues(t);
                 humGain.gain.setValueAtTime(humGain.gain.value, t);
-                humGain.gain.linearRampToValueAtTime(0.0001, t + 0.3); // 300ms fade-out
+                humGain.gain.linearRampToValueAtTime(0.0001, t + 0.3);
 
                 const o1 = humOsc1;
                 const o2 = humOsc2;
@@ -535,6 +511,35 @@ window.Game = window.Game || {};
 
         isHumActive: function() {
             return humActive;
+        },
+
+        dialogueBeep: function() {
+            if (isMuted) return;
+            const ac = getAudioContext();
+            if (!ac) return;
+            try {
+                const t = ac.currentTime;
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                const filter = ac.createBiquadFilter();
+
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(620, t);
+                osc.frequency.exponentialRampToValueAtTime(740, t + 0.04);
+
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(1400, t);
+
+                gain.gain.setValueAtTime(0.08, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(ac.destination);
+
+                osc.start(t);
+                osc.stop(t + 0.045);
+            } catch (e) {}
         }
     };
 })();

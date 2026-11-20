@@ -1,25 +1,19 @@
-/* ==========================================================================
-   AUDITORÍA FORENSE - GACETA OFICIAL N.° 37.313
-   ESTILO DE ILUSTRACIÓN 2D TÉCNICA, SOBRIA, AMPLIA Y NÍTIDA
-   ========================================================================== */
-
+/* colores y estilos base */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-    /* Paleta sobria institucional */
+
     --bg-dark: #11161F;
     --panel-bg: #192230;
     --panel-surface: #202B3D;
     --panel-border: #2C3B52;
     --panel-border-subtle: #233042;
 
-    /* Acentos funcionales mate */
-    --accent-amber: #D99B26;      /* Énfasis pericial, cotejos pendientes */
-    --accent-emerald: #3FA37C;    /* Conformidad jurídica, acceso concedido */
-    --accent-brick: #C84B52;      /* Restricción de acceso, advertencia penal */
-    --accent-blue: #4B6E94;       /* Respaldo institucional */
+    --accent-amber: #D99B26;
+    --accent-emerald: #3FA37C;
+    --accent-brick: #C84B52;
+    --accent-blue: #4B6E94;
 
-    /* Tonalidades de texto y lectura */
     --text-main: #E8EEF5;
     --text-dim: #9CB0C6;
     --text-muted: #6E8299;
@@ -32,7 +26,6 @@
     padding: 0;
 }
 
-/* Scrollbar moderno sobrio */
 ::-webkit-scrollbar {
     width: 7px;
     height: 7px;
@@ -65,7 +58,6 @@ body {
     box-sizing: border-box;
 }
 
-/* Encabezado Institucional Limpio */
 header {
     text-align: center;
     margin-top: 2px;
@@ -83,7 +75,7 @@ header {
     background: rgba(217, 155, 38, 0.1);
     border: 1px solid rgba(217, 155, 38, 0.25);
     padding: 2.5px 10px;
-    border-radius: 12px;
+    border-radius: 4px;
     margin-bottom: 4px;
 }
 
@@ -104,7 +96,7 @@ h1 {
     font-weight: 400;
 }
 
-/* HUD Superior: Barra de Estado Forense Amplia */
+/* barra de arriba y pantalla completa */
 #status-bar {
     width: min(1040px, 96vw, calc((100vh - 132px) * (840 / 520)));
     display: flex;
@@ -114,7 +106,7 @@ h1 {
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     border-bottom: none;
-    border-radius: 8px 8px 0 0;
+    border-radius: 4px 4px 0 0;
     padding: 8px 14px;
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.35);
     z-index: 2;
@@ -126,7 +118,7 @@ h1 {
     gap: 7px;
     background: #141B26;
     border: 1px solid var(--panel-border-subtle);
-    border-radius: 5px;
+    border-radius: 3px;
     padding: 5px 10px;
 }
 
@@ -150,7 +142,6 @@ h1 {
     color: #FFFFFF;
 }
 
-/* Indicador de expediente activo */
 .hud-status-led {
     display: inline-block;
     width: 7px;
@@ -158,10 +149,9 @@ h1 {
     background-color: var(--accent-emerald);
     border-radius: 50%;
     margin-right: 2px;
-    box-shadow: 0 0 6px rgba(63, 163, 124, 0.6);
+    box-shadow: none;
 }
 
-/* Botón de Manual en el HUD */
 .hud-btn {
     display: inline-flex;
     align-items: center;
@@ -170,7 +160,7 @@ h1 {
     color: #FFFFFF;
     border: 1px solid #354763;
     padding: 5px 11px;
-    border-radius: 5px;
+    border-radius: 3px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 600;
@@ -215,19 +205,17 @@ h1 {
     font-weight: 600;
 }
 
-/* Contenedor Principal del Juego */
 #game-container {
     position: relative;
     width: min(1040px, 96vw, calc((100vh - 132px) * (840 / 520)));
     border: 1px solid var(--panel-border);
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 4px 4px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
     background-color: #0E131B;
     overflow: hidden;
     z-index: 1;
 }
 
-/* Canvas nítido en renderizado 2D ilustrado */
 canvas#gameCanvas {
     display: block;
     width: 100%;
@@ -236,7 +224,6 @@ canvas#gameCanvas {
     background-color: #0E131B;
 }
 
-/* Viñeta sutil perimetral */
 .vignette-layer {
     position: absolute;
     inset: 0;
@@ -245,7 +232,6 @@ canvas#gameCanvas {
     z-index: 5;
 }
 
-/* Toast de notificación pericial */
 #tactical-toast {
     position: absolute;
     top: 16px;
@@ -258,7 +244,7 @@ canvas#gameCanvas {
     font-size: 12px;
     font-weight: 500;
     padding: 10px 20px;
-    border-radius: 6px;
+    border-radius: 3px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
     z-index: 25;
     transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out;
@@ -282,7 +268,6 @@ canvas#gameCanvas {
     font-size: 14px;
 }
 
-/* Transición entre sectores periciales */
 #transition-overlay {
     position: absolute;
     inset: 0;
@@ -331,9 +316,6 @@ canvas#gameCanvas {
     color: var(--text-dim);
 }
 
-/* =========================================================================
-   CAPA DE TRANSICIÓN CINEMATOGRÁFICA ENTRE SECTORES // CICPC
-   ========================================================================= */
 #room-transition-overlay {
     position: absolute;
     inset: 0;
@@ -436,7 +418,6 @@ canvas#gameCanvas {
     letter-spacing: 0.5px;
 }
 
-/* Pantallas superpuestas (Inicio y Dictamen Final) */
 .screen-overlay {
     position: absolute;
     inset: 0;
@@ -461,7 +442,7 @@ canvas#gameCanvas {
     background: #192230;
     border: 1px solid var(--panel-border);
     border-top: 4px solid var(--accent-amber);
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 28px 34px;
     max-width: 680px;
     max-height: calc(100% - 20px);
@@ -484,7 +465,6 @@ canvas#gameCanvas {
     max-width: 760px;
 }
 
-/* Sello diagonal de uso académico */
 .academic-stamp {
     position: absolute;
     top: 20px;
@@ -500,7 +480,7 @@ canvas#gameCanvas {
     transform: rotate(6deg);
     text-transform: uppercase;
     pointer-events: none;
-    box-shadow: 0 0 10px rgba(200, 75, 82, 0.15);
+    box-shadow: none;
 }
 
 .screen-footer-note {
@@ -514,9 +494,6 @@ canvas#gameCanvas {
     text-align: center;
 }
 
-/* =========================================================================
-   ENCABEZADO INSTITUCIONAL UNEFA (PORTADA #start-screen)
-   ========================================================================= */
 .unefa-header {
     display: flex;
     align-items: center;
@@ -559,15 +536,12 @@ canvas#gameCanvas {
     letter-spacing: 0.2px;
 }
 
-/* =========================================================================
-   FICHA PERICIAL: EQUIPO DESARROLLADOR
-   ========================================================================= */
 .team-credits {
     margin-top: 14px;
     padding: 10px 14px;
     background: rgba(14, 21, 32, 0.75);
     border: 1px solid #28374D;
-    border-radius: 6px;
+    border-radius: 3px;
     text-align: left;
 }
 
@@ -635,7 +609,7 @@ canvas#gameCanvas {
     background: #202B3D;
     border: 1px solid #2E3E56;
     color: var(--accent-amber);
-    border-radius: 20px;
+    border-radius: 4px;
     margin-bottom: 12px;
 }
 
@@ -677,7 +651,7 @@ canvas#gameCanvas {
 .instruction-item {
     background: #141B26;
     border: 1px solid var(--panel-border-subtle);
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 10px 12px;
     display: flex;
     flex-direction: column;
@@ -733,7 +707,6 @@ canvas#gameCanvas {
     margin: 0;
 }
 
-/* Métricas en Pantalla de Victoria */
 .metrics-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -744,7 +717,7 @@ canvas#gameCanvas {
 .metric-box {
     background: #141B26;
     border: 1px solid var(--panel-border-subtle);
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 10px 12px;
     display: flex;
     flex-direction: column;
@@ -767,12 +740,11 @@ canvas#gameCanvas {
     color: #FFFFFF;
 }
 
-/* Tabla del Informe Final de Auditoría */
 .table-scroll-container {
     max-height: 200px;
     overflow-y: auto;
     border: 1px solid var(--panel-border);
-    border-radius: 6px;
+    border-radius: 3px;
     margin-bottom: 20px;
     background: #121822;
 }
@@ -838,7 +810,6 @@ canvas#gameCanvas {
     font-size: 10.5px;
 }
 
-/* Botones ejecutivos sobrios y amplios */
 .cyber-btn {
     font-family: 'Inter', sans-serif;
     font-size: 12px;
@@ -848,7 +819,7 @@ canvas#gameCanvas {
     background: #233042;
     color: #FFFFFF;
     border: 1px solid #364863;
-    border-radius: 6px;
+    border-radius: 3px;
     cursor: pointer;
     transition: all 0.18s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -870,7 +841,7 @@ canvas#gameCanvas {
 
 .cyber-btn:focus-visible {
     border-color: #FFFFFF;
-    box-shadow: 0 0 0 3px rgba(217, 155, 38, 0.3);
+    outline: 1px solid #FFFFFF;
 }
 
 .cyber-btn:active {
@@ -878,8 +849,128 @@ canvas#gameCanvas {
     background: #1B2533;
 }
 
-/* Modales Amplios para Lectura Legal */
-#terminal-modal, #clue-modal, #manual-modal, #notebook-modal {
+/* selector de sectores en portada */
+.sector-select-block {
+    margin-top: 10px;
+    margin-bottom: 2px;
+    text-align: left;
+}
+
+.sector-select-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #94A3B8;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sector-select-title::before {
+    content: "▶";
+    font-size: 8px;
+    color: var(--accent-amber);
+}
+
+.sector-select-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+}
+
+.btn-sector-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: rgba(15, 23, 34, 0.75);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    color: #CBD5E1;
+    padding: 6px 3px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-sector-select:hover {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: #38BDF8;
+    color: #FFFFFF;
+    box-shadow: none;
+    transform: translateY(-1px);
+}
+
+.btn-sector-select:active {
+    transform: translateY(0);
+}
+
+.btn-sector-select .sec-num {
+    color: var(--accent-amber);
+    font-weight: 700;
+}
+
+.btn-sector-select .sec-sep {
+    color: #64748B;
+    font-weight: 400;
+}
+
+.btn-sector-select .sec-name {
+    color: inherit;
+}
+
+#start-screen .screen-card {
+    padding: 20px 28px;
+    max-height: 94vh;
+}
+
+#start-screen .unefa-header {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+#start-screen .unefa-logo {
+    height: 48px;
+}
+
+#start-screen .screen-title {
+    margin-bottom: 6px;
+    font-size: 15px;
+}
+
+#start-screen .screen-desc {
+    font-size: 11.5px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+#start-screen .instructions-grid {
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+#start-screen .instruction-item {
+    padding: 7px 10px;
+}
+
+#start-screen .team-credits {
+    margin-top: 10px;
+    padding: 8px 12px;
+}
+
+#start-screen .screen-footer-note {
+    margin-top: 8px;
+    padding-top: 8px;
+}
+
+/* modales y gaceta */
+#terminal-modal, #clue-modal, #manual-modal, #notebook-modal, #interview-modal {
     display: none;
     position: absolute;
     top: 50%;
@@ -892,7 +983,7 @@ canvas#gameCanvas {
     background: #192230;
     padding: 24px 28px;
     z-index: 15;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid var(--panel-border);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
     animation: modalEnter 0.22s ease-out;
@@ -921,9 +1012,6 @@ canvas#gameCanvas {
     transition: background 0.2s ease, color 0.2s ease;
 }
 
-/* =========================================================================
-   MODAL DE EVIDENCIA: MODO DOCUMENTO (GACETA OFICIAL N.° 37.313)
-   ========================================================================= */
 #clue-modal.clue-document {
     background: #F4EFE6;
     color: #1A1A1A;
@@ -1050,9 +1138,6 @@ canvas#gameCanvas {
     color: #FFFFFF;
 }
 
-/* =========================================================================
-   MODAL DE EVIDENCIA: MODO COMPUTADORA (ESTACIÓN FORENSE DIGITAL)
-   ========================================================================= */
 #clue-modal.clue-computer {
     background: #151B23;
     color: var(--text-main);
@@ -1072,7 +1157,7 @@ canvas#gameCanvas {
     background: #0D1117;
     border: 1px solid #21262D;
     padding: 7px 12px;
-    border-radius: 6px 6px 0 0;
+    border-radius: 3px 3px 0 0;
     margin: -16px -22px 16px -22px;
     border-bottom: 1px solid #30363D;
 }
@@ -1117,14 +1202,11 @@ canvas#gameCanvas {
     color: #E6EDF3;
     border: 1px solid #30363D;
     border-left: 4px solid #388BFD;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Consolas', 'Courier New', monospace;
     font-size: 12.5px;
     line-height: 1.6;
 }
 
-/* =========================================================================
-   MODAL DE EVIDENCIA: MODO NOTA ANTIGUA / PAPEL ENVEJECIDO (SALAS 2, 3 Y 5)
-   ========================================================================= */
 #clue-modal.clue-old-note {
     background: #EFE6D5 !important;
     border: 2px solid #C4B496 !important;
@@ -1154,7 +1236,7 @@ canvas#gameCanvas {
 }
 
 #clue-modal.clue-old-note #clue-text {
-    font-family: 'Courier New', Georgia, serif;
+    font-family: Georgia, 'Times New Roman', serif; font-style: italic;
     font-size: 13.5px;
     line-height: 1.7;
     color: #36291A;
@@ -1192,7 +1274,6 @@ canvas#gameCanvas {
     margin-bottom: 12px;
 }
 
-/* Indicador de progreso de pasos en la terminal */
 .step-badge {
     display: inline-block;
     font-family: 'JetBrains Mono', monospace;
@@ -1228,7 +1309,6 @@ canvas#gameCanvas {
     border: 1px solid rgba(56, 189, 248, 0.35);
 }
 
-/* Cabecera superior del terminal con botón rápido de Bitácora */
 .terminal-header-top {
     display: flex;
     justify-content: space-between;
@@ -1263,9 +1343,6 @@ canvas#gameCanvas {
     color: #FFFFFF;
 }
 
-/* =========================================================================
-   SELLO PERICIAL DE VALIDACIÓN LEGAL (TERMINAL STAMP)
-   ========================================================================= */
 .terminal-stamp-wrapper {
     position: absolute;
     top: 50%;
@@ -1281,8 +1358,8 @@ canvas#gameCanvas {
     text-transform: uppercase;
     border: 4px double #3FA37C;
     background: rgba(14, 28, 20, 0.95);
-    box-shadow: 0 0 30px rgba(63, 163, 124, 0.45), inset 0 0 20px rgba(63, 163, 124, 0.3);
-    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border-radius: 3px;
     text-align: center;
     transform: rotate(-8deg);
 }
@@ -1336,9 +1413,6 @@ canvas#gameCanvas {
     }
 }
 
-/* =========================================================================
-   PASO 3: TECLADO NUMÉRICO DE ANULACIÓN DE COMPUERTA TÉCNICA
-   ========================================================================= */
 #terminal-keypad {
     margin-top: 14px;
     animation: fadeIn 0.2s ease-out;
@@ -1349,7 +1423,7 @@ canvas#gameCanvas {
     border: 1px solid rgba(63, 163, 124, 0.35);
     color: #D4EFE3;
     padding: 8px 12px;
-    border-radius: 5px;
+    border-radius: 3px;
     margin-bottom: 12px;
     font-size: 12px;
     display: flex;
@@ -1382,7 +1456,7 @@ canvas#gameCanvas {
     background: #0B0E14;
     border: 1px solid #2B3747;
     padding: 10px 18px;
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
@@ -1391,7 +1465,7 @@ canvas#gameCanvas {
     height: 52px;
     background: #11161F;
     border: 1.5px solid #334155;
-    border-radius: 6px;
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1446,7 +1520,7 @@ canvas#gameCanvas {
     font-size: 18px;
     font-weight: 700;
     padding: 10px 0;
-    border-radius: 6px;
+    border-radius: 3px;
     cursor: pointer;
     transition: all 0.12s ease;
 }
@@ -1502,7 +1576,7 @@ canvas#gameCanvas {
     font-size: 11.5px;
     font-weight: 600;
     padding: 8px 14px;
-    border-radius: 5px;
+    border-radius: 3px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1516,9 +1590,6 @@ canvas#gameCanvas {
     color: #FFFFFF;
 }
 
-/* =========================================================================
-   MODAL DE LIBRETA DE CAMPO / BITÁCORA DE EVIDENCIAS ([B])
-   ========================================================================= */
 #notebook-modal {
     width: 680px;
     border-top: 4px solid #D99B26;
@@ -1576,7 +1647,7 @@ canvas#gameCanvas {
 .notebook-card {
     background: #18202B;
     border: 1px solid #2B3747;
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 14px 16px;
     margin-bottom: 12px;
     transition: all 0.18s ease;
@@ -1585,7 +1656,7 @@ canvas#gameCanvas {
 .notebook-card.is-relevant {
     border: 1.5px solid #3FA37C;
     background: rgba(63, 163, 124, 0.06);
-    box-shadow: 0 0 10px rgba(63, 163, 124, 0.15);
+    box-shadow: none;
 }
 
 .notebook-card.is-discarded {
@@ -1675,6 +1746,159 @@ canvas#gameCanvas {
     justify-content: flex-end;
 }
 
+/* acta de entrevista testimonial */
+#interview-modal {
+    width: 660px;
+    background: #141C28;
+    border: 1px solid #29394E;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+}
+
+.interview-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 14px;
+}
+
+.interview-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #38BDF8;
+    background: rgba(56, 189, 248, 0.12);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border-left: 2px solid #38BDF8;
+    display: inline-block;
+    width: fit-content;
+}
+
+.interview-name {
+    margin: 4px 0 0 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #F8FAFC;
+    letter-spacing: 0.3px;
+}
+
+.interview-role {
+    font-size: 11.5px;
+    color: #94A3B8;
+    font-weight: 500;
+}
+
+.interview-header .modal-close-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.interview-statement-box {
+    background: #0B1017;
+    border: 1px solid #1E293B;
+    border-radius: 3px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.statement-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #64748B;
+    margin-bottom: 6px;
+}
+
+.statement-text {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #E2E8F0;
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif; font-size: 14.5px; font-style: italic;
+    min-height: 44px;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.questions-section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    color: #94A3B8;
+    margin-bottom: 8px;
+}
+
+.interview-questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.interview-q-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    background: #192434;
+    border: 1px solid #2B3D54;
+    color: #CBD5E1;
+    padding: 10px 14px;
+    border-radius: 3px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.interview-q-btn:hover {
+    background: #202F44;
+    border-color: #38BDF8;
+    color: #FFFFFF;
+    transform: translateX(2px);
+}
+
+.interview-q-btn .q-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: #94A3B8;
+    flex-shrink: 0;
+}
+
+.interview-q-btn.asked {
+    border-color: #1E3A35;
+    background: #101B1D;
+    color: #8899A6;
+}
+
+.interview-q-btn.asked .q-indicator {
+    background: rgba(63, 163, 124, 0.2);
+    border-color: #3FA37C;
+    color: #3FA37C;
+}
+
+.interview-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .modal-badge-info {
     display: inline-block;
     font-family: 'JetBrains Mono', monospace;
@@ -1712,7 +1936,7 @@ canvas#gameCanvas {
     margin-bottom: 16px;
     background: #121722;
     padding: 14px 16px;
-    border-radius: 6px;
+    border-radius: 3px;
     border-left: 4px solid;
     text-align: justify;
 }
@@ -1726,7 +1950,6 @@ canvas#gameCanvas {
     border-color: var(--accent-amber);
 }
 
-/* Mensaje de observación legal en Terminal */
 #terminal-error {
     display: none;
     background: rgba(200, 75, 82, 0.14);
@@ -1734,13 +1957,12 @@ canvas#gameCanvas {
     color: #F2BAC0;
     font-size: 12px;
     padding: 10px 14px;
-    border-radius: 6px;
+    border-radius: 3px;
     margin-bottom: 12px;
     line-height: 1.45;
     font-weight: 500;
 }
 
-/* Animación Shake al fallar la respuesta */
 @keyframes shake-modal {
     0%, 100% { transform: translate(-50%, -50%); }
     20%, 60% { transform: translate(calc(-50% - 6px), -50%); }
@@ -1751,7 +1973,6 @@ canvas#gameCanvas {
     animation: shake-modal 0.38s ease-in-out;
 }
 
-/* Opciones de respuesta */
 .option-btn {
     display: flex;
     align-items: flex-start;
@@ -1767,7 +1988,7 @@ canvas#gameCanvas {
     font-family: 'Inter', sans-serif;
     font-size: 12px;
     line-height: 1.45;
-    border-radius: 6px;
+    border-radius: 3px;
     transition: all 0.16s ease;
     outline: none;
 }
@@ -1795,11 +2016,10 @@ canvas#gameCanvas {
     background: #1B2433;
 }
 
-/* Tarjeta de Dictamen Validado */
 .verdict-box {
     background: #141D29;
     border: 1px solid rgba(63, 163, 124, 0.35);
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 16px 18px;
     text-align: left;
     margin-top: 10px;
@@ -1836,7 +2056,6 @@ canvas#gameCanvas {
     color: var(--accent-amber);
 }
 
-/* Modal de Manual Legal */
 .manual-modal-header {
     display: flex;
     align-items: flex-start;
@@ -1905,7 +2124,7 @@ canvas#gameCanvas {
     width: 100%;
     background: #131A24;
     border: 1px solid #2E3E56;
-    border-radius: 5px;
+    border-radius: 3px;
     padding: 9px 12px;
     color: #FFFFFF;
     font-family: 'Inter', sans-serif;
@@ -1930,7 +2149,7 @@ canvas#gameCanvas {
 .manual-entry {
     background: #141C26;
     border: 1px solid var(--panel-border-subtle);
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 11px 13px;
 }
 
@@ -1972,7 +2191,6 @@ canvas#gameCanvas {
     text-align: center;
 }
 
-/* Botón cerrar modal de pista */
 .close-btn {
     background: #233042;
     color: #FFFFFF;
@@ -1982,7 +2200,7 @@ canvas#gameCanvas {
     font-family: 'Inter', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    border-radius: 5px;
+    border-radius: 3px;
     transition: all 0.16s ease;
     display: inline-block;
     margin-top: 6px;
@@ -2003,13 +2221,12 @@ canvas#gameCanvas {
     transform: translateY(1px);
 }
 
-/* Sello de Calificación del Dictamen Pericial (Fiscalía) */
 .fiscal-evaluation-seal {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px 18px;
-    border-radius: 6px;
+    border-radius: 3px;
     margin: 10px 0 16px 0;
     text-align: left;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
@@ -2085,7 +2302,7 @@ canvas#gameCanvas {
     margin: 0;
 }
 
-/* Responsividad */
+/* adaptacion para celulares y pantallas chicas */
 @media (max-width: 768px) {
     #status-bar {
         gap: 6px;
@@ -2112,9 +2329,6 @@ canvas#gameCanvas {
     }
 }
 
-/* =========================================================================
-   PANTALLA COMPLETA ADAPTABLE
-   ========================================================================= */
 :fullscreen body,
 :-webkit-full-screen body,
 body.is-fullscreen {
@@ -2134,7 +2348,7 @@ body.is-fullscreen header {
 :-webkit-full-screen #status-bar,
 body.is-fullscreen #status-bar {
     width: min(96vw, calc((100vh - 64px) * (840 / 520))) !important;
-    border-radius: 8px 8px 0 0 !important;
+    border-radius: 4px 4px 0 0 !important;
     padding: 6px 14px !important;
 }
 
@@ -2142,12 +2356,9 @@ body.is-fullscreen #status-bar {
 :-webkit-full-screen #game-container,
 body.is-fullscreen #game-container {
     width: min(96vw, calc((100vh - 64px) * (840 / 520))) !important;
-    border-radius: 0 0 8px 8px !important;
+    border-radius: 0 0 4px 4px !important;
 }
 
-/* =========================================================================
-   ELEMENTOS DE DICTAMEN PERICIAL Y PANTALLA DE VICTORIA
-   ========================================================================= */
 .print-official-header {
     display: flex;
     align-items: center;
@@ -2219,7 +2430,7 @@ body.is-fullscreen #game-container {
     background: #121822;
     border: 1px solid var(--panel-border-subtle);
     padding: 8px 14px;
-    border-radius: 5px;
+    border-radius: 3px;
     margin-bottom: 14px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -2244,7 +2455,7 @@ body.is-fullscreen #game-container {
 .victory-team-block {
     background: rgba(14, 21, 32, 0.75);
     border: 1px solid #28374D;
-    border-radius: 6px;
+    border-radius: 3px;
     padding: 10px 14px;
     margin-bottom: 16px;
     text-align: left;
@@ -2350,16 +2561,13 @@ body.is-fullscreen #game-container {
     border-color: #6EE7B7 !important;
 }
 
-/* =========================================================================
-   HOJA DE ESTILOS PARA IMPRESIÓN OFICIAL Y EXPORTACIÓN PDF (@media print)
-   ========================================================================= */
+/* para imprimir el dictamen en pdf */
 @media print {
     @page {
         size: letter portrait;
         margin: 1.5cm 1.2cm 1.5cm 1.2cm;
     }
 
-    /* Ocultar elementos irrelevantes para el acta formal */
     #status-bar,
     #game-container > canvas,
     .vignette-layer,
@@ -2372,6 +2580,7 @@ body.is-fullscreen #game-container {
     #clue-modal,
     #manual-modal,
     #notebook-modal,
+    #interview-modal,
     header,
     .hud-btn,
     .cyber-btn,
@@ -2423,7 +2632,6 @@ body.is-fullscreen #game-container {
         animation: none !important;
     }
 
-    /* Encabezado Oficial */
     .print-official-header {
         display: flex !important;
         align-items: center;
@@ -2474,7 +2682,6 @@ body.is-fullscreen #game-container {
         margin-bottom: 12px !important;
     }
 
-    /* Metadatos */
     .report-meta-bar {
         background: #F4F4F4 !important;
         border: 1px solid #CCCCCC !important;
@@ -2494,7 +2701,6 @@ body.is-fullscreen #game-container {
         font-weight: bold !important;
     }
 
-    /* Métricas */
     .metrics-row {
         gap: 8px !important;
         margin-bottom: 14px !important;
@@ -2517,7 +2723,6 @@ body.is-fullscreen #game-container {
         font-size: 12pt !important;
     }
 
-    /* Sello fiscal */
     .fiscal-evaluation-seal {
         background: #F7F7F7 !important;
         border: 1.5px solid #222222 !important;
@@ -2544,7 +2749,6 @@ body.is-fullscreen #game-container {
         border: 1px solid #999999 !important;
     }
 
-    /* Tabla */
     .table-scroll-container {
         max-height: none !important;
         overflow: visible !important;
@@ -2593,7 +2797,6 @@ body.is-fullscreen #game-container {
         color: #333333 !important;
     }
 
-    /* Equipo pericial */
     .victory-team-block {
         background: #FAFAFA !important;
         border: 1px solid #CCCCCC !important;
@@ -2631,7 +2834,6 @@ body.is-fullscreen #game-container {
         font-weight: bold !important;
     }
 
-    /* Firmas */
     .print-signatures-block {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;

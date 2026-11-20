@@ -1,23 +1,43 @@
 window.Game = window.Game || {};
 
-// Nombres oficiales de las 5 secciones periciales
 window.Game.ROOM_NAMES = {
-    1: "OFICINA DE SOPORTE",
-    2: "NÚCLEO DE SERVIDORES",
-    3: "ÁREA FINANCIERA",
-    4: "CENTRAL DE COMUNICACIONES",
-    5: "LABORATORIO DE SOFTWARE"
+    1: "Oficina de Soporte",
+    2: "Núcleo de Servidores",
+    3: "Área Financiera",
+    4: "Central de Comunicaciones",
+    5: "Laboratorio de Software"
 };
 
-// Diseños arquitectónicos de las 5 salas periciales en plano amplio (1160 x 740)
-// Con pasillos mínimos garantizados >= 76px libres, mamparas de oficina y mobiliario ampliado HD
 window.Game.ROOM_LAYOUTS = {
-    // =========================================================================
-    // SALA 1 — OFICINA DE SOPORTE
-    // Recepción en la entrada (emblema CICPC), pasillo central que divide 3
-    // cubículos en "L" con mamparas y cuarto de archivo al fondo con puerta abierta.
-    // =========================================================================
+    // sala 1
     1: {
+        npcs: [
+            {
+                id: "carlos_mendez",
+                name: "Carlos Méndez",
+                role: "Analista de Soporte",
+                x: 450,
+                y: 340,
+                gender: "male",
+                outfitColor: "#cbd5e1",
+                hairColor: "#2b2d42",
+                intro: "Buenas, detective. Yo estaba cubriendo la guardia de la mañana cuando el monitor empezó a registrar accesos no autorizados.",
+                questions: [
+                    {
+                        q: "¿Quién tenía credenciales para entrar a ese puesto?",
+                        a: "En teoría solo los analistas activos. Pero un muchacho que renunció el mes pasado nunca entregó su tarjeta ni le dieron de baja a su cuenta de respaldo en el sistema."
+                    },
+                    {
+                        q: "¿Notó si se llevaron o alteraron algún documento?",
+                        a: "En papel no falta nada, revisamos las carpetas. El problema es que alguien se metió desde esa máquina a consultar módulos internos sin tener autorización."
+                    },
+                    {
+                        q: "¿Algo más fuera de lo común en la oficina?",
+                        a: "Nada raro... lo de siempre: la impresora que se traba con papel reciclado y las consultas rutinarias de los usuarios."
+                    }
+                ]
+            }
+        ],
         desks: [
             {
                 x: 150, y: 80, width: 150, label: "PUESTO 01",
@@ -44,40 +64,34 @@ window.Game.ROOM_LAYOUTS = {
             { x: 720, y: 620 }
         ],
         walls: [
-            // Cubículo 1 / 2 (L norte)
             { x: 350, y: 22, width: 14, height: 170 },
             { x: 350, y: 192, width: 130, height: 14 },
-            // Cubículo 3 (L sur)
             { x: 330, y: 490, width: 14, height: 228 },
             { x: 330, y: 476, width: 140, height: 14 },
-            // Cuarto de archivo cerrado con puerta abierta de 90px de luz
             { x: 780, y: 22, width: 14, height: 220 },
             { x: 780, y: 242, width: 100, height: 14 },
             { x: 970, y: 242, width: 130, height: 14 }
         ],
         decor: [
             { type: "table", propType: "table", x: 180, y: 320, width: 90, height: 48, label: "RECEPCIÓN" },
-            // Objeto de ruido 1: Impresora en pasillo central
             {
                 propType: "printer",
                 x: 600, y: 320, width: 50, height: 44,
                 label: "IMPRESORA 01",
                 isNoise: true,
                 clueType: "document",
-                title: "Impresora Multifunción: Reporte de Tóner",
-                clue: "Reporte de autodiagnóstico: Nivel de tóner negro al 88%, tóner cian al 92%, bandeja principal con 200 hojas bond formato carta. Último trabajo en cola: 'Turnos_Soporte_Semana.pdf', emitido a las 17:45 hrs desde la estación local de recepción."
+                title: "Aviso de soporte técnico",
+                clue: "Aviso de soporte: Bandeja 2 trabada con papel reciclado. Se imprimió el rol de guardias técnicas del fin de semana (Turno sábado: Méndez; domingo: Rivas). Favor no recargar hojas arrugadas en el alimentador de la impresora."
             },
-            // Objeto de ruido 2: Archivador en cuarto de archivo cerrado
             {
                 propType: "filingCabinet",
                 x: 820, y: 70, width: 46, height: 44,
                 label: "FACTURAS",
                 isNoise: true,
                 clueType: "document",
-                title: "Archivador Metálico: Facturas de Papelería",
-                clue: "Expediente administrativo de compras: Comprobantes de pago y facturas comerciales canceladas por concepto de resmas de papel bond, carpetas manila, tóner láser y consumibles de oficina correspondientes al primer trimestre del año."
+                title: "Relación de compras de papelería",
+                clue: "Relación de compras de oficina: Factura por 10 resmas de papel bond carta, 3 cajas de bolígrafos Kilométrico, grapas estándar y 2 tóners de repuesto cancelados a Distribuidora Los Próceres por Bs. 850.000. Falta firma de recibido de administración."
             },
-            // Mobiliario auxiliar en archivo
             {
                 propType: "evidenceBox",
                 x: 990, y: 70, width: 44, height: 38,
@@ -86,13 +100,36 @@ window.Game.ROOM_LAYOUTS = {
         ]
     },
 
-    // =========================================================================
-    // SALA 2 — NÚCLEO DE SERVIDORES
-    // Distribución de "jaula fría" con dos pasillos paralelos amplios entre filas
-    // de racks de servidores, más cabina de monitoreo acristalada en el extremo oeste.
-    // =========================================================================
+    // sala 2
     2: {
         doorCode: "2048",
+        npcs: [
+            {
+                id: "luis_herrera",
+                name: "Luis Herrera",
+                role: "Técnico de Infraestructura",
+                x: 200,
+                y: 340,
+                gender: "male",
+                outfitColor: "#334155",
+                hairColor: "#1e293b",
+                intro: "Saludos, inspector. Para mí que en administración se alarmaron de más; esto tuvo pinta de un simple bajón de luz o un comando mal metido.",
+                questions: [
+                    {
+                        q: "¿Usted asegura que la caída del servidor fue accidental?",
+                        a: "Mire, a cualquiera se le va un comando haciendo mantenimiento... pero siendo sincero, ese script raro que corrió en el servidor principal nadie de mi equipo lo reconoce."
+                    },
+                    {
+                        q: "¿Alguien ajeno entró a la jaula fría?",
+                        a: "Ahí solo entramos con llave los técnicos autorizados. Si revisa los registros de la consola sabrá si el sistema falló solo o si alguien le cargó instrucciones para tumbarlo."
+                    },
+                    {
+                        q: "¿Conoce la clave actual del panel de salida?",
+                        a: "Yo no me sé esa combinación. Morales la cambió antes de irse de vacaciones y él siempre dejaba papeles doblados por el archivo técnico."
+                    }
+                ]
+            }
+        ],
         desks: [
             {
                 x: 80, y: 80, width: 160, label: "SEGURIDAD",
@@ -107,7 +144,7 @@ window.Game.ROOM_LAYOUTS = {
             {
                 x: 500, y: 310, width: 160, label: "INCIDENTES",
                 clueType: "document",
-                clue: "Inventario de activos tecnológicos de la corporación: El clúster de servidores afectado cuenta con cortafuegos perimetrales redundantes, cifrado de volumen activo y autenticación multifactor. Las particiones dañadas alojan repositorios de historiales clínicos, registros de identidad y estados patrimoniales de personas naturales y clientes corporativos."
+                clue: "Inventario de activos tecnológicos de la corporación: El clúster de servidores afectado cuenta con cortafuegos perimetrales redundantes, cifrado de volumen activo y contraseñas de acceso restringido. Las particiones dañadas alojan bases de datos con historiales clínicos, registros de identidad y estados patrimoniales de personas naturales y jurídicas."
             },
             {
                 x: 740, y: 310, width: 160, label: "ANÁLISIS",
@@ -116,12 +153,10 @@ window.Game.ROOM_LAYOUTS = {
             }
         ],
         racks: [
-            // Fila Norte
             { x: 460, y: 80, label: "SRV-A1" },
             { x: 600, y: 80, label: "SRV-A2" },
             { x: 740, y: 80, label: "SRV-A3" },
             { x: 880, y: 80, label: "SRV-A4" },
-            // Fila Sur
             { x: 460, y: 530, label: "SRV-B1" },
             { x: 600, y: 530, label: "SRV-B2" },
             { x: 740, y: 530, label: "SRV-B3" },
@@ -132,51 +167,70 @@ window.Game.ROOM_LAYOUTS = {
             { x: 1050, y: 620 }
         ],
         walls: [
-            // Pared divisoria de la cabina de monitoreo acristalada (con acceso libre de 160px)
             { x: 370, y: 22, width: 14, height: 260 },
             { x: 370, y: 440, width: 14, height: 278 }
         ],
         decor: [
-            // Objeto de ruido 1: Impresora en cabina de monitoreo
             {
                 propType: "printer",
                 x: 270, y: 80, width: 50, height: 44,
                 label: "LOGGER",
                 isNoise: true,
                 clueType: "document",
-                title: "Impresora Matricial: Log de Respaldo",
-                clue: "Registro impreso de consola de respaldo: Tarea programada 'backup_incremental_nomina' iniciada a las 02:00:15 hrs y finalizada a las 02:24:40 hrs. Total de bloques procesados: 48.210 MB. Código de salida: 0 (Ejecución satisfactoria)."
+                title: "Reporte de eventos del banco de baterías",
+                clue: "Reporte de eventos del banco de baterías: A las 04:15 hrs hubo una fluctuación eléctrica en la zona que disparó el transfer automático del UPS principal durante 8 minutos. Todos los racks mantuvieron carga nominal sin corte de alimentación ni caída de tensión."
             },
-            // Objeto de ruido 2: Unidad HVAC / Climatización industrial de servidores
             {
                 propType: "acUnit",
                 x: 1020, y: 180, width: 58, height: 50,
                 label: "HVAC CLIMA",
                 isNoise: true,
                 clueType: "computer",
-                title: "Unidad HVAC: Telemetría Ambiental",
-                clue: "Panel de control ambiental de jaula fría: Temperatura de inyección en 17.5 °C, temperatura de retorno en 21.2 °C, humedad relativa al 45%. Suministro de energía ininterrumpida en línea nominal a 220V / 60Hz, sin caídas de tensión ni alertas de condensación."
+                title: "Bitácora de climatización ambiental",
+                clue: "Bitácora de climatización: El compresor 2 del aire de precisión presentó goteo en la bandeja de condensado por la humedad de las lluvias del jueves. Se limpió el desagüe manual y la temperatura de la jaula se estabilizó en 19 °C."
             },
-            // Objeto de ruido 3: Nota arrugada (Archivo técnico) con código sutil
             {
                 propType: "filingCabinet",
                 x: 1020, y: 440, width: 44, height: 44,
                 label: "ARCHIVO",
                 isNoise: true,
                 clueType: "oldNote",
-                title: "Nota arrugada (Archivo técnico)",
-                clue: "De: Téc. Morales (2023). Si el supervisor vuelve a preguntar por qué se reinició el rack 4, dile que fue la bajada de tensión del martes. Por cierto, cambié la clave del panel de salida porque la anterior se la sabía hasta el vigilante; dejé lo mismo que la capacidad en megas del primer servidor que monté aquí en 2011, el famoso 2048. No lo anotes en la pizarra."
+                title: "Nota manuscrita en archivo técnico",
+                clue: "Morales: si los de operaciones vienen a quejarse otra vez por el teclado de la jaula, diles que fue por el bajón de luz que descalibró el pestillo. Cambié la clave para que no entre cualquiera a curiosear: puse los megas de RAM del servidor de base de datos que montamos este año, 2048. Ni se te ocurra dejarla anotada en la pizarra."
             }
         ]
     },
 
-    // =========================================================================
-    // SALA 3 — ÁREA FINANCIERA
-    // Vestíbulo de control, sala de juntas central con mesa grande, despacho
-    // gerencial compartimentado y rincón de bóveda/caja fuerte con lectoras.
-    // =========================================================================
+    // sala 3
     3: {
         doorCode: "8415",
+        npcs: [
+            {
+                id: "patricia_silva",
+                name: "Patricia Silva",
+                role: "Coordinadora Administrativa",
+                x: 650,
+                y: 430,
+                gender: "female",
+                outfitColor: "#5b2333",
+                hairColor: "#3b1e28",
+                intro: "Qué alivio que llegó la comisión del CICPC. Cuando cuadrábamos el cierre ayer por la tarde vimos un descuadre gravísimo en las transferencias.",
+                questions: [
+                    {
+                        q: "¿Se perdieron tarjetas o sustrajeron dinero directamente?",
+                        a: "No tocaron plásticos ni cajeros. Lo que hicieron fue modificar las instrucciones del sistema contable para canalizar los pagos hacia una cuenta ajena."
+                    },
+                    {
+                        q: "¿Ya calcularon el daño económico exacto?",
+                        a: "A simple vista es imposible determinar el monto total; el banco nos advirtió que se necesitará una experticia contable e informática para cuantificar el perjuicio real."
+                    },
+                    {
+                        q: "¿Quién administraba la puerta de seguridad?",
+                        a: "Esa cerradura la manejaba don Ernesto desde que inauguramos la sede. Seguro dejó algún memorando con el código guardado en los gaveteros."
+                    }
+                ]
+            }
+        ],
         desks: [
             {
                 x: 780, y: 80, width: 160, label: "TESORERÍA",
@@ -202,71 +256,84 @@ window.Game.ROOM_LAYOUTS = {
             { x: 720, y: 620 }
         ],
         walls: [
-            // Separador del vestíbulo de control (paso libre central de 160px)
             { x: 280, y: 22, width: 14, height: 260 },
             { x: 280, y: 440, width: 14, height: 278 },
-            // Rincón reforzado de la bóveda
             { x: 20, y: 200, width: 170, height: 14 },
-            // Sala de juntas central (particiones norte y sur con amplias entradas laterales)
             { x: 340, y: 200, width: 330, height: 14 },
             { x: 340, y: 520, width: 330, height: 14 },
-            // Despacho gerencial
             { x: 720, y: 22, width: 14, height: 210 }
         ],
         decor: [
-            // Mesa de recepción de control en vestíbulo (desplazada fuera del área de spawn)
             { type: "table", propType: "table", x: 130, y: 220, width: 80, height: 46, label: "CONTROL" },
-            // Objeto de ruido 1: Caja fuerte / bóveda menor
             {
                 propType: "safe",
                 x: 70, y: 70, width: 50, height: 50,
                 label: "CAJA CHICA",
                 isNoise: true,
                 clueType: "document",
-                title: "Caja Fuerte: Arqueo de Caja Chica",
-                clue: "Acta de arqueo periódico de caja menor: Fondos asignados por Bs. 1.000. Facturas y vales de caja adjuntos por compra de café en grano, bidones de agua mineral y suministros de limpieza por Bs. 720, con remanente en efectivo de Bs. 280 en billetes de curso legal."
+                title: "Vale de caja menor",
+                clue: "Vale provisional de caja menor: Bs. 450.000 entregados para bidones de agua mineral, café en grano, azúcar y refrigerios de la reunión de cierre de mes. Facturas grapadas en la carpeta amarilla de Tesorería."
             },
-            // Mesa de juntas central
             {
                 propType: "conferenceTable",
                 x: 420, y: 315, width: 150, height: 64,
                 label: "MESA DE JUNTA"
             },
-            // Objeto de ruido 2: Pizarra de juntas
             {
                 propType: "whiteboard",
                 x: 460, y: 216, width: 70, height: 32,
                 label: "METAS",
                 isNoise: true,
                 clueType: "document",
-                title: "Pizarra de Juntas: Metas Comerciales",
-                clue: "Esquema de planificación comercial: Gráfica comparativa de metas de captación de cuentas corporativas, proyección de comisiones bancarias para el segundo semestre y cronograma de reuniones con proveedores de servicios de auditoría."
+                title: "Circular interna de administración",
+                clue: "Circular administrativa N.° 14: Se recuerda a todo el personal consignar a tiempo los comprobantes de retención de ISLR y el reporte de viáticos antes del día 28. No se procesarán anticipos fuera de fecha."
             },
-            // Archivador en despacho gerencial
             {
                 propType: "filingCabinet",
                 x: 990, y: 80, width: 44, height: 44,
                 label: "LEGAJOS"
             },
-            // Objeto de ruido 3: Memorando antiguo (Cajón inferior) con código sutil
             {
                 propType: "filingCabinet",
                 x: 880, y: 220, width: 44, height: 44,
                 label: "CAJÓN",
                 isNoise: true,
                 clueType: "oldNote",
-                title: "Memorando antiguo (Cajón inferior)",
-                clue: "Para: Claudia — Gerencia. Te dejé las llaves del depósito en el segundo cajón. Me voy de permiso el viernes y no pienso contestar el teléfono. Si necesitas sacar las cajas por la puerta de seguridad, recuerda que don Ernesto nunca quiso cambiar la combinación desde que abrió la sucursal: dejó los últimos cuatro dígitos de su extensión interna de toda la vida (la 8415). Avísale a soporte antes de cerrar."
+                title: "Memorando en gaveta inferior",
+                clue: "Claudia: me voy de permiso médico desde el viernes y regreso el martes. Dejé las carpetas del balance en el estante de arriba. Si don Ernesto no está y te toca abrir la puerta de seguridad, acuérdate de que él nunca quiso cambiar la clave: siguen siendo los cuatro números de su extensión del conmutador, la 8415. Pasa el pestillo al salir."
             }
         ]
     },
 
-    // =========================================================================
-    // SALA 4 — CENTRAL DE COMUNICACIONES
-    // Sala en forma de "U" rodeando una isla central de operadores/enrutamiento,
-    // con cabinas laterales de telecomunicaciones y pasillos perimetrales libres.
-    // =========================================================================
+    // sala 4
     4: {
+        npcs: [
+            {
+                id: "javier_rojas",
+                name: "Javier Rojas",
+                role: "Ingeniero de Redes",
+                x: 300,
+                y: 340,
+                gender: "male",
+                outfitColor: "#2d4a3e",
+                hairColor: "#1a2520",
+                intro: "Buenas tardes, detective. Los enlaces de mensajería interna estuvieron desviando tráfico hacia afuera durante toda la madrugada.",
+                questions: [
+                    {
+                        q: "¿Qué tipo de tráfico fue comprometido?",
+                        a: "No buscaron las nóminas ni los saldos. Se dedicaron a capturar en tiempo real los correos y comunicaciones privadas que se cruzaban entre directores."
+                    },
+                    {
+                        q: "¿Lograron rastrear desde dónde se ejecutó el ataque?",
+                        a: "El paquete de ataque vino rebotado desde una dirección IP extranjera, pero la interceptación perjudicó de lleno las operaciones de nuestra oficina en Caracas."
+                    },
+                    {
+                        q: "¿Existe ya alguna denuncia o juicio en el país de origen?",
+                        a: "Hablamos con la consultoría jurídica: afuera no hay ningún procedimiento abierto ni esa gente ha sido procesada en ningún tribunal extranjero."
+                    }
+                ]
+            }
+        ],
         desks: [
             {
                 x: 480, y: 260, width: 160, label: "CORREO",
@@ -300,47 +367,67 @@ window.Game.ROOM_LAYOUTS = {
             { x: 960, y: 340 }
         ],
         walls: [
-            // Mamparas que delimitan la isla central en U (abierta al este con 290px de luz)
             { x: 430, y: 210, width: 14, height: 320 },
             { x: 430, y: 210, width: 330, height: 14 },
             { x: 430, y: 516, width: 330, height: 14 }
         ],
         decor: [
-            // Objeto de ruido 1: Impresora en cabina norte
             {
                 propType: "printer",
                 x: 480, y: 70, width: 50, height: 44,
                 label: "CONMUTADOR",
                 isNoise: true,
                 clueType: "document",
-                title: "Impresora de Conmutador: Bitácora PBX",
-                clue: "Registro automático de la centralita telefónica PBX: 130 llamadas entrantes procesadas en recepción comercial durante el turno matutino, con 42 derivaciones al departamento de atención al cliente y 18 registros en el conmutador de buzón de voz."
+                title: "Aviso de mantenimiento de enlace",
+                clue: "Aviso de proveedor de telecomunicaciones: Notificación de trabajos de mantenimiento nocturno en el cableado de la central telefónica de la zona el próximo miércoles de 01:00 a 05:00 hrs. Posible intermitencia temporal en enlaces dedicados y discado directo."
             },
-            // Objeto de ruido 2: Archivador en cabina sur
             {
                 propType: "filingCabinet",
                 x: 480, y: 580, width: 44, height: 44,
                 label: "ENLACES",
                 isNoise: true,
                 clueType: "document",
-                title: "Archivador: Contratos de Troncales",
-                clue: "Legajo de telecomunicaciones y contratos de servicio: Acuerdos corporativos de provisión de enlace troncal de fibra óptica simétrica (1 Gbps), anexos técnicos de nivel de servicio (SLA 99.8%) y comprobantes de facturación mensual del operador de Internet."
+                title: "Minuta de guardia de redes",
+                clue: "Minuta de guardia de redes: Se reportó caída del enlace secundario hacia la sede regional durante el aguacero del martes. Se verificó conmutación al canal de respaldo y se levantó el ticket de reclamo N.° 4108 ante la operadora."
             }
         ]
     },
 
-    // =========================================================================
-    // SALA 5 — LABORATORIO DE SOFTWARE
-    // Distribución asimétrica con islas de estaciones de prueba, pizarra de
-    // arquitectura y zona acordonada de CUARENTENA / EQUIPO INCAUTADO.
-    // =========================================================================
+    // sala 5
     5: {
         doorCode: "5903",
+        npcs: [
+            {
+                id: "andres_delgado",
+                name: "Andrés Delgado",
+                role: "Desarrollador Junior",
+                x: 620,
+                y: 340,
+                gender: "male",
+                outfitColor: "#234b5c",
+                hairColor: "#241f1c",
+                intro: "Inspector, yo prefiero hablar con la verdad desde ya... Cuando la directiva propuso copiar ese código yo les dije que eso nos iba a traer líos legales.",
+                questions: [
+                    {
+                        q: "¿Quién dio la orden de reproducir y vender el software?",
+                        a: "Eso no fue invento de los programadores. Vino como instrucción por escrito de la gerencia de la contratista para comercializar el paquete a terceros."
+                    },
+                    {
+                        q: "¿Qué equipos utilizaron para compilar y distribuir la copia?",
+                        a: "Se usaron las estaciones de trabajo, los servidores y las licencias que paga la propia empresa, buscando lucrarse con el proyecto."
+                    },
+                    {
+                        q: "¿Sabe por qué está bloqueado el teclado de la salida?",
+                        a: "El ingeniero Blanco lo puso en la guardia de anoche antes de irse. Siempre anota esas claves en un cuaderno de notas que deja por los mesones."
+                    }
+                ]
+            }
+        ],
         desks: [
             {
-                x: 440, y: 90, width: 160, label: "REPOSITORIO",
+                x: 440, y: 90, width: 160, label: "SOFTWARE",
                 clueType: "computer",
-                clue: "Registro de control de versiones Git: A través de una sesión remota no autorizada, se descargó el árbol completo del repositorio que contiene el código fuente y módulos compilados del software propietario desarrollado por la empresa para su comercialización exclusiva."
+                clue: "Registro de auditoría del servidor de desarrollo: A través de una sesión remota no autorizada, se descargó el paquete maestro que contiene el código fuente y programas de computación del software propietario desarrollado por la empresa para su comercialización exclusiva."
             },
             {
                 x: 440, y: 540, width: 160, label: "PROPIEDAD",
@@ -350,7 +437,7 @@ window.Game.ROOM_LAYOUTS = {
             {
                 x: 140, y: 540, width: 160, label: "DICTAMEN",
                 clueType: "document",
-                clue: "Ficha técnica de recursos humanos y auditoría pericial: El imputado principal actuó como líder técnico del proyecto, cargo que le otorgaba custodia y acceso privilegiado a los repositorios. La comercialización del código protegido generó un perjuicio cuantificable al patrimonio del titular del software, acreditándose los extremos para la sanción corporativa a la persona jurídica, la inhabilitación del responsable y la indemnización civil obligatoria por expertos."
+                clue: "Ficha técnica de recursos humanos y auditoría pericial: El imputado principal actuó como líder técnico del proyecto, cargo que le otorgaba custodia y acceso privilegiado a los programas y sistemas de software de la organización. La comercialización del código protegido generó un perjuicio cuantificable al patrimonio del titular del software, acreditándose los extremos para la sanción corporativa a la persona jurídica, la inhabilitación del responsable y la indemnización civil obligatoria por expertos."
             }
         ],
         racks: [
@@ -362,47 +449,42 @@ window.Game.ROOM_LAYOUTS = {
             { x: 700, y: 620 }
         ],
         walls: [
-            // Muros asimétricos del laboratorio con amplia abertura central de 208px
             { x: 360, y: 22, width: 14, height: 230 },
             { x: 360, y: 460, width: 14, height: 258 },
             { x: 720, y: 22, width: 14, height: 160 }
         ],
         decor: [
-            // Objeto de ruido 1: Pizarra de arquitectura UI/UX
             {
                 propType: "whiteboard",
                 x: 140, y: 60, width: 80, height: 40,
                 label: "ARQUITECTURA",
                 isNoise: true,
                 clueType: "document",
-                title: "Pizarra de Arquitectura: Mockups UI/UX",
-                clue: "Diagrama de experiencia de usuario (UI/UX): Mapa de navegación de pantallas, wireframes preliminares para la versión móvil del portal web y lista de requerimientos de diseño estético para botones, tipografías y paletas de colores corporativas."
+                title: "Pizarra de tareas pendientes",
+                clue: "Esquema de módulos pendientes: Ajustar validación de cédulas en el formulario de clientes, corregir alineación de la grilla de consulta y revisar el reporte en hoja de cálculo antes del pase a producción."
             },
-            // Zona de Cuarentena: Caja de evidencia preservada
             {
                 propType: "evidenceBox",
                 x: 800, y: 90, width: 44, height: 38,
                 label: "EVIDENCIA 01"
             },
-            // Objeto de ruido 2: Caja de archivo con componentes en depósito
             {
                 propType: "evidenceBox",
                 x: 920, y: 90, width: 44, height: 38,
                 label: "PERIFÉRICOS",
                 isNoise: true,
                 clueType: "document",
-                title: "Caja de Archivo: Lote de Periféricos",
-                clue: "Inventario de componentes periféricos en depósito: Lote de 14 teclados USB estándar con cables deteriorados, 9 ratones ópticos genéricos en desuso y 20 cables de alimentación eléctrica retirados de las estaciones de trabajo para recambio tecnológico."
+                title: "Inventario de rezagos de hardware",
+                clue: "Inventario de rezagos de hardware: 8 teclados PS/2 con teclas gastadas, 4 ratones de bola para limpieza de rodillos y rollos de cable UTP categoría 5 sobrantes de la instalación del piso 2."
             },
-            // Objeto de ruido 3: Hoja de cuaderno olvidada con código sutil
             {
                 propType: "table",
                 x: 800, y: 220, width: 50, height: 44,
                 label: "CUADERNO",
                 isNoise: true,
                 clueType: "oldNote",
-                title: "Hoja de cuaderno olvidada",
-                clue: "Bitácora personal — Ing. R. Blanco. Otra madrugada compilando parches sin café. El jefe de seguridad se molestó porque dejé la zona de cuarentena abierta, así que activé el teclado numérico de la salida. Para no olvidarlo mientras terminamos la migración, usé el número de lote del primer equipo que catalogamos este trimestre, el Lote #5903. El lunes lo cambio por uno aleatorio."
+                title: "Hoja de cuaderno rayado",
+                clue: "Nota de guardia — Ing. R. Blanco: Me quedé hasta la medianoche probando los instaladores. Para que el personal de limpieza no deje la puerta entreabierta de noche, bloqueé el acceso con el teclado. Puse de combinación el número de lote del servidor que llegó en el flete de la semana pasada, Lote #5903. El lunes a primera hora lo desbloqueo."
             }
         ]
     }

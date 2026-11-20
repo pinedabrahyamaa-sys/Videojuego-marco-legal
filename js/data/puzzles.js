@@ -1,15 +1,12 @@
 window.Game = window.Game || {};
 
-// Desafíos periciales en dos fases conforme a la Ley Especial contra los Delitos Informáticos (Gaceta N.° 37.313)
+// preguntas del terminal para cada sala
 window.Game.PUZZLES = {
-    // =========================================================================
-    // SALA 1 — OFICINA DE SOPORTE
-    // =========================================================================
     1: {
-        title: "Expediente 01 // Intrusión y Abuso de Credenciales",
-        summary: "Un operador de soporte escaló privilegios al panel de administración valiéndose de una credencial retenida de un exsupervisor, sin alterar datos ni insertar malware.",
+        title: "Expediente 01 - Intrusión y abuso de credenciales",
+        summary: "Un operador de soporte escaló privilegios al panel de administración valiéndose de una credencial retenida de un exsupervisor, sin alterar datos ni insertar un virus o programa análogo.",
         step1: {
-            prompt: "PASO 1/2 — Conforme a la evidencia forense y el Manual Legal [M], tipifica el delito principal:",
+            prompt: "Paso 1 de 2: Conforme a la evidencia y el Manual legal [M], tipifica el delito principal:",
             options: [
                 {
                     text: "Acceso indebido (Art. 6): Prisión de 1 a 5 años y multa de 10 a 50 UT.",
@@ -53,7 +50,7 @@ window.Game.PUZZLES = {
                     fiscalFeedback: "Fiscalía observa: El sistema vulnerado no contenía data sensible de salud ni cuentas patrimoniales protegidas por el Art. 9; la circunstancia fáctica demostrada fue el uso de credencial ajena de un exempleado y abuso de cargo (Arts. 27 y 29)."
                 },
                 {
-                    text: "Atenuación facultativa por falta de dolo o favorecimiento culposo (Art. 8) con reducción de la pena a un tercio.",
+                    text: "Atenuación por favorecimiento culposo (Art. 8) con reducción de la pena entre la mitad y dos tercios.",
                     correct: false,
                     feedback: "Observación fiscal: La conducta fue intencional y deliberada, incompatible con la figura culposa del Art. 8.",
                     fiscalFeedback: "Fiscalía observa: El operador ejecutó una intrusión voluntaria valiéndose de una clave ajena; la ausencia de imprudencia o impericia descarta cualquier atenuación por culpa del Art. 8."
@@ -75,14 +72,11 @@ window.Game.PUZZLES = {
         }
     },
 
-    // =========================================================================
-    // SALA 2 — NÚCLEO DE SERVIDORES
-    // =========================================================================
     2: {
-        title: "Expediente 02 // Sabotaje a Servidores de Datos Protegidos",
+        title: "Expediente 02 - Sabotaje a servidores de datos protegidos",
         summary: "Se detectó la inserción dolosa de un virus informático que colapsó irreversiblemente servidores protegidos que custodian datos patrimoniales y personales.",
         step1: {
-            prompt: "PASO 1/2 — Conforme al análisis de código malicioso y el Manual Legal [M], tipifica el delito base:",
+            prompt: "Paso 1 de 2: Conforme al análisis de código y el Manual legal [M], tipifica el delito base:",
             options: [
                 {
                     text: "Sabotaje o daño a sistemas mediante virus (Art. 7, segundo aparte): Prisión de 5 a 10 años y multa de 500 a 1.000 UT.",
@@ -91,7 +85,7 @@ window.Game.PUZZLES = {
                     fiscalFeedback: "Tipificación agravada por virus homologada."
                 },
                 {
-                    text: "Favorecimiento culposo (Art. 8): Prisión reducida entre un tercio y la mitad.",
+                    text: "Favorecimiento culposo (Art. 8): Prisión reducida entre la mitad y dos tercios.",
                     correct: false,
                     feedback: "Observación fiscal: El código fue compilado con dolo directo, descartando impericia o descuido de los operadores.",
                     fiscalFeedback: "Fiscalía observa: El peritaje técnico comprobó la inserción deliberada de código malicioso con rutinas programadas de daño masivo; se descarta la negligencia o imprudencia requerida por el Art. 8. Consulte el Art. 7 en el Manual [M]."
@@ -148,14 +142,11 @@ window.Game.PUZZLES = {
         }
     },
 
-    // =========================================================================
-    // SALA 3 — ÁREA FINANCIERA
-    // =========================================================================
     3: {
-        title: "Expediente 03 // Desvío de Fondos por Instrucciones Falsas",
+        title: "Expediente 03 - Desvío de fondos por instrucciones falsas",
         summary: "Se constató la alteración fraudulenta del código contable para desviar fondos patrimoniales hacia cuentas no autorizadas mediante manipulación transaccional.",
         step1: {
-            prompt: "PASO 1/2 — Conforme a las trazas contables y el Manual Legal [M], tipifica el delito patrimonial:",
+            prompt: "Paso 1 de 2: Conforme a las trazas contables y el Manual legal [M], tipifica el delito patrimonial:",
             options: [
                 {
                     text: "Fraude informático (Art. 14): Prisión de 3 a 7 años y multa de 300 a 700 UT.",
@@ -176,9 +167,9 @@ window.Game.PUZZLES = {
                     fiscalFeedback: "Fiscalía observa: El dictamen de laboratorio descartó manipulación o clonación de tarjetas plásticas inteligentes (definidas en Art. 2 lit. i); el ataque se ejecutó a nivel de comandos de software bancario. Consulte el Art. 14 en el Manual [M]."
                 },
                 {
-                    text: "Obtención indebida de bienes o servicios (Art. 15): Prisión de 1 a 5 años y multa de 10 a 50 UT.",
+                    text: "Obtención indebida de bienes o servicios (Art. 15): Prisión de 2 a 6 años y multa de 200 a 600 UT.",
                     correct: false,
-                    feedback: "Observación fiscal: El tipo del Art. 15 sanciona el consumo ilícito de servicios (como telefonía o streaming), no el desvío ilícito de fondos líquidos.",
+                    feedback: "Observación fiscal: El tipo del Art. 15 sanciona el consumo ilícito de servicios (como servicios telefónicos o acceso telemático no autorizado), no el desvío ilícito de fondos líquidos.",
                     fiscalFeedback: "Fiscalía observa: El Art. 15 tipifica el acceso furtivo a servicios o consumos ajenos sin pago; la alteración de órdenes de dispersión para apropiarse de capital integra de manera exclusiva el fraude del Art. 14."
                 }
             ]
@@ -221,14 +212,11 @@ window.Game.PUZZLES = {
         }
     },
 
-    // =========================================================================
-    // SALA 4 — CENTRAL DE COMUNICACIONES
-    // =========================================================================
     4: {
-        title: "Expediente 04 // Interceptación y Cesión Corporativa Ilícita",
+        title: "Expediente 04 - Interceptación y cesión corporativa ilícita",
         summary: "La directiva de una empresa acordó interceptar y comercializar mensajes de datos de competidores usando recursos de la corporación para provecho societario.",
         step1: {
-            prompt: "PASO 1/2 — Conforme a la evidencia de captura en redes y el Manual Legal [M], tipifica el delito matriz:",
+            prompt: "Paso 1 de 2: Conforme a la evidencia de captura en redes y el Manual legal [M], tipifica el delito matriz:",
             options: [
                 {
                     text: "Violación de la privacidad de las comunicaciones (Art. 21): Prisión de 2 a 6 años y multa de 200 a 600 UT.",
@@ -243,7 +231,7 @@ window.Game.PUZZLES = {
                     fiscalFeedback: "Fiscalía observa: El Art. 20 castiga el acceso o copia de datos en reposo dentro de bases de datos; el sniffer capturó mensajes de datos y correos en tránsito por canales de comunicación (Art. 21). Distinga ambos en el Manual [M]."
                 },
                 {
-                    text: "Revelación indebida de data o información personal (Art. 22): Prisión de 2 a 5 años y multa de 200 a 500 UT.",
+                    text: "Revelación indebida de data o información de carácter personal (Art. 22): Prisión de 2 a 6 años y multa de 200 a 600 UT.",
                     correct: false,
                     feedback: "Observación fiscal: La revelación es la fase posterior de difusión; el delito base y conducta matriz en el router fue la interceptación del Art. 21.",
                     fiscalFeedback: "Fiscalía observa: Si bien existió divulgación posterior, la acción delictiva originaria y autónoma ejecutada en el conmutador de red es la interceptación de mensajes de datos (Art. 21). Revise el Manual [M]."
@@ -278,7 +266,7 @@ window.Game.PUZZLES = {
                     fiscalFeedback: "Fiscalía observa: El juzgamiento no queda subordinado a tratados de extradición si el daño se produjo en el territorio de la República (Art. 3); además, la expulsión del Art. 30 opera solo después de cumplida la pena principal impuesta."
                 },
                 {
-                    text: "Atenuación facultativa de la pena a un tercio por concurrencia de jurisdicciones foráneas y falta de allanamiento telemático internacional (Art. 8).",
+                    text: "Atenuación de la pena entre la mitad y dos tercios por favorecimiento culposo (Art. 8).",
                     correct: false,
                     feedback: "Observación fiscal: La Ley no atenúa por el uso de servidores extranjeros; la conducta dolosa con fin de lucro mantiene la plenitud punitiva.",
                     fiscalFeedback: "Fiscalía observa: La Ley Especial no contempla atenuantes de culpa (Art. 8) por operar desde el extranjero; al surtirse los efectos lesivos en territorio venezolano mediando ánimo de lucro, se aplica la agravación del Art. 22 bajo el imperio del Art. 3."
@@ -290,18 +278,15 @@ window.Game.PUZZLES = {
             room: "Sala 4: Comunicaciones",
             crime: "Interceptación Extraterritorial y Lucro Ilícito",
             articles: "Arts. 3, 21 y 22",
-            penalty: "Prisión de 2 a 6 años (+ 1/3 a 1/2 por lucro) | Multa 200–500 UT | Sujeción plena a la ley venezolana (Art. 3)"
+            penalty: "Prisión de 2 a 6 años (+ 1/3 a 1/2 por lucro) | Multa 200–600 UT | Sujeción plena a la ley venezolana (Art. 3)"
         }
     },
 
-    // =========================================================================
-    // SALA 5 — LABORATORIO DE SOFTWARE
-    // =========================================================================
     5: {
-        title: "Expediente 05 // Apropiación y Venta de Código Propietario",
-        summary: "Un líder técnico sustrajo el repositorio de software propietario de la organización para distribuirlo comercialmente bajo cobro de licencias ilícitas.",
+        title: "Expediente 05 - Apropiación y venta de código propietario",
+        summary: "Un líder técnico sustrajo el código fuente y programas de software propietario de la organización para distribuirlo comercialmente bajo cobro de licencias ilícitas.",
         step1: {
-            prompt: "PASO 1/2 — Conforme a las pruebas de extracción de código y el Manual Legal [M], tipifica el delito:",
+            prompt: "Paso 1 de 2: Conforme a las pruebas de extracción de código y el Manual legal [M], tipifica el delito:",
             options: [
                 {
                     text: "Apropiación de propiedad intelectual (Art. 25): Prisión de 1 a 5 años y multa de 100 a 500 UT.",

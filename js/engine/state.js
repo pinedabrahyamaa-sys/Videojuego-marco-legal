@@ -1,55 +1,52 @@
 window.Game = window.Game || {};
 
 (function() {
-    // Máquina de estados centralizada, mundo amplio y cámara suave
+    // variables del juego
     window.Game.State = {
-        // Máquina de estados: "MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY", "NOTEBOOK"
         mode: "MENU",
 
         currentRoom: 1,
-        readClues: new Set(),     // "sala_indice"
+        startRoom: 1,
+        readClues: new Set(),
         inspectedCluesByRoom: { 1: [], 2: [], 3: [], 4: [], 5: [] },
-        noteTags: {},             // key -> 'none' | 'relevant' | 'discarded'
-        quizSolvedByRoom: {},     // roomIndex -> boolean
-        doorCodeInput: "",        // buffer para el teclado numérico del Paso 3
+        noteTags: {},
+        quizSolvedByRoom: {},
+        doorCodeInput: "",
         notebookPreviousMode: "PLAYING",
+        askedQuestionsByNpc: {},
+        activeNPC: null,
         errors: 0,
         elapsedSeconds: 0,
         timerInterval: null,
         terminalStep: 1,
 
-        // Dimensiones del mundo ampliado por sala
         world: {
             width: 1160,
             height: 740
         },
 
-        // Dimensiones del visor / viewport
         viewport: {
             width: 840,
             height: 520
         },
 
-        // Cámara de seguimiento con interpolación suave (lerp)
         camera: {
             x: 0,
             y: 0
         },
 
-        // Jugador: Auditor / Perito Forense
         player: {
             x: 64,
             y: 350,
-            size: 26,             // Hitbox de colisión seguro = 26x26
-            speed: 3.6,           // Velocidad ágil para el mundo ampliado = 3.6
+            size: 26,
+            speed: 3.6,
             color: "#D99B26",
-            facing: "down"        // "up", "down", "left", "right"
+            facing: "down"
         },
 
         isMoving: false,
         walkTimer: 0,
 
-        // Puerta / Control de paso pericial (centrada en la pared derecha del mundo)
         door: {
             x: 1124,
             y: 318,
@@ -64,9 +61,6 @@ window.Game = window.Game || {};
         toastTimeout: null,
         ambientParticles: [],
 
-        // =========================================================================
-        // CONTROL DE CÁMARA SUAVE (LERP) Y RECORTE DENTRO DEL MUNDO
-        // =========================================================================
         updateCamera: function(lerp = 0.14) {
             const targetX = this.player.x + this.player.size / 2 - this.viewport.width / 2;
             const targetY = this.player.y + this.player.size / 2 - this.viewport.height / 2;
@@ -92,11 +86,8 @@ window.Game = window.Game || {};
             this.camera.y = Math.max(0, Math.min(maxY, targetY));
         },
 
-        // =========================================================================
-        // TRANSICIÓN DE ESTADOS SEGURA Y CENTRALIZADA
-        // =========================================================================
         setMode: function(newMode) {
-            const validModes = ["MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY", "NOTEBOOK"];
+            const validModes = ["MENU", "PLAYING", "CLUE", "TERMINAL", "MANUAL", "TRANSITION", "VICTORY", "NOTEBOOK", "INTERVIEW"];
             if (!validModes.includes(newMode)) return;
 
             this.mode = newMode;
@@ -109,6 +100,7 @@ window.Game = window.Game || {};
             const clueModal = document.getElementById("clue-modal");
             const manualModal = document.getElementById("manual-modal");
             const notebookModal = document.getElementById("notebook-modal");
+            const interviewModal = document.getElementById("interview-modal");
             const startScreen = document.getElementById("start-screen");
             const victoryScreen = document.getElementById("victory-screen");
 
@@ -116,13 +108,31 @@ window.Game = window.Game || {};
             if (clueModal) clueModal.style.display = newMode === "CLUE" ? "block" : "none";
             if (manualModal) manualModal.style.display = newMode === "MANUAL" ? "block" : "none";
             if (notebookModal) notebookModal.style.display = newMode === "NOTEBOOK" ? "block" : "none";
+            if (interviewModal) interviewModal.style.display = newMode === "INTERVIEW" ? "block" : "none";
             if (startScreen) startScreen.style.display = newMode === "MENU" ? "flex" : "none";
             if (victoryScreen) victoryScreen.style.display = newMode === "VICTORY" ? "flex" : "none";
 
             this.ensureTimerRunning();
         },
 
-        // Registro de evidencias examinadas para la Bitácora de Campo [B]
+        isQuestionAsked: function(npcId, qIdx) {
+            return !!(this.askedQuestionsByNpc[npcId] && this.askedQuestionsByNpc[npcId][qIdx]);
+        },
+
+        markQuestionAsked: function(npcId, qIdx) {
+            if (!this.askedQuestionsByNpc[npcId]) {
+                this.askedQuestionsByNpc[npcId] = {};
+            }
+            this.askedQuestionsByNpc[npcId][qIdx] = true;
+        },
+
+        allQuestionsAsked: function(npc) {
+            if (!npc || !npc.questions) return false;
+            const recorded = this.askedQuestionsByNpc[npc.id];
+            if (!recorded) return false;
+            return npc.questions.every((_, idx) => !!recorded[idx]);
+        },
+
         recordInspectedClue: function(room, item) {
             if (!this.inspectedCluesByRoom[room]) {
                 this.inspectedCluesByRoom[room] = [];
@@ -143,7 +153,6 @@ window.Game = window.Game || {};
             }
         },
 
-        // Clasificación manual del jugador en la Bitácora ('relevant', 'discarded', 'none')
         setNoteTag: function(key, tag) {
             if (this.noteTags[key] === tag) {
                 this.noteTags[key] = "none";
@@ -157,9 +166,6 @@ window.Game = window.Game || {};
             this.keys = {};
         },
 
-        // =========================================================================
-        // MÉTRICAS Y CÁLCULOS DINÁMICOS
-        // =========================================================================
         getTotalRooms: function() {
             return window.Game.PUZZLES ? Object.keys(window.Game.PUZZLES).length : 5;
         },
@@ -242,9 +248,6 @@ window.Game = window.Game || {};
             }
         },
 
-        // =========================================================================
-        // ACTUALIZACIÓN DEL HUD SUPERIOR
-        // =========================================================================
         updateHUD: function() {
             const roomNumEl = document.getElementById("room-num");
             const roomNameEl = document.getElementById("room-name-display");
@@ -266,13 +269,12 @@ window.Game = window.Game || {};
                 errorsEl.innerText = this.errors;
             }
 
-            // Actualizar botón de audio si existe
             const btnAudio = document.getElementById("btn-audio");
             if (btnAudio && window.Game.Audio) {
                 const muted = window.Game.Audio.isMuted();
                 btnAudio.innerHTML = muted 
-                    ? `<span class="hud-btn-icon">🔇</span> AUDIO OFF` 
-                    : `<span class="hud-btn-icon">🔊</span> AUDIO ON`;
+                    ? `<span id="audio-btn-label">Audio: OFF</span>` 
+                    : `<span id="audio-btn-label">Audio: ON</span>`;
                 btnAudio.classList.toggle("muted", muted);
             }
         },
@@ -290,7 +292,6 @@ window.Game = window.Game || {};
             }, 3200);
         },
 
-        // Partículas atmosféricas distribuidas en las dimensiones del mundo
         initAmbientParticles: function(worldWidth = 1160, worldHeight = 740, count = 35) {
             this.ambientParticles = [];
             for (let i = 0; i < count; i++) {
@@ -324,17 +325,21 @@ window.Game = window.Game || {};
             }
         },
 
-        // =========================================================================
-        // REINICIO COMPLETO Y LIMPIO SIN RECARGAR LA PÁGINA
-        // =========================================================================
-        resetMission: function() {
-            this.currentRoom = 1;
+        resetMission: function(targetRoom = 1) {
+            let r = Number(targetRoom);
+            if (r < 1) r = r + 1;
+            if (r > 5) r = 5;
+
+            this.currentRoom = r;
+            this.startRoom = r;
             this.readClues.clear();
             this.inspectedCluesByRoom = { 1: [], 2: [], 3: [], 4: [], 5: [] };
             this.noteTags = {};
             this.quizSolvedByRoom = {};
             this.doorCodeInput = "";
             this.notebookPreviousMode = "PLAYING";
+            this.askedQuestionsByNpc = {};
+            this.activeNPC = null;
             this.errors = 0;
             this.elapsedSeconds = 0;
             this.terminalStep = 1;
@@ -353,7 +358,7 @@ window.Game = window.Game || {};
             this.snapCamera();
             this.setMode("PLAYING");
             this.updateHUD();
-            this.showTacticalToast("EXPEDIENTE REINICIADO // SECCIÓN 1");
+            this.showTacticalToast("Expediente reiniciado: Sala " + r);
         }
     };
 })();

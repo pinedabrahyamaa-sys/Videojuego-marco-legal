@@ -1,7 +1,4 @@
-/**
- * textures.js - Generador procedural de texturas 2D HD y patrones offscreen
- * Parte de la arquitectura técnica forense (100% offline, sin imágenes externas)
- */
+// texturas del suelo y paredes
 window.Game = window.Game || {};
 
 (function() {
@@ -34,10 +31,6 @@ window.Game = window.Game || {};
             }
         },
 
-        /**
-         * Patrón de baldosas amplias de concreto / pizarra gris oscuro (#242B33 y #20262E)
-         * con juntas finas, micro-grano sutil y variación tonal por losa.
-         */
         createFloorConcretePattern: function() {
             const size = 160;
             const canvas = document.createElement("canvas");
@@ -45,12 +38,8 @@ window.Game = window.Game || {};
             canvas.height = size;
             const ctx = canvas.getContext("2d");
             if (!ctx) return null;
-
-            // Fondo base
             ctx.fillStyle = "#191F26";
             ctx.fillRect(0, 0, size, size);
-
-            // 4 grandes losas técnicas (80x80 cada una)
             const tiles = [
                 { x: 1, y: 1, w: 78, h: 78, col: "#222931" },
                 { x: 81, y: 1, w: 78, h: 78, col: "#1E252D" },
@@ -61,8 +50,6 @@ window.Game = window.Game || {};
             tiles.forEach((t) => {
                 ctx.fillStyle = t.col;
                 ctx.fillRect(t.x, t.y, t.w, t.h);
-
-                // Bisel sutil en cada losa
                 ctx.fillStyle = "rgba(255, 255, 255, 0.025)";
                 ctx.fillRect(t.x, t.y, t.w, 1.5);
                 ctx.fillRect(t.x, t.y, 1.5, t.h);
@@ -71,8 +58,6 @@ window.Game = window.Game || {};
                 ctx.fillRect(t.x, t.y + t.h - 1.5, t.w, 1.5);
                 ctx.fillRect(t.x + t.w - 1.5, t.y, 1.5, t.h);
             });
-
-            // Micro-grano orgánico procedural (seguro ante entornos sin putImageData)
             if (ctx.getImageData && ctx.putImageData) {
                 try {
                     const imgData = ctx.getImageData(0, 0, size, size);
@@ -86,8 +71,6 @@ window.Game = window.Game || {};
                     ctx.putImageData(imgData, 0, 0);
                 } catch (e) {}
             }
-
-            // Juntas finas de dilatación pericial
             ctx.strokeStyle = "#12161B";
             ctx.lineWidth = 1.5;
             ctx.strokeRect(0.75, 0.75, size - 1.5, size - 1.5);
@@ -101,10 +84,6 @@ window.Game = window.Game || {};
             return ctx.createPattern(canvas, "repeat");
         },
 
-        /**
-         * Sala 2 (Núcleo de Servidores): piso técnico elevado gris oscuro (#1a212a)
-         * con rejillas metálicas perforadas y líneas de paneles técnicos modulares.
-         */
         createFloorServerGridPattern: function() {
             const size = 120;
             const canvas = document.createElement("canvas");
@@ -126,8 +105,6 @@ window.Game = window.Game || {};
             tiles.forEach((t, idx) => {
                 ctx.fillStyle = t.col;
                 ctx.fillRect(t.x, t.y, t.w, t.h);
-
-                // Bisel perimetral metálico
                 ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
                 ctx.fillRect(t.x, t.y, t.w, 1.5);
                 ctx.fillRect(t.x, t.y, 1.5, t.h);
@@ -135,8 +112,6 @@ window.Game = window.Game || {};
                 ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
                 ctx.fillRect(t.x, t.y + t.h - 1.5, t.w, 1.5);
                 ctx.fillRect(t.x + t.w - 1.5, t.y, 1.5, t.h);
-
-                // Tornillos de anclaje de esquina
                 const corners = [
                     { x: t.x + 4, y: t.y + 4 },
                     { x: t.x + t.w - 4, y: t.y + 4 },
@@ -151,8 +126,6 @@ window.Game = window.Game || {};
                     ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
                     ctx.fillRect(c.x - 1, c.y - 0.5, 2, 1);
                 });
-
-                // Rejillas perforadas de ventilación en baldosas seleccionadas
                 if (idx === 1 || idx === 2) {
                     const gx = t.x + 12;
                     const gy = t.y + 12;
@@ -174,8 +147,6 @@ window.Game = window.Game || {};
                     }
                 }
             });
-
-            // Juntas de dilatación del piso técnico
             ctx.strokeStyle = "#0E1318";
             ctx.lineWidth = 2;
             ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
@@ -189,10 +160,6 @@ window.Game = window.Game || {};
             return ctx.createPattern(canvas, "repeat");
         },
 
-        /**
-         * Sala 3 (Área Financiera): alfombra corporativa tejida en tono azul pizarra / carbón
-         * sobrio (#1d2430) con micro-trama fina entrelazada.
-         */
         createFloorFinanceCarpetPattern: function() {
             const size = 64;
             const canvas = document.createElement("canvas");
@@ -200,25 +167,17 @@ window.Game = window.Game || {};
             canvas.height = size;
             const ctx = canvas.getContext("2d");
             if (!ctx) return null;
-
-            // Base azul pizarra sobrio
             ctx.fillStyle = "#1D2430";
             ctx.fillRect(0, 0, size, size);
-
-            // Micro-trama tejida de alfombra corporativa
             for (let y = 0; y < size; y += 4) {
                 for (let x = 0; x < size; x += 4) {
                     const isEven = ((x + y) / 4) % 2 === 0;
                     ctx.fillStyle = isEven ? "#222B39" : "#19202B";
                     ctx.fillRect(x, y, 4, 4);
-
-                    // Micro-hebra texturada
                     ctx.fillStyle = isEven ? "rgba(255, 255, 255, 0.025)" : "rgba(0, 0, 0, 0.07)";
                     ctx.fillRect(x + 1, y + 1, 2, 2);
                 }
             }
-
-            // Cuadrícula arquitectónica de placas de alfombra (32x32)
             ctx.strokeStyle = "rgba(43, 56, 74, 0.45)";
             ctx.lineWidth = 1;
             ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
@@ -232,10 +191,6 @@ window.Game = window.Game || {};
             return ctx.createPattern(canvas, "repeat");
         },
 
-        /**
-         * Sala 5 (Laboratorio de Software): losas técnicas gris claro-medio (#27303a)
-         * con juntas precisas y acabado clínico limpio.
-         */
         createFloorLabTilePattern: function() {
             const size = 120;
             const canvas = document.createElement("canvas");
@@ -257,8 +212,6 @@ window.Game = window.Game || {};
             tiles.forEach(t => {
                 ctx.fillStyle = t.col;
                 ctx.fillRect(t.x, t.y, t.w, t.h);
-
-                // Biselado perimetral nítido
                 ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
                 ctx.fillRect(t.x, t.y, t.w, 1.5);
                 ctx.fillRect(t.x, t.y, 1.5, t.h);
@@ -266,13 +219,9 @@ window.Game = window.Game || {};
                 ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
                 ctx.fillRect(t.x, t.y + t.h - 1.5, t.w, 1.5);
                 ctx.fillRect(t.x + t.w - 1.5, t.y, 1.5, t.h);
-
-                // Cuadrante central de acabado liso antiestático
                 ctx.fillStyle = "rgba(255, 255, 255, 0.012)";
                 ctx.fillRect(t.x + 8, t.y + 8, t.w - 16, t.h - 16);
             });
-
-            // Juntas periciales milimétricas
             ctx.strokeStyle = "#161D24";
             ctx.lineWidth = 1.5;
             ctx.strokeRect(0.75, 0.75, size - 1.5, size - 1.5);
@@ -286,10 +235,6 @@ window.Game = window.Game || {};
             return ctx.createPattern(canvas, "repeat");
         },
 
-        /**
-         * Madera cálida oscura realista (#5E412C a #4A3120)
-         * con vetas horizontales finas y brillo satinado.
-         */
         createWoodDeskPattern: function() {
             const width = 120;
             const height = 60;
@@ -298,16 +243,12 @@ window.Game = window.Game || {};
             canvas.height = height;
             const ctx = canvas.getContext("2d");
             if (!ctx) return null;
-
-            // Degradado base de madera
             const grad = ctx.createLinearGradient(0, 0, 0, height);
             grad.addColorStop(0, "#563C29");
             grad.addColorStop(0.5, "#483222");
             grad.addColorStop(1, "#3D2A1C");
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, width, height);
-
-            // Vetas horizontales suaves
             ctx.lineWidth = 1;
             for (let y = 3; y < height; y += 4) {
                 const alpha = 0.08 + Math.random() * 0.12;
@@ -323,8 +264,6 @@ window.Game = window.Game || {};
                 }
                 ctx.stroke();
             }
-
-            // Brillo satinado diagonal sutil
             const satinGrad = ctx.createLinearGradient(0, 0, width, height);
             satinGrad.addColorStop(0, "rgba(255, 235, 210, 0.0)");
             satinGrad.addColorStop(0.45, "rgba(255, 235, 210, 0.035)");
@@ -337,9 +276,6 @@ window.Game = window.Game || {};
             return ctx.createPattern(canvas, "repeat");
         },
 
-        /**
-         * Acero cepillado oscuro (#1C232B) con perforaciones de rejilla de ventilación.
-         */
         createRackMetalPattern: function() {
             const size = 32;
             const canvas = document.createElement("canvas");
@@ -347,19 +283,13 @@ window.Game = window.Game || {};
             canvas.height = size;
             const ctx = canvas.getContext("2d");
             if (!ctx) return null;
-
-            // Metal base cepillado
             ctx.fillStyle = "#182028";
             ctx.fillRect(0, 0, size, size);
-
-            // Estrías de cepillado vertical
             for (let x = 0; x < size; x += 2) {
                 const a = Math.random() * 0.06;
                 ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
                 ctx.fillRect(x, 0, 1, size);
             }
-
-            // Perforaciones hexagonales/circulares de ventilación
             const holes = [
                 { x: 8, y: 8 }, { x: 24, y: 8 },
                 { x: 16, y: 16 },
@@ -367,13 +297,10 @@ window.Game = window.Game || {};
             ];
 
             holes.forEach((h) => {
-                // Sombra interior de perforación
                 ctx.fillStyle = "#0A0D11";
                 ctx.beginPath();
                 ctx.arc(h.x, h.y, 2.2, 0, Math.PI * 2);
                 ctx.fill();
-
-                // Borde inferior iluminado
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
                 ctx.lineWidth = 0.8;
                 ctx.beginPath();
@@ -384,9 +311,6 @@ window.Game = window.Game || {};
             return ctx.createPattern(canvas, "repeat");
         },
 
-        /**
-         * Acabado arquitectónico mate (#161C24) con bisel superior para muros y mamparas.
-         */
         createWallTopPattern: function() {
             const size = 40;
             const canvas = document.createElement("canvas");
@@ -397,12 +321,8 @@ window.Game = window.Game || {};
 
             ctx.fillStyle = "#161C24";
             ctx.fillRect(0, 0, size, size);
-
-            // Línea de bisel superior técnico
             ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
             ctx.fillRect(0, 0, size, 2);
-
-            // Línea de junta arquitectónica
             ctx.strokeStyle = "#10141A";
             ctx.lineWidth = 1;
             ctx.strokeRect(0.5, 0.5, size - 1, size - 1);

@@ -1,22 +1,19 @@
 window.Game = window.Game || {};
 
 (function() {
-    // Módulos centrales
+
     const State = window.Game.State;
     const Renderer = window.Game.Renderer;
     const Audio = window.Game.Audio;
 
     let canvas, ctx;
 
-    // =========================================================================
-    // DETECCIÓN DE OBSTÁCULOS (ESCRITORIOS, RACKS, PLANTAS, MAMPARAS Y DECOR)
-    // =========================================================================
+    // movimiento y choques con paredes
     function getRoomObstacles() {
         const layout = window.Game.ROOM_LAYOUTS[State.currentRoom];
         const obstacles = [];
         if (!layout) return obstacles;
 
-        // Escritorios y sus respectivas sillas
         if (layout.desks) {
             layout.desks.forEach((desk) => {
                 obstacles.push({ x: desk.x, y: desk.y, width: desk.width, height: 58 });
@@ -29,34 +26,35 @@ window.Game = window.Game || {};
             });
         }
 
-        // Racks de servidores
         if (layout.racks) {
             layout.racks.forEach((rack) => {
                 obstacles.push({ x: rack.x, y: rack.y, width: 56, height: 106 });
             });
         }
 
-        // Plantas de ornato
         if (layout.plants) {
             layout.plants.forEach((plant) => {
                 obstacles.push({ x: plant.x + 5, y: plant.y, width: 24, height: 28 });
             });
         }
 
-        // Muros divisorios internos / mamparas de oficina
         if (layout.walls) {
             layout.walls.forEach((wall) => {
                 obstacles.push({ x: wall.x, y: wall.y, width: wall.width, height: wall.height });
             });
         }
 
-        // Mobiliario decorativo, archivadores y props
         const decorList = (layout.decor || []).concat(layout.props || []);
         decorList.forEach((dec) => {
             obstacles.push({ x: dec.x, y: dec.y, width: dec.width, height: dec.height });
         });
 
-        // Puerta mientras permanezca cerrada
+        if (layout.npcs) {
+            layout.npcs.forEach((npc) => {
+                obstacles.push({ x: npc.x, y: npc.y, width: 26, height: 26 });
+            });
+        }
+
         if (State.door.locked) {
             obstacles.push({
                 x: State.door.x,
@@ -69,16 +67,12 @@ window.Game = window.Game || {};
         return obstacles;
     }
 
-    // =========================================================================
-    // OBJETOS INTERACTIVOS (EVIDENCIAS REALES, RUIDO FORENSE Y TERMINAL)
-    // =========================================================================
     function getRoomInteractables() {
         const layout = window.Game.ROOM_LAYOUTS[State.currentRoom];
         if (!layout) return [];
 
         const items = [];
 
-        // 1. Escritorios con evidencias
         if (layout.desks) {
             layout.desks.forEach((desk, idx) => {
                 const key = `${State.currentRoom}_desk_${idx}`;
@@ -102,7 +96,6 @@ window.Game = window.Game || {};
             });
         }
 
-        // 2. Mobiliario, props y ruido forense interactuable
         const decorList = (layout.decor || []).concat(layout.props || []);
         decorList.forEach((dec, idx) => {
             if (dec.clue) {
@@ -127,7 +120,23 @@ window.Game = window.Game || {};
             }
         });
 
-        // 3. Terminal de salida (puzzle de tipificación)
+        if (layout.npcs) {
+            layout.npcs.forEach((npc) => {
+                items.push({
+                    kind: "npc",
+                    key: "npc_" + npc.id,
+                    id: npc.id,
+                    data: npc,
+                    title: npc.name,
+                    x: npc.x,
+                    y: npc.y,
+                    width: 26,
+                    height: 26,
+                    range: 64
+                });
+            });
+        }
+
         if (State.door.locked) {
             items.push({
                 kind: "puzzle",
@@ -193,6 +202,8 @@ window.Game = window.Game || {};
             const item = State.activeInteraction;
             if (item.kind === "puzzle") {
                 hint.innerHTML = `Pulsa <b>[E]</b> para validar en terminal: <span style="color:#3FA37C">${item.title}</span>`;
+            } else if (item.kind === "npc") {
+                hint.innerHTML = `Pulsa <b>[E]</b> para entrevistar a: <span style="color:#38BDF8">${item.title}</span>`;
             } else {
                 const isRead = State.readClues.has(item.key) || State.readClues.has(`${State.currentRoom}_${item.index}`);
                 const statusTag = isRead
@@ -205,9 +216,6 @@ window.Game = window.Game || {};
         }
     }
 
-    // =========================================================================
-    // ACTUALIZACIÓN DE FOTOGRAMA (UPDATE)
-    // =========================================================================
     function update() {
         if (State.mode !== "PLAYING") return;
 
@@ -248,17 +256,15 @@ window.Game = window.Game || {};
                 try {
                     Audio.step();
                 } catch (e) {
-                    // Silencioso para garantizar que el movimiento nunca se interrumpa
+
                 }
             }
         } else {
             State.isMoving = false;
         }
 
-        // Actualizar seguimiento suave de cámara (lerp = 0.14)
         State.updateCamera(0.14);
 
-        // Cruzar la puerta abierta activa la transición de sector
         if (!State.door.locked) {
             if (State.player.x + State.player.size >= State.door.x &&
                 State.player.y + State.player.size >= State.door.y &&
@@ -273,20 +279,17 @@ window.Game = window.Game || {};
         updateInteractionHint();
     }
 
-    // =========================================================================
-    // TRANSICIÓN CINEMATOGRÁFICA ENTRE SALAS // CICPC
-    // =========================================================================
     function playRoomTransition(roomNumber, onReady) {
         State.setMode("TRANSITION");
-        State.keys = {}; // Limpiar estados de teclas para evitar bloqueos
+        State.keys = {};
 
         const overlay = document.getElementById("room-transition-overlay");
         const titleEl = document.getElementById("room-trans-title");
         const subEl = document.getElementById("room-trans-sub");
 
-        const roomName = (window.Game.ROOM_NAMES && window.Game.ROOM_NAMES[roomNumber]) || "SECTOR PERICIAL";
+        const roomName = (window.Game.ROOM_NAMES && window.Game.ROOM_NAMES[roomNumber]) || "Área pericial";
         if (titleEl) {
-            titleEl.innerText = `SECTOR 0${roomNumber} // ${roomName.toUpperCase()}`;
+            titleEl.innerText = `Sala ${roomNumber} - ${roomName}`;
         }
         if (subEl) {
             subEl.innerText = "Preservando cadena de custodia digital (G.O. N.° 37.313)";
@@ -306,15 +309,15 @@ window.Game = window.Game || {};
                     overlay.classList.remove("active");
                     setTimeout(() => {
                         overlay.style.display = "none";
-                        State.keys = {}; // Asegurar que no queden teclas pegadas
+                        State.keys = {};
                         State.setMode("PLAYING");
                     }, 350);
                 } else {
                     State.keys = {};
                     State.setMode("PLAYING");
                 }
-            }, 1000); // Mantener ~1.0s con animación de entrada
-        }, 350); // Fade-in inicial
+            }, 1000);
+        }, 350);
     }
 
     function triggerRoomTransition() {
@@ -337,7 +340,6 @@ window.Game = window.Game || {};
                 State.snapCamera();
                 State.updateHUD();
 
-                // Control del zumbido ambiental de servidores (Sala 2)
                 if (Audio) {
                     if (State.currentRoom === 2) {
                         Audio.startServerHum();
@@ -350,7 +352,7 @@ window.Game = window.Game || {};
                 State.showTacticalToast("SECCIÓN " + State.currentRoom + ": " + sectorName);
             });
         } else {
-            // Última sala completada: consolidar informe final de auditoría
+
             const overlay = document.getElementById("transition-overlay");
             const statusText = document.getElementById("transition-status-text");
             if (statusText) statusText.innerText = "CONSOLIDANDO DICTAMEN PERICIAL FINAL...";
@@ -366,9 +368,7 @@ window.Game = window.Game || {};
         }
     }
 
-    // =========================================================================
-    // MODAL DE TERMINAL EN TRES PASOS (CALIFICACIÓN Y CÓDIGO DE PUERTA)
-    // =========================================================================
+    // terminal, preguntas y codigo
     function openTerminal() {
         const stampWrap = document.getElementById("terminal-stamp");
         if (stampWrap) stampWrap.style.display = "none";
@@ -376,7 +376,6 @@ window.Game = window.Game || {};
         const roomLayout = window.Game.ROOM_LAYOUTS && window.Game.ROOM_LAYOUTS[State.currentRoom];
         const hasDoorCode = roomLayout && !!roomLayout.doorCode;
 
-        // Si la calificación ya fue aprobada previamente, ir directamente al Paso 3 de código
         if (State.quizSolvedByRoom[State.currentRoom] && hasDoorCode) {
             State.terminalStep = 3;
             State.setMode("TERMINAL");
@@ -429,8 +428,8 @@ window.Game = window.Game || {};
         const stepData = State.terminalStep === 1 ? puzzle.step1 : puzzle.step2;
 
         if (stepBadgeEl) {
-            stepBadgeEl.innerText = State.terminalStep === 1 
-                ? "PASO 1 DE 2: TIPIFICACIÓN DEL DELITO" 
+            stepBadgeEl.innerText = State.terminalStep === 1
+                ? "PASO 1 DE 2: TIPIFICACIÓN DEL DELITO"
                 : "PASO 2 DE 2: AGRAVANTES, ACCESORIAS Y CONSECUENCIAS";
             stepBadgeEl.className = State.terminalStep === 1 ? "step-badge step-1" : "step-badge step-2";
         }
@@ -465,14 +464,13 @@ window.Game = window.Game || {};
                 State.terminalStep = 2;
                 renderTerminalStep();
             } else {
-                // Paso 2 aprobado: guardar calificación jurídica de la sala
+
                 State.quizSolvedByRoom[State.currentRoom] = true;
                 const roomLayout = window.Game.ROOM_LAYOUTS && window.Game.ROOM_LAYOUTS[State.currentRoom];
                 const hasDoorCode = roomLayout && !!roomLayout.doorCode;
 
                 if (Audio) Audio.stepSuccess();
 
-                // Animación de golpe de sello pericial CALIFICACIÓN VALIDADA
                 const stampWrap = document.getElementById("terminal-stamp");
                 if (stampWrap) {
                     stampWrap.style.display = "block";
@@ -503,8 +501,8 @@ window.Game = window.Game || {};
             if (errorEl) {
                 const feedbackText = option.fiscalFeedback || option.feedback || "Revise las definiciones y tipos en el Manual Legal [M].";
                 errorEl.innerHTML = `
-                    <div style="font-family:'JetBrains Mono', monospace; font-weight:700; color:#F87171; margin-bottom:5px; font-size:11px; letter-spacing:0.5px;">
-                        ⚖ OBSERVACIÓN DE FISCALÍA // DICTAMEN NO CONFORME
+                    <div style="font-family:'Consolas', 'Courier New', monospace; font-weight:700; color:#F87171; margin-bottom:5px; font-size:11px; letter-spacing:0.5px;">
+                        Observación de Fiscalía: calificación no conforme
                     </div>
                     <div style="font-size:12px; line-height:1.5;">${feedbackText}</div>
                 `;
@@ -519,7 +517,6 @@ window.Game = window.Game || {};
         }
     }
 
-    // Paso 3: Renderizado y control del Teclado Numérico de la Compuerta
     function renderTerminalStep3() {
         const puzzle = window.Game.PUZZLES[State.currentRoom];
         const qTitleEl = document.getElementById("q-title");
@@ -611,10 +608,10 @@ window.Game = window.Game || {};
             State.door.locked = false;
             State.door.color = "#3FA37C";
             if (feedbackEl) {
-                feedbackEl.innerText = "✓ CÓDIGO CORRECTO // COMPUERTA DESBLOQUEADA";
+                feedbackEl.innerText = "Código correcto - Acceso desbloqueado";
                 feedbackEl.className = "keypad-feedback success";
             }
-            State.showTacticalToast("¡CÓDIGO CORRECTO! COMPUERTA DESBLOQUEADA. DIRÍGETE A LA SALIDA.");
+            State.showTacticalToast("Código correcto. Acceso desbloqueado. Dirígete a la salida.");
             setTimeout(() => {
                 State.setMode("PLAYING");
                 State.doorCodeInput = "";
@@ -622,9 +619,9 @@ window.Game = window.Game || {};
             }, 650);
         } else {
             if (Audio) Audio.error();
-            // Código incorrecto: NO suma errores al dictamen fiscal conforme a la instrucción
+
             if (feedbackEl) {
-                feedbackEl.innerText = "Código denegado. Revise notas o archivos antiguos del sector.";
+                feedbackEl.innerText = "Código incorrecto. Verifique sus notas o archivos antiguos.";
                 feedbackEl.className = "keypad-feedback error";
             }
             const keypadContainer = document.getElementById("terminal-keypad");
@@ -646,7 +643,7 @@ window.Game = window.Game || {};
         const stepBadgeEl = document.getElementById("terminal-step-badge");
 
         if (stepBadgeEl) {
-            stepBadgeEl.innerText = "DICTAMEN PERICIAL VALIDADO";
+            stepBadgeEl.innerText = "Dictamen pericial validado";
             stepBadgeEl.className = "step-badge step-complete";
         }
 
@@ -659,15 +656,14 @@ window.Game = window.Game || {};
             verdictContainer.innerHTML = `
                 <div class="verdict-box">
                     <div class="verdict-header">
-                        <span class="verdict-icon">⚖</span>
-                        <b>DICTAMEN PERICIAL HOMOLOGADO</b>
+                        <b>Dictamen pericial homologado</b>
                     </div>
                     <p class="verdict-text">${puzzle.verdict}</p>
                     <div class="verdict-details">
                         <span><b>Delito:</b> ${puzzle.report.crime}</span>
                         <span><b>Normativa:</b> ${puzzle.report.articles}</span>
                     </div>
-                    <button id="btn-unlock-door" class="cyber-btn" type="button">CONFIRMAR Y DESBLOQUEAR PASO</button>
+                    <button id="btn-unlock-door" class="cyber-btn" type="button">Confirmar y continuar</button>
                 </div>
             `;
 
@@ -681,9 +677,6 @@ window.Game = window.Game || {};
         }
     }
 
-    // =========================================================================
-    // MODAL DE EVIDENCIA (CLUE DIEGÉTICO)
-    // =========================================================================
     function openClue(item) {
         const clueModal = document.getElementById("clue-modal");
         const clueTitleEl = document.getElementById("clue-title");
@@ -706,11 +699,11 @@ window.Game = window.Game || {};
         const clueBadgeLabel = document.getElementById("clue-badge-label");
         if (clueBadgeLabel) {
             if (item.clueType === "oldNote") {
-                clueBadgeLabel.innerText = "DOCUMENTO ARCHIVADO // NOTA PERSONAL";
+                clueBadgeLabel.innerText = "Nota archivada";
                 clueBadgeLabel.style.color = "#5C4738";
                 clueBadgeLabel.style.borderColor = "#B89F70";
             } else {
-                clueBadgeLabel.innerText = "REGISTRO INSPECCIONADO // CADENA DE CUSTODIA";
+                clueBadgeLabel.innerText = "Registro inspeccionado";
                 clueBadgeLabel.style.color = "#D99B26";
                 clueBadgeLabel.style.borderColor = "rgba(217, 155, 38, 0.4)";
             }
@@ -734,12 +727,10 @@ window.Game = window.Game || {};
         updateInteractionHint();
     }
 
-    // =========================================================================
-    // MODAL DE LIBRETA DE CAMPO / BITÁCORA DE EVIDENCIAS ([B])
-    // =========================================================================
+    // libreta de pistas
     function openNotebook() {
         if (Audio) Audio.paper();
-        State.notebookPreviousMode = State.mode; // 'PLAYING' o 'TERMINAL'
+        State.notebookPreviousMode = State.mode;
         State.setMode("NOTEBOOK");
         renderNotebook();
     }
@@ -785,8 +776,9 @@ window.Game = window.Game || {};
             card.className = `notebook-card${tagClass}`;
 
             let typeLabel = "DOCUMENTO";
-            if (clue.clueType === "oldNote") typeLabel = "NOTA PERSONAL";
-            else if (clue.clueType === "computer") typeLabel = "SISTEMA DIGITAL";
+            if (clue.clueType === "oldNote") typeLabel = "Nota archivada";
+            else if (clue.clueType === "computer") typeLabel = "Sistema digital";
+            else if (clue.clueType === "document") typeLabel = "Documento";
 
             card.innerHTML = `
                 <div class="nb-card-header">
@@ -796,10 +788,10 @@ window.Game = window.Game || {};
                 <div class="nb-card-text">${clue.text}</div>
                 <div class="nb-card-actions">
                     <button class="nb-tag-btn tag-btn-rel${currentTag === 'relevant' ? ' active' : ''}" type="button">
-                        ★ Relevante
+                        Relevante
                     </button>
                     <button class="nb-tag-btn tag-btn-disc${currentTag === 'discarded' ? ' active' : ''}" type="button">
-                        ✕ Descartado
+                        Descartado
                     </button>
                 </div>
             `;
@@ -823,11 +815,9 @@ window.Game = window.Game || {};
         });
     }
 
-    // =========================================================================
-    // MODAL DE MANUAL LEGAL (GLOSSARY)
-    // =========================================================================
     let currentManualTab = "definitions";
 
+    // manual y pantalla final
     function toggleManual() {
         if (Audio) Audio.uiClick();
 
@@ -870,9 +860,6 @@ window.Game = window.Game || {};
         `).join("");
     }
 
-    // =========================================================================
-    // PANTALLA DE VICTORIA: INFORME FINAL DE AUDITORÍA
-    // =========================================================================
     function renderVictoryScreen() {
         if (Audio) Audio.stopServerHum();
 
@@ -901,29 +888,29 @@ window.Game = window.Game || {};
         if (tableContainer && window.Game.PUZZLES) {
             let evalTitle = "";
             let evalClass = "";
-            let evalIcon = "";
+            let evalBadge = "";
             let evalDesc = "";
 
             if (State.errors <= 1) {
-                evalTitle = "DICTAMEN EXCELENTE — ADMITIDO POR FISCALÍA SIN REPAROS";
+                evalTitle = "Dictamen aprobado";
                 evalClass = "eval-excellent";
-                evalIcon = "✓";
+                evalBadge = "[Conforme]";
                 evalDesc = "El Ministerio Público homologó la totalidad de las calificaciones jurídicas en primera instancia, reconociendo rigurosidad probatoria y apego irrestricto a la Gaceta Oficial N.° 37.313.";
             } else if (State.errors <= 4) {
-                evalTitle = "DICTAMEN APROBADO CON OBSERVACIONES MENORES";
+                evalTitle = "Aprobado con observaciones";
                 evalClass = "eval-approved";
-                evalIcon = "!";
+                evalBadge = "[Observado]";
                 evalDesc = "La Fiscalía admitió las tipificaciones tras subsanar observaciones técnicas puntuales durante la instrucción del expediente.";
             } else {
-                evalTitle = "DICTAMEN DEVUELTO PARA AMPLIACIÓN PERICIAL";
+                evalTitle = "Devuelto por Fiscalía";
                 evalClass = "eval-rejected";
-                evalIcon = "✕";
-                evalDesc = "El fiscal de la causa ordenó reabrir la investigación debido a reiteradas discrepancias en la tipificación penal y concurso de agravantes.";
+                evalBadge = "[Revisión]";
+                evalDesc = "El fiscal de la causa ordenó reabrir la investigación debido a discrepancias en la tipificación penal y concurso de agravantes.";
             }
 
             const evalHtml = `
                 <div class="fiscal-evaluation-seal ${evalClass}">
-                    <div class="eval-icon-badge">${evalIcon}</div>
+                    <div class="eval-icon-badge">${evalBadge}</div>
                     <div class="eval-content-block">
                         <div class="eval-seal-title">${evalTitle}</div>
                         <p class="eval-seal-desc">${evalDesc} (Total de observaciones: <b>${State.errors}</b>)</p>
@@ -934,15 +921,32 @@ window.Game = window.Game || {};
             const rows = [];
             const total = State.getTotalRooms();
             for (let r = 1; r <= total; r++) {
-                const rep = window.Game.PUZZLES[r].report;
-                rows.push(`
-                    <tr>
-                        <td class="col-room">${rep.room}</td>
-                        <td class="col-crime">${rep.crime}</td>
-                        <td class="col-art">${rep.articles}</td>
-                        <td class="col-penalty">${rep.penalty}</td>
-                    </tr>
-                `);
+                const puzzle = window.Game.PUZZLES && window.Game.PUZZLES[r];
+                const rep = puzzle ? puzzle.report : null;
+                const isDirectAccess = State.startRoom && r < State.startRoom;
+
+                if (rep) {
+                    const sectorLabel = isDirectAccess
+                        ? `${rep.room} <span style="font-size:9.5px; color:#38BDF8; font-weight:600; display:block;">(Acceso directo)</span>`
+                        : rep.room;
+                    rows.push(`
+                        <tr>
+                            <td class="col-room">${sectorLabel}</td>
+                            <td class="col-crime">${rep.crime || "Delito informático tipificado"}</td>
+                            <td class="col-art">${rep.articles || "G.O. N.° 37.313"}</td>
+                            <td class="col-penalty">${rep.penalty || "Sanción pericial homologada"}</td>
+                        </tr>
+                    `);
+                } else {
+                    rows.push(`
+                        <tr>
+                            <td class="col-room">Sector 0${r}</td>
+                            <td class="col-crime">Acceso directo pericial</td>
+                            <td class="col-art">G.O. N.° 37.313</td>
+                            <td class="col-penalty">Conforme a dictamen pericial</td>
+                        </tr>
+                    `);
+                }
             }
 
             tableContainer.innerHTML = `
@@ -964,12 +968,14 @@ window.Game = window.Game || {};
         }
     }
 
-    // =========================================================================
-    // GESTIÓN DE INTERACCIÓN GENERAL
-    // =========================================================================
     function interactWithObject(item) {
+        if (item.kind === "npc") {
+            openInterview(item.data);
+            return;
+        }
+
         if (item.kind === "puzzle") {
-            // Verificar si se han examinado todas las evidencias requeridas obligatorias
+
             const interactables = getRoomInteractables();
             const realClues = interactables.filter((i) => i.kind !== "puzzle" && !i.isNoise);
             const unread = realClues.filter((i) => !State.readClues.has(i.key) && !State.readClues.has(`${State.currentRoom}_${i.index}`));
@@ -989,28 +995,96 @@ window.Game = window.Game || {};
             State.recordInspectedClue(State.currentRoom, item);
             State.updateHUD();
             if (!wasAlreadyRead) {
-                State.showTacticalToast("ELEMENTO INSPECCIONADO // REGISTRO EN ACTA");
+                State.showTacticalToast("Elemento inspeccionado y anotado");
             }
             openClue(item);
         }
     }
 
+    function openInterview(npc) {
+        if (!npc) return;
+        if (Audio) Audio.uiClick();
+
+        State.activeNPC = npc;
+        State.setMode("INTERVIEW");
+
+        const nameEl = document.getElementById("interview-name");
+        const roleEl = document.getElementById("interview-role");
+        const respEl = document.getElementById("interview-response-text");
+
+        if (nameEl) nameEl.textContent = npc.name;
+        if (roleEl) roleEl.textContent = npc.role;
+        if (respEl) {
+            respEl.style.opacity = "1";
+            respEl.textContent = `"${npc.intro}"`;
+        }
+
+        renderInterviewQuestions(npc);
+    }
+
+    function renderInterviewQuestions(npc) {
+        const listEl = document.getElementById("interview-questions-list");
+        const respEl = document.getElementById("interview-response-text");
+        if (!listEl) return;
+        listEl.innerHTML = "";
+
+        npc.questions.forEach((item, idx) => {
+            const isAsked = State.isQuestionAsked(npc.id, idx);
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "interview-q-btn" + (isAsked ? " asked" : "");
+            btn.innerHTML = `<span class="q-indicator">${isAsked ? "Listo" : (idx + 1)}</span><span>${item.q}</span>`;
+
+            btn.onclick = () => {
+                if (Audio) Audio.dialogueBeep();
+                State.markQuestionAsked(npc.id, idx);
+                if (respEl) {
+                    respEl.style.opacity = "0.2";
+                    setTimeout(() => {
+                        respEl.textContent = `"${item.a}"`;
+                        respEl.style.opacity = "1";
+                    }, 120);
+                }
+
+                State.recordInspectedClue(State.currentRoom, {
+                    key: `testimonio_${npc.id}_${idx}`,
+                    id: `testimonio_${npc.id}_${idx}`,
+                    title: `Testimonio: ${npc.name}`,
+                    clueType: "document",
+                    text: `Acta de entrevista testimonial\nDeclarante: ${npc.name} (${npc.role})\nPregunta: ${item.q}\nRespuesta: ${item.a}`,
+                    label: "TESTIMONIO",
+                    isNoise: false
+                });
+
+                renderInterviewQuestions(npc);
+            };
+
+            listEl.appendChild(btn);
+        });
+    }
+
+    function closeInterview() {
+        if (Audio) Audio.uiClick();
+        State.setMode("PLAYING");
+        State.activeNPC = null;
+        State.activeInteraction = findNearestInteraction();
+        updateInteractionHint();
+    }
+
     function closeAnyOpenModal() {
-        if (State.mode === "CLUE" || State.mode === "TERMINAL" || State.mode === "MANUAL" || State.mode === "NOTEBOOK") {
+        if (State.mode === "CLUE" || State.mode === "TERMINAL" || State.mode === "MANUAL" || State.mode === "NOTEBOOK" || State.mode === "INTERVIEW") {
             if (Audio) Audio.uiClick();
             const qTextEl = document.getElementById("q-text");
             if (qTextEl) qTextEl.style.display = "block";
             const stampWrap = document.getElementById("terminal-stamp");
             if (stampWrap) stampWrap.style.display = "none";
+            State.activeNPC = null;
             State.setMode("PLAYING");
             State.activeInteraction = findNearestInteraction();
             updateInteractionHint();
         }
     }
 
-    // =========================================================================
-    // CONTROL DE PANTALLA COMPLETA ADAPTABLE
-    // =========================================================================
     function toggleFullscreen() {
         if (Audio) Audio.uiClick();
 
@@ -1041,15 +1115,12 @@ window.Game = window.Game || {};
         const btnFull = document.getElementById("btn-fullscreen");
         if (btnFull) {
             btnFull.innerHTML = isFull
-                ? `<span class="hud-btn-icon">🗗</span> SALIR [Esc]`
-                : `<span class="hud-btn-icon">⛶</span> PANTALLA [F]`;
+                ? `Salir [Esc]`
+                : `[F] Pantalla`;
             btnFull.title = isFull ? "Salir de pantalla completa [Esc / F]" : "Alternar Pantalla Completa [F]";
         }
     }
 
-    // =========================================================================
-    // BUCLE DE RENDERIZADO
-    // =========================================================================
     function loop() {
         try {
             update();
@@ -1068,29 +1139,23 @@ window.Game = window.Game || {};
         requestAnimationFrame(loop);
     }
 
-    // =========================================================================
-    // INICIALIZACIÓN Y EVENT LISTENERS
-    // =========================================================================
+    // botones y teclado
     function init() {
         canvas = document.getElementById("gameCanvas");
         if (!canvas) return;
         ctx = canvas.getContext("2d");
 
-        // Inicializar texturas procedimentales HD en canvas offscreen
         if (window.Game.Textures && window.Game.Textures.init) {
             window.Game.Textures.init();
         }
 
-        // Configurar soporte High-DPI (2D HD nítido)
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         canvas.width = Math.round(State.viewport.width * dpr);
         canvas.height = Math.round(State.viewport.height * dpr);
 
-        // Inicializar partículas atmosféricas en las dimensiones del mundo (1160x740)
         State.initAmbientParticles(State.world.width, State.world.height, 35);
         State.snapCamera();
 
-        // Inicializar audio en la primera interacción
         const initAudioOnInteraction = () => {
             if (Audio) Audio.init();
             window.removeEventListener("pointerdown", initAudioOnInteraction);
@@ -1099,29 +1164,28 @@ window.Game = window.Game || {};
         window.addEventListener("pointerdown", initAudioOnInteraction);
         window.addEventListener("keydown", initAudioOnInteraction);
 
-        // Control de teclado unificado con máquina de estados
         window.addEventListener("keydown", (e) => {
             const key = e.key.toLowerCase();
 
             if (key.startsWith("arrow")) e.preventDefault();
 
-            // Bloquear entrada de teclado durante transiciones cinematográficas
             if (State.mode === "TRANSITION") {
                 return;
             }
 
-            // Si el modal de pista está abierto, permitir cerrarlo con [Enter] o [Espacio]
-            // para evitar salir accidentalmente de pantalla completa al usar [Esc]
             if (State.mode === "CLUE" && (key === "enter" || key === " " || key === "spacebar")) {
                 e.preventDefault();
                 closeClue();
                 return;
             }
 
-            // Tecla [Escape]: cierra cualquier modal abierto y regresa al modo correspondiente
             if (key === "escape") {
                 if (State.mode === "NOTEBOOK") {
                     closeNotebook();
+                    return;
+                }
+                if (State.mode === "INTERVIEW") {
+                    closeInterview();
                     return;
                 }
                 if (State.mode === "CLUE" || State.mode === "TERMINAL" || State.mode === "MANUAL") {
@@ -1130,7 +1194,6 @@ window.Game = window.Game || {};
                 }
             }
 
-            // Tecla [B]: abre o cierra la Bitácora de Campo (en PLAYING o TERMINAL)
             if (key === "b") {
                 const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
                 if (tag !== "input" && tag !== "textarea") {
@@ -1144,7 +1207,6 @@ window.Game = window.Game || {};
                 }
             }
 
-            // Teclado numérico físico para el Paso 3 del Terminal (Código de Salida)
             if (State.mode === "TERMINAL" && State.terminalStep === 3) {
                 const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
                 if (tag !== "input" && tag !== "textarea") {
@@ -1164,7 +1226,6 @@ window.Game = window.Game || {};
                 }
             }
 
-            // Tecla [F]: alternar pantalla completa
             if (key === "f") {
                 const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
                 if (tag !== "input" && tag !== "textarea") {
@@ -1174,7 +1235,6 @@ window.Game = window.Game || {};
                 }
             }
 
-            // Tecla [M]: abre o cierra el Manual de Consulta Legal
             if (key === "m") {
                 const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
                 if (tag !== "input" && tag !== "textarea") {
@@ -1183,7 +1243,6 @@ window.Game = window.Game || {};
                 }
             }
 
-            // Tecla [N]: alternar audio
             if (key === "n") {
                 const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
                 if (tag !== "input" && tag !== "textarea") {
@@ -1198,10 +1257,15 @@ window.Game = window.Game || {};
                 }
             }
 
-            // Tecla [E]: interacción física en el escenario (solo en PLAYING)
-            if (key === "e" && !State.keys[key] && State.mode === "PLAYING") {
-                const target = findNearestInteraction();
-                if (target) interactWithObject(target);
+            if (key === "e") {
+                if (State.mode === "INTERVIEW") {
+                    closeInterview();
+                    return;
+                }
+                if (!State.keys[key] && State.mode === "PLAYING") {
+                    const target = findNearestInteraction();
+                    if (target) interactWithObject(target);
+                }
             }
 
             State.keys[key] = true;
@@ -1211,30 +1275,57 @@ window.Game = window.Game || {};
             State.keys[e.key.toLowerCase()] = false;
         });
 
-        // Botón cerrar modal de pista
         const closeClueBtn = document.getElementById("close-clue");
         if (closeClueBtn) {
             closeClueBtn.addEventListener("click", closeClue);
         }
 
-        // Botón iniciar en la pantalla de inicio
-        const btnStart = document.getElementById("btn-start");
-        if (btnStart) {
-            btnStart.addEventListener("click", () => {
-                if (Audio) {
-                    Audio.init();
-                    Audio.uiClick();
+        function startGame(startRoomIndex = 0) {
+            let roomNum = Number(startRoomIndex);
+            if (roomNum < 1) roomNum = roomNum + 1;
+            if (roomNum > 5) roomNum = 5;
+
+            if (Audio) {
+                Audio.init();
+                Audio.uiClick();
+                if (roomNum === 2) {
+                    Audio.startServerHum();
+                } else {
                     Audio.stopServerHum();
                 }
+            }
 
-                playRoomTransition(1, () => {
-                    State.updateHUD();
-                    State.showTacticalToast("DILIGENCIA INICIADA // SECCIÓN 1");
-                });
+            State.resetMission(roomNum);
+
+            playRoomTransition(roomNum, () => {
+                State.updateHUD();
+                if (Audio) {
+                    if (roomNum === 2) {
+                        Audio.startServerHum();
+                    } else {
+                        Audio.stopServerHum();
+                    }
+                }
+                const sectorName = (window.Game.ROOM_NAMES && window.Game.ROOM_NAMES[roomNum]) || "";
+                State.showTacticalToast(`Inspección iniciada: Sala ${roomNum} - ${sectorName}`);
             });
         }
 
-        // Botón reiniciar en la pantalla de victoria
+        const btnStart = document.getElementById("btn-start");
+        if (btnStart) {
+            btnStart.addEventListener("click", () => {
+                startGame(0);
+            });
+        }
+
+        const sectorBtns = document.querySelectorAll(".btn-sector-select");
+        sectorBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const targetRoom = btn.dataset.room !== undefined ? Number(btn.dataset.room) : 0;
+                startGame(targetRoom);
+            });
+        });
+
         const btnRestart = document.getElementById("btn-restart");
         if (btnRestart) {
             btnRestart.addEventListener("click", () => {
@@ -1242,11 +1333,10 @@ window.Game = window.Game || {};
                     Audio.uiClick();
                     Audio.stopServerHum();
                 }
-                State.resetMission();
+                startGame(0);
             });
         }
 
-        // Botón imprimir dictamen pericial en PDF
         const btnPrintReport = document.getElementById("btn-print-report");
         if (btnPrintReport) {
             btnPrintReport.addEventListener("click", () => {
@@ -1255,13 +1345,11 @@ window.Game = window.Game || {};
             });
         }
 
-        // Botón abrir manual en el HUD
         const btnOpenManual = document.getElementById("btn-open-manual");
         if (btnOpenManual) {
             btnOpenManual.addEventListener("click", toggleManual);
         }
 
-        // Botón abrir bitácora en el HUD
         const btnNotebook = document.getElementById("btn-notebook");
         if (btnNotebook) {
             btnNotebook.addEventListener("click", () => {
@@ -1270,19 +1358,16 @@ window.Game = window.Game || {};
             });
         }
 
-        // Botón abrir bitácora desde la cabecera del terminal
         const btnTerminalNotebook = document.getElementById("btn-terminal-notebook");
         if (btnTerminalNotebook) {
             btnTerminalNotebook.addEventListener("click", openNotebook);
         }
 
-        // Botón abrir bitácora desde el teclado numérico del terminal
         const btnKeypadNotebook = document.getElementById("btn-keypad-notebook");
         if (btnKeypadNotebook) {
             btnKeypadNotebook.addEventListener("click", openNotebook);
         }
 
-        // Botones de cierre de la bitácora
         const closeNotebookBtn = document.getElementById("close-notebook");
         if (closeNotebookBtn) {
             closeNotebookBtn.addEventListener("click", closeNotebook);
@@ -1293,7 +1378,16 @@ window.Game = window.Game || {};
             closeNotebookFooterBtn.addEventListener("click", closeNotebook);
         }
 
-        // Botón cerrar teclado numérico y buscar código en el sector
+        const closeInterviewBtn = document.getElementById("close-interview");
+        if (closeInterviewBtn) {
+            closeInterviewBtn.addEventListener("click", closeInterview);
+        }
+
+        const btnCloseInterviewFooter = document.getElementById("btn-close-interview-footer");
+        if (btnCloseInterviewFooter) {
+            btnCloseInterviewFooter.addEventListener("click", closeInterview);
+        }
+
         const btnCloseKeypadSearch = document.getElementById("btn-close-keypad-search");
         if (btnCloseKeypadSearch) {
             btnCloseKeypadSearch.addEventListener("click", () => {
@@ -1303,7 +1397,6 @@ window.Game = window.Game || {};
             });
         }
 
-        // Delegación de clics en la cuadrícula del teclado numérico
         const keypadGrid = document.querySelector(".keypad-grid");
         if (keypadGrid) {
             keypadGrid.addEventListener("click", (e) => {
@@ -1319,7 +1412,6 @@ window.Game = window.Game || {};
             });
         }
 
-        // Botón toggle audio en el HUD
         const btnAudio = document.getElementById("btn-audio");
         if (btnAudio) {
             btnAudio.addEventListener("click", () => {
@@ -1335,17 +1427,14 @@ window.Game = window.Game || {};
             });
         }
 
-        // Botón toggle pantalla completa en el HUD
         const btnFullscreen = document.getElementById("btn-fullscreen");
         if (btnFullscreen) {
             btnFullscreen.addEventListener("click", toggleFullscreen);
         }
 
-        // Sincronización de eventos de pantalla completa
         document.addEventListener("fullscreenchange", updateFullscreenUI);
         document.addEventListener("webkitfullscreenchange", updateFullscreenUI);
 
-        // Botón cerrar manual
         const closeManualBtn = document.getElementById("close-manual");
         if (closeManualBtn) {
             closeManualBtn.addEventListener("click", () => {
@@ -1354,7 +1443,6 @@ window.Game = window.Game || {};
             });
         }
 
-        // Pestañas del Manual Legal
         const tabDefs = document.getElementById("tab-defs");
         const tabRules = document.getElementById("tab-rules");
         const searchInput = document.getElementById("manual-search");
@@ -1383,7 +1471,6 @@ window.Game = window.Game || {};
             });
         }
 
-        // Estado inicial: pantalla de inicio
         State.setMode("MENU");
         State.updateHUD();
 
