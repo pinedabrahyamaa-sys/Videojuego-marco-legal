@@ -1738,24 +1738,40 @@ window.Game = window.Game || {};
                 ctx.fill();
                 ctx.stroke();
 
-                drawRoundedRect(ctx, -3.5, -23, 7, 3.5, 1.5);
-                ctx.fillStyle = "#E5B288";
+                // Cuello trasero
+                drawRoundedRect(ctx, -3.5, -22.5, 7, 4, 1.5);
+                ctx.fillStyle = "#F4C7A3";
                 ctx.fill();
 
+                // Cabello en la nuca
+                ctx.fillStyle = "#1E1614";
+                ctx.fillRect(-5.5, -24.5, 11, 3.5);
+
+                // Orejas traseras
                 ctx.fillStyle = "#E5B288";
                 ctx.fillRect(-8.5, -27, 2, 4);
                 ctx.fillRect(6.5, -27, 2, 4);
 
-                ctx.fillStyle = "#1E1614";
+                // Cabeza base trasera
+                ctx.fillStyle = "#F4C7A3";
                 ctx.beginPath();
-                ctx.arc(0, -26.5, 7.8, 0, Math.PI * 2);
+                ctx.arc(0, -26.5, 7.6, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
+                ctx.strokeStyle = "#1F2937";
                 ctx.lineWidth = 1.2;
                 ctx.stroke();
 
-                drawRoundedRect(ctx, -8, -33, 16, 9.5, [6, 6, 2, 2]);
-                ctx.fillStyle = "#2D221F";
+                // Parte trasera de la gorra del CICPC
+                drawRoundedRect(ctx, -8, -35.5, 16, 10, [7, 7, 2, 2]);
+                ctx.fillStyle = "#0B192C";
+                ctx.fill();
+                ctx.strokeStyle = "#1F2937";
+                ctx.lineWidth = 1.1;
+                ctx.stroke();
+
+                // Tira de ajuste trasera de la gorra
+                drawRoundedRect(ctx, -3.5, -27, 7, 2.4, 1);
+                ctx.fillStyle = "#1E293B";
                 ctx.fill();
 
             } else {
@@ -1917,103 +1933,166 @@ window.Game = window.Game || {};
 
                 const headOffsetX = isSide ? headDir * 2.5 : 0;
 
-                ctx.fillStyle = "#E5B288";
-                ctx.fillRect(-3.2 + headOffsetX * 0.5, -21.5, 6.4, 4);
+                // Cuello
+                ctx.fillStyle = "#F4C7A3";
+                drawRoundedRect(ctx, -3.5 + headOffsetX * 0.4, -22, 7, 4.2, 1.5);
+                ctx.fill();
                 ctx.fillStyle = "rgba(180, 110, 75, 0.35)";
-                ctx.fillRect(-3.2 + headOffsetX * 0.5, -21.5, 6.4, 1.5);
+                ctx.fillRect(-3.5 + headOffsetX * 0.4, -22, 7, 1.5);
 
-                ctx.fillStyle = "#F0C49F";
+                // Cabeza base y menton con borde oscuro fino
+                ctx.fillStyle = "#F4C7A3";
                 ctx.beginPath();
                 ctx.arc(headOffsetX, -26.5, 7.6, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = INK_OUTLINE;
-                ctx.lineWidth = 1.3;
+                ctx.strokeStyle = "#1F2937";
+                ctx.lineWidth = 1.25;
                 ctx.stroke();
 
                 drawRoundedRect(ctx, -4.5 + headOffsetX, -23.5, 9, 4, 2);
-                ctx.fillStyle = "#F0C49F";
+                ctx.fillStyle = "#F4C7A3";
                 ctx.fill();
 
-                ctx.fillStyle = "rgba(35, 25, 20, 0.22)";
+                ctx.fillStyle = "rgba(35, 25, 20, 0.18)";
                 ctx.beginPath();
                 ctx.arc(headOffsetX, -24.5, 6.5, 0.2, Math.PI - 0.2);
                 ctx.fill();
 
                 if (!isSide) {
-
+                    // Orejas frontales
                     ctx.fillStyle = "#E5B288";
                     ctx.fillRect(-8.4, -27, 2, 4.2);
                     ctx.fillRect(6.4, -27, 2, 4.2);
 
-                    ctx.fillStyle = "#1E1614";
-                    ctx.fillRect(-5.8, -29.5, 4.2, 1.4);
-                    ctx.fillRect(1.6, -29.5, 4.2, 1.4);
-
-                    ctx.fillStyle = "#0E141D";
-                    ctx.beginPath();
-                    ctx.arc(-3.6, -27, 1.2, 0, Math.PI * 2);
+                    // Gorra del CICPC elevada (termina en -29.5 para despejar ojos)
+                    drawRoundedRect(ctx, -8, -35.5, 16, 7.8, [7, 7, 1, 1]);
+                    ctx.fillStyle = "#0B192C";
                     ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(3.6, -27, 1.2, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = "#FFFFFF";
-                    ctx.fillRect(-3.9, -27.4, 0.8, 0.8);
-                    ctx.fillRect(3.3, -27.4, 0.8, 0.8);
-
-                    ctx.strokeStyle = "rgba(180, 110, 75, 0.65)";
-                    ctx.lineWidth = 0.9;
-                    ctx.beginPath();
-                    ctx.moveTo(0, -28);
-                    ctx.lineTo(0.5, -25.2);
-                    ctx.lineTo(-0.8, -24.8);
+                    ctx.strokeStyle = "#1F2937";
+                    ctx.lineWidth = 1.1;
                     ctx.stroke();
 
+                    // Franja dorada CICPC
+                    ctx.fillStyle = "#D99B26";
+                    ctx.fillRect(-3.5, -33, 7, 1.4);
+
+                    // Visera tactica acortada hacia arriba
+                    drawRoundedRect(ctx, -8.5, -29.5, 17, 2.4, 1.2);
+                    ctx.fillStyle = "#07111E";
+                    ctx.fill();
+                    ctx.strokeStyle = "#1F2937";
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+
+                    // Cejas oscuras finas
+                    ctx.fillStyle = "#0F172A";
+                    ctx.fillRect(-5.0, -28.7, 3.8, 1.2);
+                    ctx.fillRect(1.2, -28.7, 3.8, 1.2);
+
+                    // Ojos de alto contraste (base blanca + pupila oscura 2.3px + brillo)
+                    drawRoundedRect(ctx, -4.8, -27.4, 3.6, 2.6, 1);
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fill();
+                    drawRoundedRect(ctx, 1.2, -27.4, 3.6, 2.6, 1);
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fill();
+
+                    ctx.fillStyle = "#0F172A";
+                    ctx.beginPath();
+                    ctx.arc(-3.0, -26.1, 1.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(3.0, -26.1, 1.15, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(-3.5, -26.8, 0.8, 0.8);
+                    ctx.fillRect(2.5, -26.8, 0.8, 0.8);
+
+                    // Nariz sutil
+                    ctx.strokeStyle = "rgba(180, 110, 75, 0.75)";
+                    ctx.lineWidth = 0.9;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -27);
+                    ctx.lineTo(0.6, -24.8);
+                    ctx.lineTo(-0.7, -24.4);
+                    ctx.stroke();
+
+                    // Boca seria / concentrada
                     ctx.fillStyle = "#8C5542";
-                    ctx.fillRect(-1.8, -22.5, 3.6, 1);
-
-                    ctx.fillStyle = "#1E1614";
-                    drawRoundedRect(ctx, -8, -34, 16, 9.5, [7, 7, 1, 1]);
-                    ctx.fill();
-
-                    ctx.fillStyle = "#2D221F";
-                    drawRoundedRect(ctx, -6.5, -34.8, 13, 5, [5, 5, 0, 0]);
-                    ctx.fill();
+                    ctx.fillRect(-1.8, -22.4, 3.6, 1.1);
 
                 } else {
-
-                    const eyeX = headOffsetX + headDir * 2.6;
-                    const earX = headOffsetX - headDir * 5.5;
-
+                    // Vista lateral / perfil
+                    const earX = headOffsetX - headDir * 5.6;
                     ctx.fillStyle = "#E5B288";
-                    ctx.fillRect(earX, -27, 2.2, 4.5);
+                    ctx.fillRect(earX, -27, 2.2, 4.2);
 
-                    ctx.fillStyle = "#1E1614";
-                    ctx.fillRect(eyeX - 1.5, -29.5, 4, 1.4);
-
-                    ctx.fillStyle = "#0E141D";
-                    ctx.beginPath();
-                    ctx.arc(eyeX, -27, 1.3, 0, Math.PI * 2);
+                    // Gorra lateral elevada
+                    drawRoundedRect(ctx, headOffsetX - 7, -35.5, 14, 7.8, [7, 7, 2, 2]);
+                    ctx.fillStyle = "#0B192C";
                     ctx.fill();
-                    ctx.fillStyle = "#FFFFFF";
-                    ctx.fillRect(eyeX + (headDir > 0 ? 0.3 : -0.8), -27.3, 0.7, 0.7);
+                    ctx.strokeStyle = "#1F2937";
+                    ctx.lineWidth = 1.1;
+                    ctx.stroke();
 
-                    ctx.fillStyle = "#E5B288";
+                    ctx.fillStyle = "#D99B26";
+                    ctx.fillRect(headOffsetX + headDir * 0.5 - 2.5, -33, 5, 1.4);
+
+                    // Visera lateral orientada al frente
+                    ctx.fillStyle = "#07111E";
                     ctx.beginPath();
-                    ctx.moveTo(headOffsetX + headDir * 5, -27);
-                    ctx.lineTo(headOffsetX + headDir * 7.5, -25.5);
-                    ctx.lineTo(headOffsetX + headDir * 5, -24.5);
+                    const brimBaseX = headOffsetX + headDir * 3;
+                    ctx.moveTo(brimBaseX - headDir * 4, -29.5);
+                    ctx.lineTo(brimBaseX + headDir * 6.5, -29.5);
+                    ctx.lineTo(brimBaseX + headDir * 5.5, -28.0);
+                    ctx.lineTo(brimBaseX - headDir * 4, -28.0);
                     ctx.closePath();
                     ctx.fill();
+                    ctx.strokeStyle = "#1F2937";
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
 
+                    // Ojos y boca desplazados 2 a 3 px en la direccion de la mirada
+                    const nearEyeX = headOffsetX + headDir * 2.2;
+                    const farEyeX = headOffsetX - headDir * 1.5;
+
+                    // Cejas
+                    ctx.fillStyle = "#0F172A";
+                    ctx.fillRect(nearEyeX - 1.8, -28.7, 3.6, 1.2);
+                    ctx.fillRect(farEyeX - 1.5, -28.7, 3.0, 1.2);
+
+                    // Ojos de alto contraste
+                    drawRoundedRect(ctx, nearEyeX - 1.8, -27.4, 3.6, 2.6, 1);
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fill();
+                    drawRoundedRect(ctx, farEyeX - 1.4, -27.4, 2.8, 2.4, 1);
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fill();
+
+                    ctx.fillStyle = "#0F172A";
+                    ctx.beginPath();
+                    ctx.arc(nearEyeX + headDir * 0.4, -26.1, 1.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(farEyeX + headDir * 0.2, -26.1, 1.0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(nearEyeX + (headDir > 0 ? 0.3 : -0.8), -26.8, 0.8, 0.8);
+
+                    // Nariz en perfil
+                    ctx.strokeStyle = "rgba(180, 110, 75, 0.75)";
+                    ctx.lineWidth = 0.9;
+                    ctx.beginPath();
+                    ctx.moveTo(headOffsetX + headDir * 4.5, -26.5);
+                    ctx.lineTo(headOffsetX + headDir * 6.5, -25.2);
+                    ctx.lineTo(headOffsetX + headDir * 4.5, -24.5);
+                    ctx.stroke();
+
+                    // Boca seria / concentrada en perfil
                     ctx.fillStyle = "#8C5542";
-                    ctx.fillRect(headOffsetX + headDir * 2, -22.5, 2.8, 1);
-
-                    ctx.fillStyle = "#1E1614";
-                    drawRoundedRect(ctx, headOffsetX - 7, -34, 14, 9.5, [7, 7, 2, 2]);
-                    ctx.fill();
-                    ctx.fillStyle = "#2D221F";
-                    drawRoundedRect(ctx, headOffsetX - 5.5, -34.8, 11, 4.8, [5, 5, 0, 0]);
-                    ctx.fill();
+                    ctx.fillRect(headOffsetX + headDir * 1.5 - 1.4, -22.4, 2.8, 1.1);
                 }
             }
 
@@ -2365,7 +2444,7 @@ window.Game = window.Game || {};
             ctx.restore();
 
             const allAsked = state && state.allQuestionsAsked && state.allQuestionsAsked(npc);
-            const badgeY = footY - 48 + breath;
+            const badgeY = footY - 75 + breath;
 
             if (allAsked) {
                 ctx.fillStyle = "rgba(19, 46, 43, 0.92)";
